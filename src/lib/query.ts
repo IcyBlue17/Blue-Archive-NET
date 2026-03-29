@@ -1,0 +1,30 @@
+import { QueryClient } from '@tanstack/react-query'
+import type { GameName } from './types'
+
+const MINUTE = 60 * 1000
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 10 * MINUTE,
+      gcTime: 30 * MINUTE,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+})
+
+export const qk = {
+  me: ['me'] as const,
+  adminStatus: ['admin-status'] as const,
+  settings: ['settings'] as const,
+  homeSummary: (username: string) => ['home-summary', username] as const,
+  cardSummary: (luid: string) => ['card-summary', luid] as const,
+  gameDash: (username: string, game: GameName) => ['game-dashboard', username, game] as const,
+  collectiblesChu3: ['collectibles', 'chu3'] as const,
+}
