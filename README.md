@@ -5,10 +5,10 @@
 ## 开发
 
 ```bash
-pnpm install
+bun install
 cp .env.example .env
 # 编辑 .env：至少设置 VITE_AQUA_HOST（后端地址）、VITE_TURNSTILE_SITE_KEY（生产必填）
-pnpm dev
+bun run dev
 ```
 
 开发时 Vite 已将 `/api`、`/uploads` 代理到 `http://127.0.0.1:8080`，可与本机后端联调。
@@ -16,8 +16,8 @@ pnpm dev
 ## 构建
 
 ```bash
-pnpm build
-pnpm preview
+bun run build
+bun run preview
 ```
 
 将 `dist/` 部署到任意静态托管，并保证 `VITE_AQUA_HOST` 指向可访问的后端（含 CORS）。
