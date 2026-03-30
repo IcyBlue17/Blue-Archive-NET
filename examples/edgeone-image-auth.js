@@ -148,6 +148,7 @@ export default {
       method: req1.method,
       headers: {
         Accept: req1.headers.get('accept') || '*/*',
+        'X-YUANSHEN': 'NIUBI',
       },
     })
 
