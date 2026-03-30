@@ -100,7 +100,33 @@ export interface GenericGameSummary {
   ratingComposition?: Record<string, unknown>
   recent: GenericGamePlaylog[]
   rival?: boolean
+  rivalExtId?: number | null
   favorites?: number[]
+}
+
+export interface Chu3RivalEntry {
+  rivalExtId: number
+  userName: string
+  playerRating: number
+  highestRating: number
+  level: number
+  teamId: number
+  teamName: string
+  characterId: number
+  charaIllustId: number
+  nameplateId: number
+  frameId: number
+  trophyId: number
+  classEmblemBase: number
+  classEmblemMedal: number
+  avatarWear: number
+  avatarHead: number
+  avatarFace: number
+  avatarSkin: number
+  avatarItem: number
+  avatarFront: number
+  avatarBack: number
+  addedAt: string
 }
 
 export interface GenericRankingPlayer {

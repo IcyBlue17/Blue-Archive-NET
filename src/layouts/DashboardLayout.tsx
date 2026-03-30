@@ -9,6 +9,7 @@ import {
   ShieldStar,
   Sparkle,
   List,
+  UsersThree,
 } from '@phosphor-icons/react'
 import { Sidebar, useSidebar } from '@cloudflare/kumo'
 import { Button } from '@cloudflare/kumo/components/button'
@@ -92,6 +93,9 @@ function DashboardShell() {
               </NavBtn>
               <NavBtn path="/games/chu3" icon={Trophy} active={loc.pathname.startsWith('/games')} onNavigate={go}>
                 Games
+              </NavBtn>
+              <NavBtn path="/friends" icon={UsersThree} active={loc.pathname.startsWith('/friends')} onNavigate={go}>
+                {t('friends')}
               </NavBtn>
               <NavBtn
                 path="/collectibles"

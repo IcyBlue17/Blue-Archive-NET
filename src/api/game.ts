@@ -1,4 +1,5 @@
 import type {
+  Chu3RivalEntry,
   GameName,
   GenericGameSummary,
   GenericRankingPlayer,
@@ -79,4 +80,18 @@ export async function unlockChu3Character(characterId: number, level: number) {
 
 export async function chu3UserDetail(username: string) {
   return userPost('/api/v2/game/chu3/user-detail', { username })
+}
+
+export async function chu3RivalList() {
+  return userPost('/api/v2/game/chu3/rival/list', {}) as Promise<Chu3RivalEntry[]>
+}
+
+export async function chu3RivalAdd(username: string) {
+  return userPost('/api/v2/game/chu3/rival/add', { username }) as Promise<Chu3RivalEntry>
+}
+
+export async function chu3RivalRemove(rivalExtId: number) {
+  return userPost('/api/v2/game/chu3/rival/remove', {
+    rivalExtId: String(rivalExtId),
+  }) as Promise<void>
 }

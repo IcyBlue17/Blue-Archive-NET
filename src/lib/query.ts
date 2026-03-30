@@ -25,6 +25,7 @@ export const qk = {
   settings: ['settings'] as const,
   homeSummary: (username: string) => ['home-summary', username] as const,
   homeChu3Box: (username: string) => ['home-chu3-box', username] as const,
+  chu3Rivals: ['chu3-rivals'] as const,
   cardSummary: (luid: string) => ['card-summary', luid] as const,
   gameDash: (username: string, game: GameName) => ['game-dashboard', username, game] as const,
   collectiblesChu3: ['collectibles', 'chu3'] as const,
