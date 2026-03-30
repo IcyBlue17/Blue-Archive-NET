@@ -22,7 +22,7 @@ bun run preview
 
 将 `dist/` 部署到任意静态托管，并保证 `VITE_AQUA_HOST` 指向可访问的后端（含 CORS）。
 
-## 图片域名
+## 图片 CDN / 伪签名
 
 支持把图片单独切到对象存储 / CDN 域名：
 
@@ -32,15 +32,21 @@ VITE_IMAGE_HOST=https://img.example.com
 
 打开后，现有的曲绘、CHUNITHM 静态资源、头像、站点品牌图都会统一改到这个图片域名。
 
-- 如果你后面把图片迁到 S3 + EdgeOne：
+- 如果你要让前端请求 CDN 时自动带上 EdgeOne Token 鉴权参数，可继续配置：
 
 ```bash
 VITE_IMAGE_HOST=https://img.example.com
+VITE_IMAGE_SIGNING=on
+VITE_IMAGE_SIGN_PARAM=token
+VITE_IMAGE_SIGN_KEY=your-public-ish-key
+VITE_IMAGE_SIGN_UID=0
+VITE_IMAGE_SIGN_RAND_LEN=12
 ```
 
 - 前端这里只负责图片域名切换。
-- AWS Signature V4 不应该放进静态前端；真正的 SigV4 应该放在 EdgeOne 回源私有桶，或者由后端/边缘签发 presigned URL。
-- 如果你要让 EdgeOne/WAF校验客户端请求，优先用 EdgeOne Token Authentication / WAF 规则，不要把 AWS Secret 发给浏览器。
+- 开启后，前端会按 EdgeOne Token 鉴权 Method A 生成 `token=timestamp-rand-uid-md5`。
+- 这个方案适合你说的“伪签名放行”。不要把真正的 AWS Secret 放进前端。
+- 如果你要 EdgeOne真正验证签名是否正确，优先用 EdgeOne Token Authentication；单纯 WAF 规则更适合做存在性/格式判断。
 
 ## 技术栈
 
