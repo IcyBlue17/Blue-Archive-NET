@@ -177,7 +177,7 @@ function DashboardShell() {
 
 export function DashboardLayout() {
   return (
-    <Sidebar.Provider defaultOpen collapsible="offcanvas">
+    <Sidebar.Provider defaultOpen>
       <DashboardShell />
     </Sidebar.Provider>
   )
