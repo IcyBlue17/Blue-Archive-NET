@@ -8,6 +8,7 @@ import { SkeletonBox } from '../../components/common/Skeleton'
 import * as gameApi from '../../api/game'
 import { useAuth } from '../../hooks/useAuth'
 import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
+import { imgCross1 } from '../../lib/imgSign'
 import { qk } from '../../lib/query'
 import * as cardApi from '../../api/card'
 import type { CardSummary, CardSummaryGame, GameName } from '../../lib/types'
@@ -136,7 +137,13 @@ export function HomePage() {
           <div className="grid gap-5 px-4 py-4 md:grid-cols-[116px_minmax(0,1fr)] md:items-center">
             <div className="border-kumo-border bg-kumo-recessed mx-auto flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
               {chu3Avatar ? (
-                <img src={chu3Avatar} alt={chu3NameRaw} className="size-full object-cover" loading="lazy" />
+                <img
+                  src={chu3Avatar}
+                  crossOrigin={imgCross1(chu3Avatar)}
+                  alt={chu3NameRaw}
+                  className="size-full object-cover"
+                  loading="lazy"
+                />
               ) : (
                 <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '无头像' : 'No avatar'}</div>
               )}

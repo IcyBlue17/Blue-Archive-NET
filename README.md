@@ -37,11 +37,17 @@ VITE_IMAGE_HOST=https://img.example.com
 ```bash
 VITE_IMAGE_HOST=https://img.example.com
 VITE_IMAGE_AUTH=on
+VITE_IMAGE_COOKIE_DOMAIN=.example.com
 ```
 
-- 前端这里只负责图片域名切换。
-- 开启 `VITE_IMAGE_AUTH` 后，静态图片依然是直接请求 `IMAGE_HOST`。
-- 也就是说浏览器会直接向 `https://img.example.com/...` 发请求，鉴权完全由 `IMAGE_HOST` 那边的 EdgeOne Middleware / Edge Function 负责。
+- 前端不会做中转，静态图片依然是直接请求 `IMAGE_HOST`。
+- 打开 `VITE_IMAGE_AUTH` 后，前端会把本地 Aqua JWT 同步成 cookie，并让跨域图片请求显式带 credentials。
+- 鉴权完全由 `IMAGE_HOST` 那边的 EdgeOne Middleware / Edge Function 负责。
+- 如果站点域名和图片域名是兄弟子域名，比如：
+  - 站点：`blue-archive.icybit.cn`
+  - 图片：`img.icybit.cn`
+  - 那 `VITE_IMAGE_COOKIE_DOMAIN` 应填 `.icybit.cn`
+- 如果站点域名与图片域名不在同一个父域下，浏览器无法从前端把 JWT cookie 写到图片域名上，这套方案就不能直接工作。
 - `/api/...`、`/uploads/...` 这类后端动态资源不会被这层改写，避免把现有接口图片流量带坏。
 
 ## 技术栈

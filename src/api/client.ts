@@ -1,4 +1,5 @@
 import { apiUrl } from '../lib/config'
+import { syncImgJwtCookie1 } from '../lib/imgSign'
 
 export const TOKEN_KEY = 'token'
 
@@ -8,10 +9,16 @@ function getToken(): string | null {
 
 export function setToken(token: string) {
   localStorage.setItem(TOKEN_KEY, token)
+  syncImgJwtCookie1(token)
 }
 
 export function clearToken() {
   localStorage.removeItem(TOKEN_KEY)
+  syncImgJwtCookie1(null)
+}
+
+export function syncImageJwtCookie() {
+  syncImgJwtCookie1(getToken())
 }
 
 export function isLoggedIn(): boolean {

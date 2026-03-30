@@ -12,6 +12,7 @@ import { formatDisplayRating } from '../../lib/gameRatingDisplay'
 import { useI18n } from '../../lib/i18n'
 import { qk } from '../../lib/query'
 import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
+import { imgCross1 } from '../../lib/imgSign'
 import type { Chu3RivalEntry } from '../../lib/types'
 
 function formatTime1(iso: string, locale: 'zh' | 'en') {
@@ -212,7 +213,13 @@ export function Chu3FriendsPage() {
                   <div className="flex items-start gap-4">
                     <div className="border-kumo-border bg-kumo-recessed flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
                       {img ? (
-                        <img src={img} alt={row.userName} className="size-full object-cover" loading="lazy" />
+                        <img
+                          src={img}
+                          crossOrigin={imgCross1(img)}
+                          alt={row.userName}
+                          className="size-full object-cover"
+                          loading="lazy"
+                        />
                       ) : (
                         <Text size="sm">{row.userName.slice(0, 1)}</Text>
                       )}

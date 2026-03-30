@@ -3,6 +3,7 @@ import { Text } from '@cloudflare/kumo/components/text'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import type { GameName } from '../../lib/types'
 import { parseComposition, type MusicMetaLite } from '../../lib/scoring'
+import { imgCross1 } from '../../lib/imgSign'
 
 function CompGrid({
   title,
@@ -38,6 +39,7 @@ function CompGrid({
           >
             <img
               src={p.img}
+              crossOrigin={imgCross1(p.img)}
               alt=""
               className="h-14 w-14 shrink-0 rounded object-cover"
               onError={(e) => {

@@ -6,6 +6,7 @@ import { getMult, roundFloor, type MusicMetaLite } from '../../lib/scoring'
 import { toDisplayRating } from '../../lib/gameRatingDisplay'
 import { formatPlaylogLevelLabel } from '../../lib/playlogDisplay'
 import { musicJacketUrl } from '../../lib/musicCover'
+import { imgCross1 } from '../../lib/imgSign'
 
 type Row = GenericGamePlaylog & MusicMetaLite & { worldsEndTag?: string }
 
@@ -35,6 +36,7 @@ const RecentScoreRow = memo(function RecentScoreRow({
     ? roundFloor(row.achievement, game, 1)
     : (row.achievement / 10000).toFixed(4)
   const showEndRating = game === 'wacca' || game === 'chu3' || game === 'ongeki'
+  const jacket1 = musicJacketUrl(game, row.musicId)
 
   return (
     <div
@@ -44,7 +46,8 @@ const RecentScoreRow = memo(function RecentScoreRow({
       style={{ contentVisibility: 'auto' }}
     >
       <img
-        src={musicJacketUrl(game, row.musicId)}
+        src={jacket1}
+        crossOrigin={imgCross1(jacket1)}
         alt=""
         width={48}
         height={48}

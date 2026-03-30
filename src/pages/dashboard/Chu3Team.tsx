@@ -12,6 +12,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
 import { formatDisplayRating } from '../../lib/gameRatingDisplay'
 import { useI18n } from '../../lib/i18n'
+import { imgCross1 } from '../../lib/imgSign'
 import { qk } from '../../lib/query'
 import type { Chu3TeamDetail, Chu3TeamMember, Chu3TeamRankEntry } from '../../lib/types'
 
@@ -56,7 +57,13 @@ function MemberCard({ row, locale }: { row: Chu3TeamMember; locale: 'zh' | 'en' 
       <div className="flex items-start gap-4">
         <div className="border-kumo-border bg-kumo-recessed flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border">
           {avatar ? (
-            <img src={avatar} alt={row.userName} className="size-full object-cover" loading="lazy" />
+            <img
+              src={avatar}
+              crossOrigin={imgCross1(avatar)}
+              alt={row.userName}
+              className="size-full object-cover"
+              loading="lazy"
+            />
           ) : (
             <Text size="sm">{row.userName.slice(0, 1) || '?'}</Text>
           )}

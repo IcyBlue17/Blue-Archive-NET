@@ -20,6 +20,7 @@ import {
   type Chu3CatalogBundle,
   type Chu3NameLookups,
 } from '../../lib/chu3Assets'
+import { imgCross1 } from '../../lib/imgSign'
 import {
   buildChu3AppearanceSelectRows,
   CHU3_APPEARANCE_FIELD_ORDER,
@@ -608,6 +609,7 @@ export function CollectiblesPage() {
                       {img ? (
                         <img
                           src={img}
+                          crossOrigin={imgCross1(img)}
                           alt=""
                           className={
                             row.field === 'nameplateId'
@@ -796,6 +798,7 @@ export function CollectiblesPage() {
                             {img ? (
                               <img
                                 src={img}
+                                crossOrigin={imgCross1(img)}
                                 alt=""
                                 className={
                                   isNameplate
