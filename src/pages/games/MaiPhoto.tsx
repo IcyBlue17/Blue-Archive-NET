@@ -4,6 +4,7 @@ import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { PageHeader } from '../../components/common/PageHeader'
 import * as gameApi from '../../api/game'
 import { apiUrl } from '../../lib/config'
+import { imgUrl1 } from '../../lib/imgSign'
 import { readToken } from '../../hooks/useAuth'
 import { useI18n } from '../../lib/i18n'
 
@@ -31,7 +32,7 @@ export function MaiPhotoPage() {
           if (token) u.searchParams.set('token', token)
           return (
             <LayerCard key={p} className="overflow-hidden p-0">
-              <img src={u.toString()} alt="" className="h-auto w-full object-cover" />
+              <img src={imgUrl1(u.toString())} alt="" className="h-auto w-full object-cover" />
             </LayerCard>
           )
         })}

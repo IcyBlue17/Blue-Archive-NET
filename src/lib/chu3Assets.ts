@@ -1,3 +1,5 @@
+import { imgUrl1 } from './imgSign'
+
 /**
  * CHUNITHM 收藏品静态资源：`public/chu3-assets/`（由 tools/chuni_assets 同步）。
  * 大部分图片文件名 id 为 8 位零填充；角色图使用 `prefix_suffix_variant` 规则。
@@ -26,7 +28,7 @@ export function chu3CharacterImageUrl(itemId: number, variant: '00' | '02' = '00
   if (itemId < 0) return null
   const pre = padChu3CharaImageId(itemId)
   const suf = padChu3CharaImageSuffix(itemId)
-  return `${BASE}/chara/CHU_UI_Character_${pre}_${suf}_${variant}.webp`
+  return imgUrl1(`${BASE}/chara/CHU_UI_Character_${pre}_${suf}_${variant}.webp`)
 }
 
 /** 计划表：分类元数据（field、JSON、本地图目录与前缀） */
@@ -80,7 +82,7 @@ export function chu3CollectibleImageUrl(field: string, itemId: number): string |
   if (!meta) return null
   const fmt = meta.formatId ?? padChu3Id8
   const suffix = meta.suffix ?? ''
-  return `${BASE}/${meta.dir}/${meta.prefix}${fmt(itemId)}${suffix}.webp`
+  return imgUrl1(`${BASE}/${meta.dir}/${meta.prefix}${fmt(itemId)}${suffix}.webp`)
 }
 
 export function chu3CollectibleHasImage(field: string): boolean {

@@ -22,6 +22,37 @@ bun run preview
 
 将 `dist/` 部署到任意静态托管，并保证 `VITE_AQUA_HOST` 指向可访问的后端（含 CORS）。
 
+## 图片签名
+
+支持构建时开关图片签名：
+
+```bash
+VITE_IMAGE_SIGNING=on
+```
+
+打开后，前端所有图片 URL 会统一改走 `/_img?u=原始地址`，由同仓库的服务端函数代签并回源取图。这样浏览器里不会暴露 AWS Secret。
+
+常用环境变量：
+
+```bash
+VITE_IMAGE_SIGNING=on
+VITE_IMAGE_SIGN_DEV=off
+VITE_IMAGE_SIGN_PATH=/_img
+
+IMAGE_SIGN_ALLOW_HOSTS=blue-archive.icybit.cn,aquadx.net,aqua.icybit.cn
+IMAGE_SIGN_AWS_HOSTS=img.example.com
+IMAGE_SIGN_AWS_ACCESS_KEY_ID=...
+IMAGE_SIGN_AWS_SECRET_ACCESS_KEY=...
+IMAGE_SIGN_AWS_SESSION_TOKEN=
+IMAGE_SIGN_AWS_REGION=ap-shanghai
+IMAGE_SIGN_AWS_SERVICE=s3
+```
+
+- `IMAGE_SIGN_ALLOW_HOSTS`：代理允许访问的图片域名白名单。
+- `IMAGE_SIGN_AWS_HOSTS`：这些域名会额外套 AWS Signature V4。
+- 如果你已经配置了 `VITE_DATA_HOST` / `VITE_AQUA_HOST`，服务端函数会自动把这两个域名加入允许列表。
+- 本地 `bun run dev` 默认不走签名代理；如需本地联调，再把 `VITE_IMAGE_SIGN_DEV=on`。
+
 ## 技术栈
 
 - React 19 + TypeScript + Vite 8

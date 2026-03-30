@@ -1,7 +1,9 @@
+import { imgUrl1 } from '../../lib/imgSign'
+
 export function BlueArchiveLogo({ className = 'h-16 w-auto' }: { className?: string }) {
   return (
     <img
-      src="/blue-archive-logo.png"
+      src={imgUrl1('/blue-archive-logo.png')}
       alt="Blue Archive"
       width={1804}
       height={500}
