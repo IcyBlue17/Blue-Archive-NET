@@ -17,24 +17,21 @@
  * - ESA `fetch` API 与浏览器环境相近：
  *   https://www.alibabacloud.com/help/en/edge-security-acceleration/esa/user-guide/api-documentation
  *
- * 建议环境变量：
- * - IMAGE_ORIGIN=https://your-origin.example.com
- * - APP_ORIGIN=https://blue-archive.icybit.cn
- * - AQUA_VERIFY_URL=https://blue-archive.icybit.cn/api/v2/user/me
- * - JWT_COOKIE_NAME=aqua_jwt
- * - AQUA_JWT_SECRET=...
+ * 直接改下面 CFG 常量即可，不依赖控制台环境变量。
  */
 
 const text1 = new TextEncoder()
-
-function env1(ctx1, key1, def1 = '') {
-  if (ctx1 && typeof ctx1 === 'object' && key1 in ctx1 && ctx1[key1] != null) {
-    return String(ctx1[key1]).trim()
-  }
-  if (typeof process !== 'undefined' && process.env && process.env[key1] != null) {
-    return String(process.env[key1]).trim()
-  }
-  return def1
+const CFG = {
+  // 你的图片真实源站，比如 S3 / OSS / COS / Nginx
+  IMAGE_ORIGIN: 'https://your-origin.example.com',
+  // 你的主站 origin
+  APP_ORIGIN: 'https://blue-archive.icybit.cn',
+  // Aqua 用户态校验接口
+  AQUA_VERIFY_URL: 'https://blue-archive.icybit.cn/api/v2/user/me',
+  // 前端同步出来的 JWT cookie 名
+  JWT_COOKIE_NAME: 'aqua_jwt',
+  // 可选：Aqua 的 aqua-net.jwt.secret；不知道就留空，只走远端 session 校验
+  AQUA_JWT_SECRET: '',
 }
 
 function bad1(msg1, code1 = 403) {
@@ -120,12 +117,12 @@ function originUrl1(req1, imageOrigin1) {
   return new URL(reqUrl1.pathname + reqUrl1.search, imageOrigin1)
 }
 
-async function handle1(req1, envObj1) {
-  const appOrigin1 = env1(envObj1, 'APP_ORIGIN')
-  const imageOrigin1 = env1(envObj1, 'IMAGE_ORIGIN')
-  const verifyUrl1 = env1(envObj1, 'AQUA_VERIFY_URL')
-  const cookieName1 = env1(envObj1, 'JWT_COOKIE_NAME', 'aqua_jwt') || 'aqua_jwt'
-  const secret1 = env1(envObj1, 'AQUA_JWT_SECRET')
+async function handle1(req1) {
+  const appOrigin1 = String(CFG.APP_ORIGIN || '').trim()
+  const imageOrigin1 = String(CFG.IMAGE_ORIGIN || '').trim()
+  const verifyUrl1 = String(CFG.AQUA_VERIFY_URL || '').trim()
+  const cookieName1 = String(CFG.JWT_COOKIE_NAME || 'aqua_jwt').trim() || 'aqua_jwt'
+  const secret1 = String(CFG.AQUA_JWT_SECRET || '').trim()
 
   if (!appOrigin1 || !imageOrigin1 || !verifyUrl1) {
     return new Response('ESA env missing', { status: 500 })
@@ -172,7 +169,7 @@ async function handle1(req1, envObj1) {
 }
 
 export default {
-  async fetch(request, envObj1) {
-    return handle1(request, envObj1)
+  async fetch(request) {
+    return handle1(request)
   },
 }
