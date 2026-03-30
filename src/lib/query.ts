@@ -27,6 +27,8 @@ export const qk = {
   homeChu3Box: (username: string) => ['home-chu3-box', username] as const,
   chu3Rivals: ['chu3-rivals'] as const,
   chu3Team: ['chu3-team'] as const,
+  chu3TeamDetailBase: ['chu3-team-detail'] as const,
+  chu3TeamDetail: (teamId: number | 'me' = 'me') => ['chu3-team-detail', teamId] as const,
   chu3TeamRanking: (limit: number) => ['chu3-team-ranking', limit] as const,
   cardSummary: (luid: string) => ['card-summary', luid] as const,
   gameDash: (username: string, game: GameName) => ['game-dashboard', username, game] as const,

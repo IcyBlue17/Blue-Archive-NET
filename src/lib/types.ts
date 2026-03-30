@@ -138,6 +138,32 @@ export interface Chu3TeamSummary {
   teamPoint: number
   myPoint: number
   memberCount: number
+  leaderExtId?: number
+  leaderName?: string
+}
+
+export interface Chu3TeamMember {
+  extId: number
+  userName: string
+  level: number
+  playerRating: number
+  highestRating: number
+  characterId: number
+  charaIllustId: number
+  teamPoint: number
+  lastPlayDate: string
+  isLeader: boolean
+}
+
+export interface Chu3TeamDetail extends Chu3TeamSummary {
+  leaderExtId: number
+  leaderName: string
+  isLeader: boolean
+  canManage: boolean
+  isMember: boolean
+  createdAt: string
+  updatedAt: string
+  members: Chu3TeamMember[]
 }
 
 export interface Chu3TeamRankEntry {
@@ -145,6 +171,8 @@ export interface Chu3TeamRankEntry {
   teamId: number
   teamName: string
   emblemId: number
+  leaderExtId?: number
+  leaderName?: string
   teamPoint: number
   memberCount: number
 }

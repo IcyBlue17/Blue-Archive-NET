@@ -12,7 +12,6 @@ import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import type { ChusanMatchingOption, GameOption } from '../../lib/types'
 import { Chu3AppearanceSettings } from './Chu3AppearanceSettings'
 import { GameOptionFields } from './GameOptionFields'
-import { ChusanTeamSettings } from './ChusanTeamSettings'
 
 export function ChusanExtraSettings({
   username,
@@ -139,7 +138,22 @@ export function ChusanExtraSettings({
         />
       </section>
 
-      <ChusanTeamSettings username={username} locale={locale} />
+      <section>
+        <h3 className="text-kumo-text mb-2 text-base font-semibold">
+          {locale === 'zh' ? '战队' : 'Team'}
+        </h3>
+        <blockquote className="border-kumo-border text-kumo-subtle mb-3 border-l-2 pl-3 text-sm">
+          {locale === 'zh'
+            ? '战队现在有独立页面，支持创建、加入、改名、成员查看和排名。'
+            : 'Teams now have a dedicated page with create, join, manage and ranking flows.'}
+        </blockquote>
+        <RouterLink
+          to="/team"
+          className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }))}
+        >
+          {locale === 'zh' ? '前往战队页' : 'Open team page'}
+        </RouterLink>
+      </section>
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">

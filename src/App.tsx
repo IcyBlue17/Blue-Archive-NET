@@ -28,6 +28,7 @@ import { GameDashboardPage } from './pages/games/GameDashboard'
 import { MaiPhotoPage } from './pages/games/MaiPhoto'
 import { CollectiblesPage } from './pages/dashboard/Collectibles'
 import { Chu3FriendsPage } from './pages/dashboard/Chu3Friends'
+import { Chu3TeamPage } from './pages/dashboard/Chu3Team'
 import { AdminOverviewPage } from './pages/admin/Overview'
 import { AdminUserListPage } from './pages/admin/UserList'
 import { AdminUserDetailPage } from './pages/admin/UserDetail'
@@ -72,6 +73,7 @@ export default function App() {
                       <Route path="/ranking/:game" element={<RankingPage />} />
                       <Route path="/games" element={<Navigate to="/games/chu3" replace />} />
                       <Route path="/games/:game" element={<GameDashboardPage />} />
+                      <Route path="/team" element={<Chu3TeamPage />} />
                       <Route path="/friends" element={<Chu3FriendsPage />} />
                       <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />
                       <Route path="/settings/:page" element={<SettingsPage />} />

@@ -212,6 +212,9 @@ export function HomePage() {
           <Link to="/cards">
             <Button variant="primary">{t('cards')}</Button>
           </Link>
+          <Link to="/team">
+            <Button variant="secondary">{t('team')}</Button>
+          </Link>
           <Link to="/friends">
             <Button variant="secondary">{t('friends')}</Button>
           </Link>

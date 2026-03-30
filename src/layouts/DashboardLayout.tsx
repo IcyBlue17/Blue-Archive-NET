@@ -94,6 +94,9 @@ function DashboardShell() {
               <NavBtn path="/games/chu3" icon={Trophy} active={loc.pathname.startsWith('/games')} onNavigate={go}>
                 Games
               </NavBtn>
+              <NavBtn path="/team" icon={ShieldStar} active={loc.pathname.startsWith('/team')} onNavigate={go}>
+                {t('team')}
+              </NavBtn>
               <NavBtn path="/friends" icon={UsersThree} active={loc.pathname.startsWith('/friends')} onNavigate={go}>
                 {t('friends')}
               </NavBtn>
