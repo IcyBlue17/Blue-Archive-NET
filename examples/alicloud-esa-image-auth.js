@@ -121,6 +121,10 @@ function originUrl1(req1, imageOrigin1) {
   return base1
 }
 
+function needJwt1(path1) {
+  return path1 === '/chu3-assets' || path1.startsWith('/chu3-assets/')
+}
+
 async function handle1(req1) {
   const appOrigin1 = String(CFG.APP_ORIGIN || '').trim()
   const imageOrigin1 = String(CFG.IMAGE_ORIGIN || '').trim()
@@ -150,16 +154,18 @@ async function handle1(req1) {
     return withCors1(bad1('Not Found', 404), appOrigin1)
   }
 
-  const token1 = cookieMap1(req1.headers.get('cookie')).get(cookieName1)
-  if (!token1) return withCors1(bad1('YOU ARE NOT FROM ABYDOS'), appOrigin1)
+  if (needJwt1(reqUrl1.pathname)) {
+    const token1 = cookieMap1(req1.headers.get('cookie')).get(cookieName1)
+    if (!token1) return withCors1(bad1('YOU ARE NOT FROM ABYDOS'), appOrigin1)
 
-  if (secret1) {
-    const ok1 = await verifyHs256_1(token1, secret1).catch(() => false)
-    if (!ok1) return withCors1(bad1('Bad JWT'), appOrigin1)
+    if (secret1) {
+      const ok1 = await verifyHs256_1(token1, secret1).catch(() => false)
+      if (!ok1) return withCors1(bad1('Bad JWT'), appOrigin1)
+    }
+
+    const remoteOk1 = await verifyRemote1(token1, verifyUrl1).catch(() => false)
+    if (!remoteOk1) return withCors1(bad1('Session expired'), appOrigin1)
   }
-
-  const remoteOk1 = await verifyRemote1(token1, verifyUrl1).catch(() => false)
-  if (!remoteOk1) return withCors1(bad1('Session expired'), appOrigin1)
 
   const res1 = await fetch(originUrl1(req1, imageOrigin1).toString(), {
     method: req1.method,
