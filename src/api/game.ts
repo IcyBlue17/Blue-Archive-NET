@@ -1,5 +1,7 @@
 import type {
   Chu3RivalEntry,
+  Chu3TeamRankEntry,
+  Chu3TeamSummary,
   GameName,
   GenericGameSummary,
   GenericRankingPlayer,
@@ -106,4 +108,22 @@ export async function chu3RivalFavoriteRemove(rivalExtId: number) {
   return userPost('/api/v2/game/chu3/rival/favorite-remove', {
     rivalExtId: String(rivalExtId),
   }) as Promise<void>
+}
+
+export async function chu3Team() {
+  return userPost('/api/v2/game/chu3/team', {}) as Promise<Chu3TeamSummary>
+}
+
+export async function chu3TeamSet(teamId: number, teamName: string, emblemId: number) {
+  return userPost('/api/v2/game/chu3/team-set', {
+    teamId: String(teamId),
+    teamName,
+    emblemId: String(emblemId),
+  }) as Promise<Chu3TeamSummary>
+}
+
+export async function chu3TeamRanking(limit = 10) {
+  return userPost('/api/v2/game/chu3/team-ranking', {
+    limit: String(limit),
+  }) as Promise<Chu3TeamRankEntry[]>
 }

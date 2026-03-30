@@ -12,6 +12,7 @@ import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import type { ChusanMatchingOption, GameOption } from '../../lib/types'
 import { Chu3AppearanceSettings } from './Chu3AppearanceSettings'
 import { GameOptionFields } from './GameOptionFields'
+import { ChusanTeamSettings } from './ChusanTeamSettings'
 
 export function ChusanExtraSettings({
   username,
@@ -36,6 +37,7 @@ export function ChusanExtraSettings({
   const [symbolDirty, setSymbolDirty] = useState<Record<number, boolean>>({})
   const [symSaving, setSymSaving] = useState<number | null>(null)
   const [exporting, setExporting] = useState(false)
+  const basicOptions = useMemo(() => options.filter((o) => o.key !== 'chusanTeamName'), [options])
 
   const matchingUrl = String(options.find((o) => o.key === 'chusanMatchingServer')?.value ?? '')
 
@@ -130,12 +132,14 @@ export function ChusanExtraSettings({
           {locale === 'zh' ? 'CHUNITHM 基础' : 'CHUNITHM basics'}
         </h3>
         <GameOptionFields
-          options={options}
+          options={basicOptions}
           gameFilter={(g) => g === 'chu3'}
           locale={locale}
           onSet={onSet}
         />
       </section>
+
+      <ChusanTeamSettings username={username} locale={locale} />
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">

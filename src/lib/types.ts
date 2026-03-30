@@ -130,6 +130,25 @@ export interface Chu3RivalEntry {
   addedAt: string
 }
 
+export interface Chu3TeamSummary {
+  teamId: number
+  teamName: string
+  emblemId: number
+  teamRank: number
+  teamPoint: number
+  myPoint: number
+  memberCount: number
+}
+
+export interface Chu3TeamRankEntry {
+  rank: number
+  teamId: number
+  teamName: string
+  emblemId: number
+  teamPoint: number
+  memberCount: number
+}
+
 export interface GenericRankingPlayer {
   rank: number
   name: string
