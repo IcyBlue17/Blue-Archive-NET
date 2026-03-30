@@ -5,6 +5,7 @@ import { Text } from '@cloudflare/kumo/components/text'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
+import { StatCard } from '../../components/common/StatCard'
 import * as gameApi from '../../api/game'
 import { useAuth } from '../../hooks/useAuth'
 import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
@@ -55,6 +56,15 @@ function formatChu3Complete(totalMapNum: number) {
   return `${((Math.max(0, totalMapNum) / CHU3_COMPLETE_MAX) * 100).toFixed(2)}%`
 }
 
+function StatCardSkeleton() {
+  return (
+    <LayerCard className="p-4">
+      <SkeletonBox className="h-4 w-24 rounded-md" />
+      <SkeletonBox className="mt-3 h-8 w-32 rounded-lg" />
+    </LayerCard>
+  )
+}
+
 function SummaryCardSkeleton() {
   return (
     <div className="border-kumo-border rounded-lg border px-4 py-3">
@@ -70,46 +80,27 @@ function Chu3ProfileCardSkeleton() {
   return (
     <LayerCard className="mt-6 overflow-hidden p-0">
       <div className="border-kumo-border border-b px-5 py-5">
-        <SkeletonBox className="h-3 w-28 rounded-md" />
-        <SkeletonBox className="mt-3 h-10 w-56 rounded-lg" />
+        <SkeletonBox className="h-9 w-52 rounded-lg" />
       </div>
-      <div className="grid gap-5 px-4 py-4 md:px-6 md:py-6 xl:grid-cols-[132px_minmax(0,1fr)] xl:items-center">
-        <div className="mx-auto flex w-full max-w-32 flex-col items-center gap-3">
-          <SkeletonBox className="size-28 rounded-2xl" />
-          <SkeletonBox className="h-8 w-full rounded-full" />
+      <div className="grid gap-5 px-4 py-4 md:grid-cols-[112px_minmax(0,1fr)] md:items-center">
+        <SkeletonBox className="mx-auto size-24 rounded-xl" />
+        <div className="space-y-3">
+          <SkeletonBox className="h-5 w-40 rounded-md" />
+          <SkeletonBox className="h-5 w-28 rounded-md" />
+          <SkeletonBox className="h-5 w-32 rounded-md" />
+          <SkeletonBox className="h-5 w-36 rounded-md" />
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          <SkeletonBox className="h-20 rounded-2xl" />
-          <SkeletonBox className="h-20 rounded-2xl" />
-          <SkeletonBox className="h-20 rounded-2xl" />
-          <SkeletonBox className="h-20 rounded-2xl" />
-          <SkeletonBox className="h-20 rounded-2xl md:col-span-2" />
-        </div>
+      </div>
+      <div className="border-kumo-border border-t px-4 py-3">
+        <SkeletonBox className="ml-auto h-5 w-40 rounded-md" />
       </div>
     </LayerCard>
   )
 }
 
-function ProfileInfoBox({ label, value, alignRight = false }: { label: string; value: string; alignRight?: boolean }) {
-  return (
-    <div
-      className={`border-kumo-border bg-kumo-recessed/45 rounded-2xl border px-4 py-3 ${
-        alignRight ? 'text-right' : ''
-      }`}
-    >
-      <div className="text-kumo-subtle text-[11px] font-semibold tracking-[0.18em] uppercase">
-        {label}
-      </div>
-      <div className="text-kumo-text mt-2 text-[clamp(1.05rem,2vw,1.75rem)] font-black">
-        {value}
-      </div>
-    </div>
-  )
-}
-
 export function HomePage() {
   const { t, locale } = useI18n()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const username = user?.username ?? ''
   const summaryQuery = useQuery<CardSummary>({
     queryKey: qk.homeSummary(username),
@@ -125,6 +116,7 @@ export function HomePage() {
     queryFn: async () => gameApi.userBox() as Promise<Chu3HomeBox>,
   })
 
+  const showUserSkeleton = loading && !user
   const showSummarySkeleton = summaryQuery.isPending && !summary
   const hasSummary = SUMMARY_KEYS.some((key) => Boolean(summary?.[key]))
   const chu3Row = summary?.chu3 ?? null
@@ -143,44 +135,54 @@ export function HomePage() {
   return (
     <div>
       <PageHeader title={t('home')} crumbs={[{ label: t('dashboard'), href: '/home' }]} />
+      {showUserSkeleton ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <StatCard label={t('username')} value={user?.username ?? '—'} />
+          <StatCard label={t('settings.profile.displayName')} value={user?.displayName || user?.username || '—'} />
+          <StatCard
+            label={locale === 'zh' ? '国家 / 地区' : 'Country / region'}
+            value={`${user?.country ?? ''} ${user?.region ?? ''}`.trim() || '—'}
+          />
+        </div>
+      )}
       {showChu3CardSkeleton ? (
         <Chu3ProfileCardSkeleton />
       ) : showChu3Card ? (
         <LayerCard className="mt-6 overflow-hidden p-0">
-          <div className="border-kumo-border bg-kumo-recessed/30 border-b px-5 py-5 md:px-6">
-            <div className="text-kumo-subtle text-[11px] font-semibold tracking-[0.28em] uppercase">
-              CHUNITHM PROFILE
-            </div>
-            <div className="text-kumo-text mt-3 truncate text-[clamp(1.9rem,4vw,3.2rem)] font-black tracking-[0.32em]">
+          <div className="border-kumo-border border-b px-5 py-5">
+            <div className="text-kumo-text truncate text-[clamp(1.5rem,4vw,2.35rem)] font-black tracking-[0.32em]">
               {chu3Name}
             </div>
           </div>
-          <div className="grid gap-5 px-4 py-4 md:px-6 md:py-6 xl:grid-cols-[132px_minmax(0,1fr)] xl:items-center">
-            <div className="mx-auto flex w-full max-w-32 flex-col items-center gap-3">
-              <div className="border-kumo-border bg-kumo-recessed flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border">
-                {chu3Avatar ? (
-                  <img src={chu3Avatar} alt={chu3NameRaw} className="size-full object-cover" loading="lazy" />
-                ) : (
-                  <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '无头像' : 'No avatar'}</div>
-                )}
-              </div>
-              <div className="border-kumo-border bg-kumo-recessed/45 text-kumo-default w-full rounded-full border px-3 py-2 text-center text-xs font-semibold tracking-[0.16em] uppercase">
-                {locale === 'zh' ? '角色头像' : 'Partner'}
-              </div>
+          <div className="grid gap-5 px-4 py-4 md:grid-cols-[116px_minmax(0,1fr)] md:items-center">
+            <div className="border-kumo-border bg-kumo-recessed mx-auto flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
+              {chu3Avatar ? (
+                <img src={chu3Avatar} alt={chu3NameRaw} className="size-full object-cover" loading="lazy" />
+              ) : (
+                <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '无头像' : 'No avatar'}</div>
+              )}
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              <ProfileInfoBox label="ID" value={chu3CardId} />
-              <ProfileInfoBox label={locale === 'zh' ? '等级' : 'Level'} value={chu3Level ? String(chu3Level) : '—'} />
-              <ProfileInfoBox label={locale === 'zh' ? '评级' : 'Rating'} value={chu3Rating} />
-              <ProfileInfoBox label={locale === 'zh' ? '完成度' : 'Completion'} value={chu3Complete} />
-              <div className="md:col-span-2">
-                <ProfileInfoBox
-                  label={locale === 'zh' ? '上次游玩' : 'Last played'}
-                  value={chu3LastPlay}
-                  alignRight
-                />
-              </div>
-            </div>
+            <dl className="grid min-w-0 grid-cols-[max-content_1fr] gap-x-5 gap-y-2 text-sm sm:text-base">
+              <dt className="font-semibold text-kumo-default">{locale === 'zh' ? 'ID' : 'ID'}</dt>
+              <dd className="truncate text-kumo-text">{chu3CardId}</dd>
+              <dt className="font-semibold text-kumo-default">{locale === 'zh' ? '等级' : 'Level'}</dt>
+              <dd className="text-kumo-text">{chu3Level || '—'}</dd>
+              <dt className="font-semibold text-kumo-default">{locale === 'zh' ? '评级' : 'Rating'}</dt>
+              <dd className="text-kumo-text">{chu3Rating}</dd>
+              <dt className="font-semibold text-kumo-default">{locale === 'zh' ? '完成度' : 'Completion'}</dt>
+              <dd className="text-kumo-text">{chu3Complete}</dd>
+            </dl>
+          </div>
+          <div className="border-kumo-border bg-kumo-recessed/50 flex justify-end border-t px-4 py-3">
+            <Text DANGEROUS_className="text-right text-sm font-medium">
+              {locale === 'zh' ? `上次游玩： ${chu3LastPlay}` : `Last played: ${chu3LastPlay}`}
+            </Text>
           </div>
         </LayerCard>
       ) : null}
