@@ -32,17 +32,16 @@ VITE_IMAGE_HOST=https://img.example.com
 
 打开后，现有的曲绘、CHUNITHM 静态资源、头像、站点品牌图都会统一改到这个图片域名。
 
-- 如果你要走同域 cookie / JWT 鉴权入口，可继续配置：
+- 如果 `IMAGE_HOST` 那边会做 cookie / JWT 鉴权，可继续配置：
 
 ```bash
 VITE_IMAGE_HOST=https://img.example.com
 VITE_IMAGE_AUTH=on
-VITE_IMAGE_AUTH_PREFIX=/img
 ```
 
 - 前端这里只负责图片域名切换。
-- 开启 `VITE_IMAGE_AUTH` 后，静态图片会统一改成同域路径，例如 `/img/chu3-assets/...`。
-- 浏览器会自动带上同域 cookie，所以适合让 EdgeOne Middleware / Edge Function 去验用户 JWT。
+- 开启 `VITE_IMAGE_AUTH` 后，静态图片依然是直接请求 `IMAGE_HOST`。
+- 也就是说浏览器会直接向 `https://img.example.com/...` 发请求，鉴权完全由 `IMAGE_HOST` 那边的 EdgeOne Middleware / Edge Function 负责。
 - `/api/...`、`/uploads/...` 这类后端动态资源不会被这层改写，避免把现有接口图片流量带坏。
 
 ## 技术栈
