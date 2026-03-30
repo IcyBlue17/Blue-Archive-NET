@@ -18,7 +18,7 @@ import { useI18n } from '../../lib/i18n'
 const SUMMARY_KEYS: (keyof CardSummary)[] = ['chu3', 'mai2', 'ongeki', 'wacca', 'diva']
 
 /** 与后端 `CardController` 默认迁移列表一致；不在 UI 暴露以免误填。 */
-const DEFAULT_MIGRATE = 'maimai2,chusan'
+const DEFAULT_MIGRATE = 'mai2,chu3'
 
 function formatLogin(iso: string | undefined) {
   if (!iso) return '—'
