@@ -144,8 +144,8 @@ export function ChusanExtraSettings({
         </h3>
         <blockquote className="border-kumo-border text-kumo-subtle mb-3 border-l-2 pl-3 text-sm">
           {locale === 'zh'
-            ? '战队现在有独立页面，支持创建、加入、改名、成员查看和排名。'
-            : 'Teams now have a dedicated page with create, join, manage and ranking flows.'}
+            ? '战队现在有独立页面，支持创建、申请加入、审核成员和管理资料。'
+            : 'Teams now have a dedicated page for create, join requests, member review and management.'}
         </blockquote>
         <RouterLink
           to="/team"

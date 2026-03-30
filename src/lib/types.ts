@@ -132,12 +132,12 @@ export interface Chu3RivalEntry {
 
 export interface Chu3TeamSummary {
   teamId: number
-  teamName: string
-  emblemId: number
-  teamRank: number
-  teamPoint: number
-  myPoint: number
-  memberCount: number
+  teamName?: string
+  emblemId?: number
+  teamRank?: number
+  teamPoint?: number
+  myPoint?: number
+  memberCount?: number
   leaderExtId?: number
   leaderName?: string
 }
@@ -156,14 +156,14 @@ export interface Chu3TeamMember {
 }
 
 export interface Chu3TeamDetail extends Chu3TeamSummary {
-  leaderExtId: number
-  leaderName: string
-  isLeader: boolean
-  canManage: boolean
-  isMember: boolean
-  createdAt: string
-  updatedAt: string
-  members: Chu3TeamMember[]
+  leaderExtId?: number
+  leaderName?: string
+  isLeader?: boolean
+  canManage?: boolean
+  isMember?: boolean
+  createdAt?: string
+  updatedAt?: string
+  members?: Chu3TeamMember[]
 }
 
 export interface Chu3TeamRankEntry {
@@ -175,6 +175,43 @@ export interface Chu3TeamRankEntry {
   leaderName?: string
   teamPoint: number
   memberCount: number
+}
+
+export interface Chu3TeamJoinResult {
+  status: 'pending'
+  id: number
+  teamId: number
+  teamName: string
+  emblemId: number
+  createdAt: string
+}
+
+export interface Chu3TeamJoinIncoming {
+  id: number
+  teamId: number
+  teamName: string
+  emblemId: number
+  applicantExtId: number
+  applicantName: string
+  applicantLevel: number
+  applicantRating: number
+  applicantCharacterId: number
+  createdAt: string
+}
+
+export interface Chu3TeamJoinOutgoing {
+  id: number
+  teamId: number
+  teamName: string
+  emblemId: number
+  leaderExtId: number
+  leaderName: string
+  createdAt: string
+}
+
+export interface Chu3TeamRequestBox {
+  incoming: Chu3TeamJoinIncoming[]
+  outgoing?: Chu3TeamJoinOutgoing | null
 }
 
 export interface GenericRankingPlayer {

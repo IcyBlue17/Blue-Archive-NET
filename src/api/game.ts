@@ -1,7 +1,9 @@
 import type {
   Chu3RivalEntry,
   Chu3TeamDetail,
+  Chu3TeamJoinResult,
   Chu3TeamRankEntry,
+  Chu3TeamRequestBox,
   Chu3TeamSummary,
   GameName,
   GenericGameSummary,
@@ -129,7 +131,7 @@ export async function chu3TeamCreate(teamName: string, emblemId: number) {
 export async function chu3TeamJoin(teamId: number) {
   return userPost('/api/v2/game/chu3/team-join', {
     teamId: String(teamId),
-  }) as Promise<Chu3TeamDetail>
+  }) as Promise<Chu3TeamJoinResult>
 }
 
 export async function chu3TeamUpdate(teamName: string, emblemId: number) {
@@ -159,4 +161,24 @@ export async function chu3TeamRanking(limit = 10) {
   return userPost('/api/v2/game/chu3/team-ranking', {
     limit: String(limit),
   }) as Promise<Chu3TeamRankEntry[]>
+}
+
+export async function chu3TeamRequests() {
+  return userPost('/api/v2/game/chu3/team-requests', {}) as Promise<Chu3TeamRequestBox>
+}
+
+export async function chu3TeamRequestCancel() {
+  return userPost('/api/v2/game/chu3/team-request-cancel', {}) as Promise<{ status: string }>
+}
+
+export async function chu3TeamRequestApprove(id: number) {
+  return userPost('/api/v2/game/chu3/team-request-approve', {
+    requestId: String(id),
+  }) as Promise<Chu3TeamDetail>
+}
+
+export async function chu3TeamRequestReject(id: number) {
+  return userPost('/api/v2/game/chu3/team-request-reject', {
+    requestId: String(id),
+  }) as Promise<{ status: string }>
 }
