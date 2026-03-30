@@ -1,6 +1,6 @@
 /**
  * CHUNITHM 收藏品静态资源：`public/chu3-assets/`（由 tools/chuni_assets 同步）。
- * 图片文件名 id 为 8 位零填充，与 JSON 内整数 id 对应。
+ * 大部分图片文件名 id 为 8 位零填充；角色图使用 `prefix_suffix_variant` 规则。
  */
 
 export type Chu3JsonEntry = { id: number; name: string; category?: number }
@@ -16,6 +16,17 @@ export function padChu3Id8(id: number): string {
 
 export function padChu3CharaImageId(id: number): string {
   return String(Math.max(0, Math.floor(id / 10))).padStart(4, '0')
+}
+
+export function padChu3CharaImageSuffix(id: number): string {
+  return String(Math.max(0, Math.floor(id % 10))).padStart(2, '0')
+}
+
+export function chu3CharacterImageUrl(itemId: number, variant: '00' | '02' = '00'): string | null {
+  if (itemId < 0) return null
+  const pre = padChu3CharaImageId(itemId)
+  const suf = padChu3CharaImageSuffix(itemId)
+  return `${BASE}/chara/CHU_UI_Character_${pre}_${suf}_${variant}.webp`
 }
 
 /** 计划表：分类元数据（field、JSON、本地图目录与前缀） */
@@ -47,8 +58,8 @@ const FIELD_IMAGE: Partial<
   characterId: {
     dir: 'chara',
     prefix: 'CHU_UI_Character_',
-    suffix: '_00_00',
-    formatId: padChu3CharaImageId,
+    suffix: '_00',
+    formatId: (id) => `${padChu3CharaImageId(id)}_${padChu3CharaImageSuffix(id)}`,
   },
   mapIconId: { dir: 'mapIcon', prefix: 'CHU_UI_MapIcon_' },
   voiceId: { dir: 'systemVoice', prefix: 'CHU_UI_SystemVoice_' },
@@ -64,6 +75,7 @@ const FIELD_IMAGE: Partial<
 export function chu3CollectibleImageUrl(field: string, itemId: number): string | null {
   if (itemId < 0) return null
   if (itemId === 0 && field !== 'characterId') return null
+  if (field === 'characterId') return chu3CharacterImageUrl(itemId, '00')
   const meta = FIELD_IMAGE[field]
   if (!meta) return null
   const fmt = meta.formatId ?? padChu3Id8
