@@ -86,6 +86,14 @@ function hex1(buf1) {
     .join('')
 }
 
+function jwtKeyBytes1(secret1) {
+  const raw1 = text1.encode(secret1)
+  if (raw1.length >= 32) return raw1
+  const out1 = new Uint8Array(32)
+  out1.set(raw1)
+  return out1
+}
+
 async function verifyHs256_1(jwt1, secret1) {
   const parts1 = String(jwt1 || '').split('.')
   if (parts1.length !== 3) return false
@@ -98,7 +106,7 @@ async function verifyHs256_1(jwt1, secret1) {
 
   const key1 = await crypto.subtle.importKey(
     'raw',
-    text1.encode(secret1),
+    jwtKeyBytes1(secret1),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign'],
