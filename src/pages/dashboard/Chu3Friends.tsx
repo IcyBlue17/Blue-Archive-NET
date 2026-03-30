@@ -44,6 +44,7 @@ export function Chu3FriendsPage() {
   const [addName, setAddName] = useState('')
   const [adding, setAdding] = useState(false)
   const [removingId, setRemovingId] = useState<number | null>(null)
+  const [favBusyId, setFavBusyId] = useState<number | null>(null)
 
   const rivalQuery = useQuery<Chu3RivalEntry[]>({
     queryKey: qk.chu3Rivals,
@@ -54,12 +55,14 @@ export function Chu3FriendsPage() {
   const rows = useMemo(() => {
     const list = [...(rivalQuery.data ?? [])]
     list.sort((a, b) => {
+      if (!!a.isFavorite !== !!b.isFavorite) return a.isFavorite ? -1 : 1
       const ta = new Date(a.addedAt).getTime()
       const tb = new Date(b.addedAt).getTime()
       return (Number.isFinite(tb) ? tb : 0) - (Number.isFinite(ta) ? ta : 0)
     })
     return list
   }, [rivalQuery.data])
+  const favCount = rows.filter((it) => it.isFavorite).length
 
   async function addOne() {
     const username = addName.trim()
@@ -112,6 +115,41 @@ export function Chu3FriendsPage() {
     }
   }
 
+  async function toggleFav(row: Chu3RivalEntry) {
+    if (favBusyId != null) return
+    const isAdd = !row.isFavorite
+    setFavBusyId(row.rivalExtId)
+    try {
+      if (isAdd) {
+        const next = await gameApi.chu3RivalFavoriteAdd(row.rivalExtId)
+        qc.setQueryData(qk.chu3Rivals, (old: Chu3RivalEntry[] | undefined) =>
+          (old ?? []).map((it) => (it.rivalExtId === row.rivalExtId ? { ...it, isFavorite: !!next.isFavorite } : it)),
+        )
+      } else {
+        await gameApi.chu3RivalFavoriteRemove(row.rivalExtId)
+        qc.setQueryData(qk.chu3Rivals, (old: Chu3RivalEntry[] | undefined) =>
+          (old ?? []).map((it) => (it.rivalExtId === row.rivalExtId ? { ...it, isFavorite: false } : it)),
+        )
+      }
+      toast.add({
+        title: locale === 'zh' ? (isAdd ? '已登录到喜爱' : '已取消喜爱') : isAdd ? 'Pinned to favorites' : 'Removed from favorites',
+        description:
+          locale === 'zh'
+            ? `${row.userName} ${isAdd ? '现在会作为劲敌槽位返回给客户端' : '已从劲敌槽位移除'}`
+            : `${row.userName} ${isAdd ? 'is now in rival favorites' : 'was removed from rival favorites'}`,
+      })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : locale === 'zh' ? '操作失败' : 'Request failed'
+      toast.add({
+        title: locale === 'zh' ? '喜爱设置失败' : 'Favorite action failed',
+        description: msg,
+        variant: 'error',
+      })
+    } finally {
+      setFavBusyId(null)
+    }
+  }
+
   return (
     <div>
       <PageHeader title={t('friends')} crumbs={[{ label: t('dashboard'), href: '/home' }, { label: t('friends') }]} />
@@ -146,6 +184,11 @@ export function Chu3FriendsPage() {
             {locale === 'zh' ? `共 ${rows.length} 位好友` : `${rows.length} friends`}
           </Text>
         </div>
+        <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
+          {locale === 'zh'
+            ? `已登录到喜爱 ${favCount} / 4。只有这 4 位会作为游戏内劲敌槽位返回，客户端才会去拉他们的成绩。`
+            : `${favCount} / 4 pinned. Only these four are returned as in-game rival slots for score lookup.`}
+        </Text>
 
         {rivalQuery.isPending && !rivalQuery.data ? (
           <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -162,6 +205,8 @@ export function Chu3FriendsPage() {
             {rows.map((row) => {
               const img = chu3CharacterImageUrl(row.characterId, '02')
               const removing = removingId === row.rivalExtId
+              const favBusy = favBusyId === row.rivalExtId
+              const canAddFav = !!row.isFavorite || favCount < 4
               return (
                 <div key={row.rivalExtId} className="border-kumo-border rounded-xl border p-4">
                   <div className="flex items-start gap-4">
@@ -175,14 +220,35 @@ export function Chu3FriendsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="truncate text-base font-semibold text-kumo-text">{row.userName}</div>
+                          <div className="truncate text-base font-semibold text-kumo-text">
+                            {row.userName}
+                            {row.isFavorite ? (
+                              <span className="bg-kumo-recessed text-kumo-text ml-2 rounded-full px-2 py-0.5 text-xs">
+                                {locale === 'zh' ? '喜爱中' : 'Pinned'}
+                              </span>
+                            ) : null}
+                          </div>
                           <div className="text-kumo-subtle mt-1 text-sm">
                             {locale === 'zh' ? `等级 ${row.level}` : `Level ${row.level}`}
                           </div>
                         </div>
-                        <Button variant="secondary" size="sm" onClick={() => void removeOne(row)} disabled={removing}>
-                          {removing ? (locale === 'zh' ? '移除中…' : 'Removing…') : (locale === 'zh' ? '删除' : 'Remove')}
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant={row.isFavorite ? 'secondary' : 'primary'}
+                            size="sm"
+                            onClick={() => void toggleFav(row)}
+                            disabled={favBusy || !canAddFav}
+                          >
+                            {favBusy
+                              ? (locale === 'zh' ? '处理中…' : 'Working…')
+                              : row.isFavorite
+                                ? (locale === 'zh' ? '取消喜爱' : 'Unpin')
+                                : (locale === 'zh' ? '登录到喜爱' : 'Pin as rival')}
+                          </Button>
+                          <Button variant="secondary" size="sm" onClick={() => void removeOne(row)} disabled={removing}>
+                            {removing ? (locale === 'zh' ? '移除中…' : 'Removing…') : (locale === 'zh' ? '删除' : 'Remove')}
+                          </Button>
+                        </div>
                       </div>
                       <dl className="mt-3 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
                         <dt className="text-kumo-subtle">{locale === 'zh' ? 'Rating' : 'Rating'}</dt>

@@ -126,6 +126,7 @@ export interface Chu3RivalEntry {
   avatarItem: number
   avatarFront: number
   avatarBack: number
+  isFavorite?: boolean
   addedAt: string
 }
 

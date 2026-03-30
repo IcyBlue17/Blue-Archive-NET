@@ -95,3 +95,15 @@ export async function chu3RivalRemove(rivalExtId: number) {
     rivalExtId: String(rivalExtId),
   }) as Promise<void>
 }
+
+export async function chu3RivalFavoriteAdd(rivalExtId: number) {
+  return userPost('/api/v2/game/chu3/rival/favorite-add', {
+    rivalExtId: String(rivalExtId),
+  }) as Promise<Chu3RivalEntry>
+}
+
+export async function chu3RivalFavoriteRemove(rivalExtId: number) {
+  return userPost('/api/v2/game/chu3/rival/favorite-remove', {
+    rivalExtId: String(rivalExtId),
+  }) as Promise<void>
+}
