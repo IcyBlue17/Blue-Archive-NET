@@ -5,7 +5,6 @@ import { Text } from '@cloudflare/kumo/components/text'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
-import { StatCard } from '../../components/common/StatCard'
 import * as gameApi from '../../api/game'
 import { useAuth } from '../../hooks/useAuth'
 import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
@@ -56,15 +55,6 @@ function formatChu3Complete(totalMapNum: number) {
   return `${((Math.max(0, totalMapNum) / CHU3_COMPLETE_MAX) * 100).toFixed(2)}%`
 }
 
-function StatCardSkeleton() {
-  return (
-    <LayerCard className="p-4">
-      <SkeletonBox className="h-4 w-24 rounded-md" />
-      <SkeletonBox className="mt-3 h-8 w-32 rounded-lg" />
-    </LayerCard>
-  )
-}
-
 function SummaryCardSkeleton() {
   return (
     <div className="border-kumo-border rounded-lg border px-4 py-3">
@@ -100,7 +90,7 @@ function Chu3ProfileCardSkeleton() {
 
 export function HomePage() {
   const { t, locale } = useI18n()
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
   const username = user?.username ?? ''
   const summaryQuery = useQuery<CardSummary>({
     queryKey: qk.homeSummary(username),
@@ -116,7 +106,6 @@ export function HomePage() {
     queryFn: async () => gameApi.userBox() as Promise<Chu3HomeBox>,
   })
 
-  const showUserSkeleton = loading && !user
   const showSummarySkeleton = summaryQuery.isPending && !summary
   const hasSummary = SUMMARY_KEYS.some((key) => Boolean(summary?.[key]))
   const chu3Row = summary?.chu3 ?? null
@@ -135,22 +124,6 @@ export function HomePage() {
   return (
     <div>
       <PageHeader title={t('home')} crumbs={[{ label: t('dashboard'), href: '/home' }]} />
-      {showUserSkeleton ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-          <StatCardSkeleton />
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <StatCard label={t('username')} value={user?.username ?? '—'} />
-          <StatCard label={t('settings.profile.displayName')} value={user?.displayName || user?.username || '—'} />
-          <StatCard
-            label={locale === 'zh' ? '国家 / 地区' : 'Country / region'}
-            value={`${user?.country ?? ''} ${user?.region ?? ''}`.trim() || '—'}
-          />
-        </div>
-      )}
       {showChu3CardSkeleton ? (
         <Chu3ProfileCardSkeleton />
       ) : showChu3Card ? (
