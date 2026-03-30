@@ -94,20 +94,28 @@ function jwtKeyBytes1(secret1) {
   return out1
 }
 
-async function verifyHs256_1(jwt1, secret1) {
+function hmacName1(alg1) {
+  if (alg1 === 'HS256') return 'SHA-256'
+  if (alg1 === 'HS384') return 'SHA-384'
+  if (alg1 === 'HS512') return 'SHA-512'
+  return ''
+}
+
+async function verifyJwt1(jwt1, secret1) {
   const parts1 = String(jwt1 || '').split('.')
   if (parts1.length !== 3) return false
   const [head1, body1, sign1] = parts1
   const headJson1 = JSON.parse(new TextDecoder().decode(b64urlBytes1(head1)))
   const bodyJson1 = JSON.parse(new TextDecoder().decode(b64urlBytes1(body1)))
-  if (headJson1.alg !== 'HS256') return false
+  const hashName1 = hmacName1(String(headJson1.alg || ''))
+  if (!hashName1) return false
   if (bodyJson1.exp && Date.now() >= Number(bodyJson1.exp) * 1000) return false
   if (bodyJson1.nbf && Date.now() < Number(bodyJson1.nbf) * 1000) return false
 
   const key1 = await crypto.subtle.importKey(
     'raw',
     jwtKeyBytes1(secret1),
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: 'HMAC', hash: hashName1 },
     false,
     ['sign'],
   )
@@ -208,15 +216,13 @@ async function handle1(req1) {
     const token1 = cookieMap1(req1.headers.get('cookie')).get(cookieName1)
     if (!token1) return withCors1(bad1('YOU ARE NOT FROM ABYDOS'), appOrigin1)
 
-    if (secret1) {
-      const ok1 = await verifyHs256_1(token1, secret1).catch(() => false)
-      if (!ok1) return withCors1(bad1('Bad JWT'), appOrigin1)
-    }
-
     const hit1 = cacheTtl1 > 0
       ? await authCacheGet1(token1, verifyUrl1).catch(() => false)
       : false
     if (!hit1) {
+      if (secret1) {
+        await verifyJwt1(token1, secret1).catch(() => false)
+      }
       const remoteOk1 = await verifyRemote1(token1, verifyUrl1).catch(() => false)
       if (!remoteOk1) return withCors1(bad1('Session expired'), appOrigin1)
       if (cacheTtl1 > 0) {
