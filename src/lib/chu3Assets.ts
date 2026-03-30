@@ -14,6 +14,10 @@ export function padChu3Id8(id: number): string {
   return String(Math.max(0, Math.floor(id))).padStart(8, '0')
 }
 
+export function padChu3CharaImageId(id: number): string {
+  return String(Math.max(0, Math.floor(id / 10))).padStart(4, '0')
+}
+
 /** 计划表：分类元数据（field、JSON、本地图目录与前缀） */
 export type Chu3CollectibleCategoryMeta = {
   key: string
@@ -34,10 +38,18 @@ const FIELD_IMAGE: Partial<
     {
       dir: string
       prefix: string
+      suffix?: string
+      formatId?: (id: number) => string
     }
   >
 > = {
   nameplateId: { dir: 'namePlate', prefix: 'CHU_UI_NamePlate_' },
+  characterId: {
+    dir: 'chara',
+    prefix: 'CHU_UI_Character_',
+    suffix: '_00_00',
+    formatId: padChu3CharaImageId,
+  },
   mapIconId: { dir: 'mapIcon', prefix: 'CHU_UI_MapIcon_' },
   voiceId: { dir: 'systemVoice', prefix: 'CHU_UI_SystemVoice_' },
   avatarWear: { dir: 'avatar', prefix: 'CHU_UI_Avatar_Icon_' },
@@ -50,10 +62,13 @@ const FIELD_IMAGE: Partial<
 }
 
 export function chu3CollectibleImageUrl(field: string, itemId: number): string | null {
-  if (!itemId) return null
+  if (itemId < 0) return null
+  if (itemId === 0 && field !== 'characterId') return null
   const meta = FIELD_IMAGE[field]
   if (!meta) return null
-  return `${BASE}/${meta.dir}/${meta.prefix}${padChu3Id8(itemId)}.webp`
+  const fmt = meta.formatId ?? padChu3Id8
+  const suffix = meta.suffix ?? ''
+  return `${BASE}/${meta.dir}/${meta.prefix}${fmt(itemId)}${suffix}.webp`
 }
 
 export function chu3CollectibleHasImage(field: string): boolean {
@@ -84,6 +99,7 @@ export async function fetchChu3AssetJson(jsonFile: string): Promise<Chu3JsonEntr
 /** 名称查找：名牌 / 称号 / 地图图标 / 系统语音 / 企鹅部件（avatar 全表按 id） */
 export type Chu3NameLookups = {
   namePlate: Map<number, string>
+  character: Map<number, string>
   trophy: Map<number, string>
   mapIcon: Map<number, string>
   systemVoice: Map<number, string>
@@ -93,6 +109,7 @@ export type Chu3NameLookups = {
 /** 本地 JSON 全量目录（用于「解锁全部」可选列表） */
 export type Chu3CatalogBundle = {
   nameplate: Chu3JsonEntry[]
+  character: Chu3JsonEntry[]
   trophy: Chu3JsonEntry[]
   mapicon: Chu3JsonEntry[]
   sysvoice: Chu3JsonEntry[]
@@ -100,20 +117,22 @@ export type Chu3CatalogBundle = {
 }
 
 export async function loadChu3CatalogBundle(): Promise<Chu3CatalogBundle> {
-  const [nameplate, trophy, mapicon, sysvoice, avatar_icon] = await Promise.all([
+  const [nameplate, character, trophy, mapicon, sysvoice, avatar_icon] = await Promise.all([
     fetchChu3AssetJson('nameplate.json'),
+    fetchChu3AssetJson('character.json'),
     fetchChu3AssetJson('trophy.json'),
     fetchChu3AssetJson('mapicon.json'),
     fetchChu3AssetJson('sysvoice.json'),
     fetchChu3AssetJson('avatar_icon.json'),
   ])
-  return { nameplate, trophy, mapicon, sysvoice, avatar_icon }
+  return { nameplate, character, trophy, mapicon, sysvoice, avatar_icon }
 }
 
 export function bundleToLookups(bundle: Chu3CatalogBundle): Chu3NameLookups {
   const toMap = (rows: Chu3JsonEntry[]) => new Map(rows.map((r) => [r.id, r.name]))
   return {
     namePlate: toMap(bundle.nameplate),
+    character: toMap(bundle.character),
     trophy: toMap(bundle.trophy),
     mapIcon: toMap(bundle.mapicon),
     systemVoice: toMap(bundle.sysvoice),
@@ -181,7 +200,7 @@ export function buildChu3CatalogOptions(
     case 'stageId':
       return allItemsKeysToOptions(allItems, 'stage')
     case 'characterId':
-      return allItemsKeysToOptions(allItems, 'chara')
+      return bundle.character.map((e) => ({ itemId: e.id, name: e.name }))
     default:
       return []
   }
@@ -197,6 +216,15 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
     hasImage: true,
     imageDir: 'namePlate',
     imagePrefix: 'CHU_UI_NamePlate_',
+  },
+  {
+    key: 'character',
+    field: 'characterId',
+    labelZh: '角色',
+    jsonFile: 'character.json',
+    hasImage: true,
+    imageDir: 'chara',
+    imagePrefix: 'CHU_UI_Character_',
   },
   {
     key: 'trophy',

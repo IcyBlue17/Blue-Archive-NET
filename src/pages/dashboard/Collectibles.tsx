@@ -42,7 +42,6 @@ const TEXT_ONLY_PREVIEW_FIELDS = new Set([
   'trophyId',
   'trophyIdSub1',
   'trophyIdSub2',
-  'characterId',
 ])
 
 const CHU3_LABELS_EN: Record<string, string> = {
@@ -98,7 +97,8 @@ function resolveCollectibleName(
   allItems: Record<string, Record<string, { name?: string }>>,
   lookups: Chu3NameLookups | null,
 ): string {
-  if (!itemId) return '—'
+  if (itemId < 0) return '—'
+  if (itemId === 0 && field !== 'characterId') return '—'
   const key = CHU3_FIELD_ALL_ITEMS_KEY[field as keyof typeof CHU3_FIELD_ALL_ITEMS_KEY]
   const fromAll = key ? allItems[key]?.[String(itemId)]?.name : undefined
 
@@ -112,6 +112,9 @@ function resolveCollectibleName(
       case 'trophyIdSub1':
       case 'trophyIdSub2':
         fromJson = lookups.trophy.get(itemId)
+        break
+      case 'characterId':
+        fromJson = lookups.character.get(itemId)
         break
       case 'mapIconId':
         fromJson = lookups.mapIcon.get(itemId)
@@ -569,6 +572,7 @@ export function CollectiblesPage() {
             const hasImg = chu3CollectibleHasImage(row.field)
             const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(row.field)
             const emptyUnlocks = row.options.length === 0
+            const isCharacter = row.field === 'characterId'
             const canChange = unlockAll ? catalogBundle != null && row.options.length > 0 : !emptyUnlocks || cur > 0
             return (
               <div
@@ -594,6 +598,8 @@ export function CollectiblesPage() {
                       className={`border-kumo-border bg-kumo-recessed flex flex-1 items-center justify-center overflow-hidden rounded-lg border ${
                         row.field === 'nameplateId'
                           ? 'min-h-[88px] px-1 py-2'
+                          : isCharacter
+                            ? 'aspect-square min-h-[180px] max-h-[240px]'
                           : hasImg
                             ? 'aspect-square min-h-[120px] max-h-[160px]'
                             : 'min-h-[48px] py-2'
@@ -606,6 +612,8 @@ export function CollectiblesPage() {
                           className={
                             row.field === 'nameplateId'
                               ? 'max-h-20 w-full object-contain object-center'
+                              : isCharacter
+                                ? 'max-h-full max-w-full object-contain p-1'
                               : 'max-h-full max-w-full object-contain p-2'
                           }
                           loading="lazy"
@@ -735,6 +743,7 @@ export function CollectiblesPage() {
                     const hasImg = chu3CollectibleHasImage(activeRow.field)
                     const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(activeRow.field)
                     const isNameplate = activeRow.field === 'nameplateId'
+                    const isCharacter = activeRow.field === 'characterId'
                     return (
                       <Button
                         key={o.itemId}
@@ -779,6 +788,8 @@ export function CollectiblesPage() {
                             className={`bg-kumo-recessed flex items-center justify-center ${
                               isNameplate
                                 ? 'min-h-[100px] px-2 py-3'
+                                : isCharacter
+                                  ? 'aspect-square min-h-[220px] max-h-[280px]'
                                 : 'aspect-[4/3] min-h-[140px] max-h-[200px]'
                             }`}
                           >
@@ -789,6 +800,8 @@ export function CollectiblesPage() {
                                 className={
                                   isNameplate
                                     ? 'max-h-24 w-full object-contain object-center'
+                                    : isCharacter
+                                      ? 'max-h-full max-w-full object-contain p-2'
                                     : 'max-h-[min(180px,100%)] max-w-full object-contain p-3'
                                 }
                                 loading="lazy"
