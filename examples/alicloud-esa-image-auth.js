@@ -7,6 +7,7 @@
  * - ESA 边缘函数读取 cookie 里的 Aqua JWT
  * - 可选先本地做一次 HS256 验签
  * - 再请求 Aqua `/api/v2/user/me` 确认 session 仍有效
+ * - 后端验活结果会缓存在 ESA POP，避免每张图都打一遍后端
  * - 鉴权通过后回源取图，并附带 `X-YUANSHEN: NIUBI`
  *
  * 官方依据：
@@ -32,6 +33,8 @@ const CFG = {
   JWT_COOKIE_NAME: 'aqua_jwt',
   // 可选：Aqua 的 aqua-net.jwt.secret；不知道就留空，只走远端 session 校验
   AQUA_JWT_SECRET: '',
+  // 后端验活结果的边缘缓存秒数。36000 = 10 小时
+  AUTH_CACHE_TTL: 36000,
 }
 
 function bad1(msg1, code1 = 403) {
@@ -77,6 +80,12 @@ function eq1(a1, b1) {
   return diff1 === 0
 }
 
+function hex1(buf1) {
+  return Array.from(new Uint8Array(buf1))
+    .map((one) => one.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 async function verifyHs256_1(jwt1, secret1) {
   const parts1 = String(jwt1 || '').split('.')
   if (parts1.length !== 3) return false
@@ -112,6 +121,30 @@ async function verifyRemote1(token1, verifyUrl1) {
   return res1.ok
 }
 
+async function authCacheKey1(token1, verifyUrl1) {
+  const raw1 = `${verifyUrl1}|${token1}`
+  const hash1 = await crypto.subtle.digest('SHA-256', text1.encode(raw1))
+  return `http://esa-auth-cache.local/${hex1(hash1)}`
+}
+
+async function authCacheGet1(token1, verifyUrl1) {
+  const key1 = await authCacheKey1(token1, verifyUrl1)
+  const hit1 = await cache.get(key1)
+  return !!hit1
+}
+
+async function authCachePut1(token1, verifyUrl1, ttl1) {
+  const key1 = await authCacheKey1(token1, verifyUrl1)
+  await cache.put(
+    key1,
+    new Response('ok', {
+      headers: {
+        'cache-control': `max-age=${ttl1}`,
+      },
+    }),
+  )
+}
+
 function originUrl1(req1, imageOrigin1) {
   const reqUrl1 = new URL(req1.url)
   const base1 = new URL(imageOrigin1)
@@ -135,6 +168,7 @@ async function handle1(req1) {
   const verifyUrl1 = String(CFG.AQUA_VERIFY_URL || '').trim()
   const cookieName1 = String(CFG.JWT_COOKIE_NAME || 'aqua_jwt').trim() || 'aqua_jwt'
   const secret1 = String(CFG.AQUA_JWT_SECRET || '').trim()
+  const cacheTtl1 = Math.max(0, Number(CFG.AUTH_CACHE_TTL || 0) || 0)
 
   if (!appOrigin1 || !imageOrigin1 || !verifyUrl1) {
     return new Response('ESA env missing', { status: 500 })
@@ -171,8 +205,16 @@ async function handle1(req1) {
       if (!ok1) return withCors1(bad1('Bad JWT'), appOrigin1)
     }
 
-    const remoteOk1 = await verifyRemote1(token1, verifyUrl1).catch(() => false)
-    if (!remoteOk1) return withCors1(bad1('Session expired'), appOrigin1)
+    const hit1 = cacheTtl1 > 0
+      ? await authCacheGet1(token1, verifyUrl1).catch(() => false)
+      : false
+    if (!hit1) {
+      const remoteOk1 = await verifyRemote1(token1, verifyUrl1).catch(() => false)
+      if (!remoteOk1) return withCors1(bad1('Session expired'), appOrigin1)
+      if (cacheTtl1 > 0) {
+        await authCachePut1(token1, verifyUrl1, cacheTtl1).catch(() => undefined)
+      }
+    }
   }
 
   const res1 = await fetch(originUrl1(req1, imageOrigin1).toString(), {
