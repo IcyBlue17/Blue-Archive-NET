@@ -114,7 +114,11 @@ async function verifyRemote1(token1, verifyUrl1) {
 
 function originUrl1(req1, imageOrigin1) {
   const reqUrl1 = new URL(req1.url)
-  return new URL(reqUrl1.pathname + reqUrl1.search, imageOrigin1)
+  const base1 = new URL(imageOrigin1)
+  const root1 = base1.pathname.endsWith('/') ? base1.pathname.slice(0, -1) : base1.pathname
+  base1.pathname = `${root1}${reqUrl1.pathname}`
+  base1.search = reqUrl1.search
+  return base1
 }
 
 async function handle1(req1) {
