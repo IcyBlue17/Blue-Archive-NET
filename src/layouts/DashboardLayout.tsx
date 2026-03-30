@@ -156,16 +156,12 @@ function DashboardShell() {
       </Sidebar>
       <DashboardMainScroll>
         <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => setOpenMobile(true)}
+          <Sidebar.Trigger
             className="shrink-0"
+            aria-label={locale === 'zh' ? '打开菜单' : 'Open menu'}
           >
             <List className="size-4" weight="bold" />
-            {t('dashboard')}
-          </Button>
+          </Sidebar.Trigger>
           <div className="flex min-w-0 items-center gap-2">
             <AppMark />
             <Text size="sm" DANGEROUS_className="truncate">
