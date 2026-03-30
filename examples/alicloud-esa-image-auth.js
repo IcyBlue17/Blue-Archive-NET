@@ -151,7 +151,7 @@ async function handle1(req1) {
   }
 
   const token1 = cookieMap1(req1.headers.get('cookie')).get(cookieName1)
-  if (!token1) return withCors1(bad1('Missing JWT cookie'), appOrigin1)
+  if (!token1) return withCors1(bad1('YOU ARE NOT FROM ABYDOS'), appOrigin1)
 
   if (secret1) {
     const ok1 = await verifyHs256_1(token1, secret1).catch(() => false)
