@@ -125,6 +125,10 @@ function needJwt1(path1) {
   return path1 === '/chu3-assets' || path1.startsWith('/chu3-assets/')
 }
 
+function allowPublic1(path1) {
+  return path1 === '/blue-archive-logo.png' || path1 === '/favicon.png'
+}
+
 async function handle1(req1) {
   const appOrigin1 = String(CFG.APP_ORIGIN || '').trim()
   const imageOrigin1 = String(CFG.IMAGE_ORIGIN || '').trim()
@@ -152,6 +156,10 @@ async function handle1(req1) {
   const reqUrl1 = new URL(req1.url)
   if (reqUrl1.pathname.startsWith('/api/')) {
     return withCors1(bad1('Not Found', 404), appOrigin1)
+  }
+
+  if (!needJwt1(reqUrl1.pathname) && !allowPublic1(reqUrl1.pathname)) {
+    return withCors1(bad1('YOU ARE NOT FROM ABYDOS'), appOrigin1)
   }
 
   if (needJwt1(reqUrl1.pathname)) {
