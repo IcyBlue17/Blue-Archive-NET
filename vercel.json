@@ -6,10 +6,6 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/_img",
-      "destination": "/api/img-sign"
-    },
-    {
       "source": "/api/:path*",
       "destination": "https://aqua.icybit.cn/api/:path*"
     },
