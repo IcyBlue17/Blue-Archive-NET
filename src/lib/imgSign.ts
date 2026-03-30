@@ -54,7 +54,7 @@ function imgHostUrl1(): URL | null {
 }
 
 function shouldBypass1(url1: URL): boolean {
-  return url1.pathname.startsWith('/api/') || url1.pathname.startsWith('/uploads/')
+  return url1.pathname.startsWith('/api/') || url1.pathname.startsWith('/uploads/') || url1.pathname.startsWith('/d/')
 }
 
 export function imgUrl1(raw?: string | null): string {
