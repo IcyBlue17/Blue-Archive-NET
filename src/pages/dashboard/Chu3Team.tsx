@@ -420,12 +420,15 @@ export function Chu3TeamPage() {
             <LayerCard.Secondary>{locale === 'zh' ? '战队操作' : 'Team actions'}</LayerCard.Secondary>
             {myTeam.canManage ? (
               <>
-                <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
-                  {locale === 'zh' ? '只有队长可以改名、改徽章和审核入队申请。' : 'Only the leader can rename the team, change emblem and review join requests.'}
-                </Text>
                 <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px]">
-                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder={locale === 'zh' ? '战队名称' : 'Team name'} />
-                  <Input value={editEmblem} type="number" onChange={(e) => setEditEmblem(e.target.value)} placeholder={locale === 'zh' ? '徽章 ID' : 'Emblem ID'} />
+                  <label className="flex flex-col gap-1">
+                    <Text size="sm">{locale === 'zh' ? '战队名称' : 'Team name'}</Text>
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder={locale === 'zh' ? '战队名称' : 'Team name'} />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <Text size="sm">{locale === 'zh' ? '战队等级（颜色，1是虹以此类推）' : 'Team color rank'}</Text>
+                    <Input value={editEmblem} type="number" onChange={(e) => setEditEmblem(e.target.value)} placeholder={locale === 'zh' ? '战队等级' : 'Team rank'} />
+                  </label>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button disabled={busy === 'update'} onClick={() => void updateTeam1()}>
@@ -513,9 +516,15 @@ export function Chu3TeamPage() {
                 ? '输入战队名称后直接创建。系统会自动生成 100xxxx 的战队 ID，并让你成为队长。'
                 : 'Create a new team with a name. The server will generate a 100xxxx id and make you the leader.'}
             </Text>
-            <div className="mt-4 grid gap-3">
-              <Input value={createName} onChange={(e) => setCreateName(e.target.value)} placeholder={locale === 'zh' ? '战队名称' : 'Team name'} />
-              <Input value={createEmblem} type="number" onChange={(e) => setCreateEmblem(e.target.value)} placeholder={locale === 'zh' ? '徽章 ID（可选）' : 'Emblem ID'} />
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <label className="flex flex-col gap-1">
+                <Text size="sm">{locale === 'zh' ? '战队名称' : 'Team name'}</Text>
+                <Input value={createName} onChange={(e) => setCreateName(e.target.value)} placeholder={locale === 'zh' ? '战队名称' : 'Team name'} />
+              </label>
+              <label className="flex flex-col gap-1">
+                <Text size="sm">{locale === 'zh' ? '战队等级（颜色，1是虹以此类推）' : 'Team color rank'}</Text>
+                <Input value={createEmblem} type="number" onChange={(e) => setCreateEmblem(e.target.value)} placeholder={locale === 'zh' ? '战队等级（可选）' : 'Team rank'} />
+              </label>
             </div>
             <div className="mt-4">
               <Button disabled={busy === 'create'} onClick={() => void createTeam1()}>

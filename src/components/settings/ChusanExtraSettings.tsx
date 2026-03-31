@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import { cn } from '@cloudflare/kumo'
+import { useKumoToastManager } from '@cloudflare/kumo'
 import { Button, buttonVariants } from '@cloudflare/kumo/components/button'
 import { Link } from '@cloudflare/kumo/components/link'
 import { Select } from '@cloudflare/kumo/components/select'
@@ -28,6 +29,7 @@ export function ChusanExtraSettings({
   onReload: () => Promise<void>
   err: string | null
 }) {
+  const toast = useKumoToastManager()
   const [linkedVerse, setLinkedVerse] = useState(false)
   const [overlay, setOverlay] = useState(false)
   const [custom, setCustom] = useState(false)
@@ -36,6 +38,9 @@ export function ChusanExtraSettings({
   const [symbolDirty, setSymbolDirty] = useState<Record<number, boolean>>({})
   const [symSaving, setSymSaving] = useState<number | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [lastFile1, setLastFile1] = useState('')
+  const inputRef1 = useRef<HTMLInputElement | null>(null)
   const basicOptions = useMemo(() => options.filter((o) => o.key !== 'chusanTeamName'), [options])
 
   const matchingUrl = String(options.find((o) => o.key === 'chusanMatchingServer')?.value ?? '')
@@ -98,6 +103,29 @@ export function ChusanExtraSettings({
       URL.revokeObjectURL(a.href)
     } finally {
       setExporting(false)
+    }
+  }
+
+  async function doImport1(file1: File) {
+    setImporting(true)
+    setLastFile1(file1.name)
+    try {
+      const text1 = await file1.text()
+      const json1 = JSON.parse(text1) as unknown
+      await gameApi.importGame('chu3', json1)
+      toast.add({
+        title: locale === 'zh' ? '导入成功' : 'Import completed',
+        description: locale === 'zh' ? 'CHUNITHM 存档已导入。' : 'CHUNITHM save imported.',
+      })
+      await onReload()
+    } catch (e) {
+      toast.add({
+        title: locale === 'zh' ? '导入失败' : 'Import failed',
+        description: e instanceof Error ? e.message : locale === 'zh' ? '导入失败' : 'Import failed',
+        variant: 'error',
+      })
+    } finally {
+      setImporting(false)
     }
   }
 
@@ -254,9 +282,41 @@ export function ChusanExtraSettings({
         </Link>
       </div>
 
-      <Button variant="secondary" disabled={exporting} onClick={() => void doExport()}>
-        {locale === 'zh' ? '导出 CHUNITHM 存档 (JSON)' : 'Export CHUNITHM save (JSON)'}
-      </Button>
+      <section>
+        <h3 className="text-kumo-text mb-2 text-base font-semibold">
+          {locale === 'zh' ? '导入 / 导出' : 'Import / Export'}
+        </h3>
+        <input
+          ref={inputRef1}
+          type="file"
+          accept=".json,application/json"
+          className="hidden"
+          onChange={(e) => {
+            const file1 = e.target.files?.[0]
+            if (file1) void doImport1(file1)
+            e.currentTarget.value = ''
+          }}
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="secondary" disabled={importing} onClick={() => inputRef1.current?.click()}>
+            {importing
+              ? locale === 'zh'
+                ? '导入中…'
+                : 'Importing…'
+              : locale === 'zh'
+                ? '导入 CHUNITHM 存档 (JSON)'
+                : 'Import CHUNITHM save (JSON)'}
+          </Button>
+          <Button variant="secondary" disabled={exporting} onClick={() => void doExport()}>
+            {locale === 'zh' ? '导出 CHUNITHM 存档 (JSON)' : 'Export CHUNITHM save (JSON)'}
+          </Button>
+        </div>
+        {lastFile1 ? (
+          <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
+            {locale === 'zh' ? `最近选择：${lastFile1}` : `Last file: ${lastFile1}`}
+          </Text>
+        ) : null}
+      </section>
 
       {overlay ? (
         <div

@@ -187,8 +187,8 @@ export function Chu3FriendsPage() {
         </div>
         <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
           {locale === 'zh'
-            ? `已登录到喜爱 ${favCount} / 4。只有这 4 位会作为游戏内劲敌槽位返回，客户端才会去拉他们的成绩。`
-            : `${favCount} / 4 pinned. Only these four are returned as in-game rival slots for score lookup.`}
+            ? `已登录到喜爱 ${favCount} / 4。`
+            : `${favCount} / 4 pinned.`}
         </Text>
 
         {rivalQuery.isPending && !rivalQuery.data ? (

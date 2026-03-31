@@ -672,11 +672,6 @@ export function CollectiblesPage() {
               />
               {activeRow.field === 'characterId' ? (
                 <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px] sm:items-end">
-                  <Text size="sm" DANGEROUS_className="text-kumo-subtle">
-                    {locale === 'zh'
-                      ? '先点一个角色，再修改等级，然后应用；未拥有角色会先解锁。'
-                      : 'Pick a character, adjust the level, then apply it. Locked characters will be unlocked first.'}
-                  </Text>
                   <label className="flex flex-col gap-1">
                     <Text size="sm">{locale === 'zh' ? '角色等级' : 'Character level'}</Text>
                     <Input
