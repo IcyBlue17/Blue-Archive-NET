@@ -34,12 +34,13 @@ import { useI18n } from '../../lib/i18n'
 
 const UNLOCK_ALL_STORAGE_KEY = 'chu3-collectibles-unlock-all'
 
-/** 本页不展示舞台（无需在网页上改） */
-const COLLECTIBLES_FIELD_ORDER = CHU3_APPEARANCE_FIELD_ORDER.filter((f) => f !== 'stageId')
+/** 本页不展示舞台和边框（网页侧没必要改） */
+const COLLECTIBLES_FIELD_ORDER = CHU3_APPEARANCE_FIELD_ORDER.filter(
+  (f) => f !== 'stageId' && f !== 'frameId',
+)
 
 /** 无 webp 预览：不占大图位、不显示「无预览图」 */
 const TEXT_ONLY_PREVIEW_FIELDS = new Set([
-  'frameId',
   'trophyId',
   'trophyIdSub1',
   'trophyIdSub2',
