@@ -1,6 +1,6 @@
 /**
- * 与 aquaNet `ChuniSettings.svelte` 一致：收藏品下拉只含 **已解锁** `items`，名称来自官方静态
- * `GET https://aquadx.net/d/chu3/00/all-items.json`（或 `VITE_DATA_HOST`）顶层键：
+ * 与 aquaNet `ChuniSettings.svelte` 一致：收藏品下拉只含 **已解锁** `items`，名称来自静态
+ * `all-items.json` 顶层键：
  * `namePlate`、`frame`、`trophy`、`mapIcon`、`systemVoice`、`avatarAccessory`、`stage`、`chara` 等。
  */
 export interface Chu3UserItem {

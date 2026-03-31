@@ -19,6 +19,14 @@ function fixBase1(raw: unknown): string {
 
 const BASE = fixBase1(import.meta.env.VITE_CHU3_ASSET_BASE ?? '')
 
+function assetPath1(one: string): string {
+  return BASE ? `${BASE}/${one}` : `/${one}`
+}
+
+export function chu3AssetUrl1(one: string): string {
+  return imgUrl1(assetPath1(one))
+}
+
 export function padChu3Id8(id: number): string {
   return String(Math.max(0, Math.floor(id))).padStart(8, '0')
 }
@@ -35,7 +43,7 @@ export function chu3CharacterImageUrl(itemId: number, variant: '00' | '02' = '00
   if (itemId < 0) return null
   const pre = padChu3CharaImageId(itemId)
   const suf = padChu3CharaImageSuffix(itemId)
-  return imgUrl1(`${BASE}/chara/CHU_UI_Character_${pre}_${suf}_${variant}.webp`)
+  return chu3AssetUrl1(`chara/CHU_UI_Character_${pre}_${suf}_${variant}.webp`)
 }
 
 /** 计划表：分类元数据（field、JSON、本地图目录与前缀） */
@@ -89,7 +97,7 @@ export function chu3CollectibleImageUrl(field: string, itemId: number): string |
   if (!meta) return null
   const fmt = meta.formatId ?? padChu3Id8
   const suffix = meta.suffix ?? ''
-  return imgUrl1(`${BASE}/${meta.dir}/${meta.prefix}${fmt(itemId)}${suffix}.webp`)
+  return chu3AssetUrl1(`${meta.dir}/${meta.prefix}${fmt(itemId)}${suffix}.webp`)
 }
 
 export function chu3CollectibleHasImage(field: string): boolean {
@@ -103,7 +111,7 @@ export async function fetchChu3AssetJson(jsonFile: string): Promise<Chu3JsonEntr
   if (!p) {
     p = (async () => {
       try {
-        const res = await fetch(`${BASE}/${jsonFile}`)
+        const res = await fetch(chu3AssetUrl1(jsonFile))
         if (!res.ok) throw new Error(`chu3-assets: failed to load ${jsonFile} (${res.status})`)
         const data = (await res.json()) as Chu3JsonEntry[]
         resolvedCache.set(jsonFile, data)
