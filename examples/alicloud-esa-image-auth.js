@@ -161,11 +161,17 @@ async function authCachePut1(token1, verifyUrl1, ttl1) {
   )
 }
 
+function originPath1(path1) {
+  if (path1 === '/chu3-assets') return '/chu3'
+  if (path1.startsWith('/chu3-assets/')) return `/chu3/${path1.slice('/chu3-assets/'.length)}`
+  return path1
+}
+
 function originUrl1(req1, imageOrigin1) {
   const reqUrl1 = new URL(req1.url)
   const base1 = new URL(imageOrigin1)
   const root1 = base1.pathname.endsWith('/') ? base1.pathname.slice(0, -1) : base1.pathname
-  base1.pathname = `${root1}${reqUrl1.pathname}`
+  base1.pathname = `${root1}${originPath1(reqUrl1.pathname)}`
   base1.search = reqUrl1.search
   return base1
 }
