@@ -54,16 +54,21 @@ function withCors1(res1, appOrigin1) {
   })
 }
 
-function cookieMap1(raw1) {
-  const map1 = new Map()
+function cookieList1(raw1, key1) {
+  const out1 = []
   for (const part1 of String(raw1 || '').split(';')) {
     const pos1 = part1.indexOf('=')
     if (pos1 <= 0) continue
-    const k1 = part1.slice(0, pos1).trim()
-    const v1 = part1.slice(pos1 + 1).trim()
-    if (k1) map1.set(k1, decodeURIComponent(v1))
+    const k2 = part1.slice(0, pos1).trim()
+    const v2 = part1.slice(pos1 + 1).trim()
+    if (k2 !== key1) continue
+    try {
+      out1.push(decodeURIComponent(v2))
+    } catch {
+      out1.push(v2)
+    }
   }
-  return map1
+  return Array.from(new Set(out1.filter(Boolean)))
 }
 
 function b64urlBytes1(raw1) {
@@ -219,22 +224,32 @@ async function handle1(req1) {
   }
 
   if (needJwt1(reqUrl1.pathname)) {
-    const token1 = cookieMap1(req1.headers.get('cookie')).get(cookieName1)
-    if (!token1) return withCors1(bad1('YOU ARE NOT FROM ABYDOS'), appOrigin1)
+    const tokenList1 = cookieList1(req1.headers.get('cookie'), cookieName1)
+    if (!tokenList1.length) return withCors1(bad1('YOU ARE NOT FROM ABYDOS'), appOrigin1)
 
-    const hit1 = cacheTtl1 > 0
-      ? await authCacheGet1(token1, verifyUrl1).catch(() => false)
-      : false
-    if (!hit1) {
+    let pass1 = false
+    for (const token1 of tokenList1) {
+      const hit1 = cacheTtl1 > 0
+        ? await authCacheGet1(token1, verifyUrl1).catch(() => false)
+        : false
+      if (hit1) {
+        pass1 = true
+        break
+      }
+
       if (secret1) {
         await verifyJwt1(token1, secret1).catch(() => false)
       }
       const remoteOk1 = await verifyRemote1(token1, verifyUrl1).catch(() => false)
-      if (!remoteOk1) return withCors1(bad1('Session expired'), appOrigin1)
+      if (!remoteOk1) continue
       if (cacheTtl1 > 0) {
         await authCachePut1(token1, verifyUrl1, cacheTtl1).catch(() => undefined)
       }
+      pass1 = true
+      break
     }
+
+    if (!pass1) return withCors1(bad1('Session expired'), appOrigin1)
   }
 
   const res1 = await fetch(originUrl1(req1, imageOrigin1).toString(), {
