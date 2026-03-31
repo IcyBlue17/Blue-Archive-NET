@@ -1,7 +1,8 @@
 import { imgUrl1 } from './imgSign'
 
 /**
- * CHUNITHM 收藏品静态资源：`public/chu3-assets/`（由 tools/chuni_assets 同步）。
+ * CHUNITHM 收藏品静态资源。
+ * 默认不再强制加 `/chu3-assets` 前缀；需要子目录时请用 `VITE_CHU3_ASSET_BASE` 或直接写进 `VITE_IMAGE_HOST`。
  * 大部分图片文件名 id 为 8 位零填充；角色图使用 `prefix_suffix_variant` 规则。
  */
 
@@ -10,7 +11,13 @@ export type Chu3JsonEntry = { id: number; name: string; category?: number }
 const resolvedCache = new Map<string, Chu3JsonEntry[]>()
 const inflight = new Map<string, Promise<Chu3JsonEntry[]>>()
 
-const BASE = '/chu3-assets'
+function fixBase1(raw: unknown): string {
+  const s1 = String(raw ?? '').trim()
+  if (!s1) return ''
+  return `/${s1.replace(/^\/+|\/+$/g, '')}`
+}
+
+const BASE = fixBase1(import.meta.env.VITE_CHU3_ASSET_BASE ?? '')
 
 export function padChu3Id8(id: number): string {
   return String(Math.max(0, Math.floor(id))).padStart(8, '0')
