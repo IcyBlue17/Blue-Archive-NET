@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useKumoToastManager } from '@cloudflare/kumo'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
+import { Select } from '@cloudflare/kumo/components/select'
 import { Switch } from '@cloudflare/kumo/components/switch'
 import { Text } from '@cloudflare/kumo/components/text'
 import { PageHeader } from '../../components/common/PageHeader'
@@ -207,13 +208,6 @@ function cleanText1(v: unknown): string {
   return s1
 }
 
-function bool1(v: unknown): boolean {
-  if (typeof v === 'boolean') return v
-  if (typeof v === 'number') return v !== 0
-  const s1 = text1(v).toLowerCase()
-  return s1 === '1' || s1 === 'true' || s1 === 'yes' || s1 === 'on'
-}
-
 function charaMetaMap1(allItems: Record<string, Record<string, { name?: string }>>): Record<number, Chu3CharacterMeta> {
   const raw1 = allItems.chara as Record<string, Chu3CharacterMeta> | undefined
   const out1: Record<number, Chu3CharacterMeta> = {}
@@ -366,26 +360,40 @@ export function CollectiblesPage() {
   const pickerOptionsFull = activeRow?.options ?? []
   const charaMetaMap = useMemo(() => charaMetaMap1(allItems), [allItems])
   const selectedCharaMeta = pickedCharaId != null ? charaMetaMap[pickedCharaId] ?? null : null
+  const validAddImages1 = useMemo(() => {
+    if (!Array.isArray(selectedCharaMeta?.addImageList)) return [] as string[]
+    return selectedCharaMeta.addImageList
+      .map((one1) => cleanText1(one1.charaName) || cleanText1(one1.imageName) || cleanText1(one1.imageId))
+      .filter((one1) => !!one1)
+  }, [selectedCharaMeta])
+  const validRankRewards1 = useMemo(() => {
+    if (!Array.isArray(selectedCharaMeta?.rankRewards)) return [] as Array<{ lv: string; reward: string }>
+    return selectedCharaMeta.rankRewards
+      .map((one1) => ({
+        lv: cleanText1(one1.index),
+        reward: cleanText1(one1.rewardSkillSeedName) || cleanText1(one1.type),
+      }))
+      .filter((one1) => !!one1.reward)
+  }, [selectedCharaMeta])
   const charaWorksList = useMemo(() => {
     if (activeRow?.field !== 'characterId') return [] as string[]
     const set1 = new Set<string>()
-    pickerOptionsFull.forEach((one1) => {
-      const meta1 = charaMetaMap[one1.itemId]
-      const works1 = text1(meta1?.worksName)
+    Object.values(charaMetaMap).forEach((meta1) => {
+      const works1 = cleanText1(meta1?.worksName)
       if (works1) set1.add(works1)
     })
     return [...set1].sort((a, b) => a.localeCompare(b, 'zh-CN'))
-  }, [activeRow?.field, charaMetaMap, pickerOptionsFull])
+  }, [activeRow?.field, charaMetaMap])
   const filteredOptions = useMemo(() => {
     return pickerOptionsFull.filter((o) => {
       const charaMeta1 = activeRow?.field === 'characterId' ? charaMetaMap[o.itemId] : null
       if (activeRow?.field === 'characterId') {
-        if (charaWorksFilter && text1(charaMeta1?.worksName) !== charaWorksFilter) return false
+        if (charaWorksFilter && cleanText1(charaMeta1?.worksName) !== charaWorksFilter) return false
       }
       if (!deferredSearch) return true
       const extra1 =
         activeRow?.field === 'characterId'
-          ? `${text1(charaMeta1?.worksName)} ${text1(charaMeta1?.illustratorName)} ${text1(charaMeta1?.defaultImageName)}`
+          ? `${cleanText1(charaMeta1?.worksName)} ${cleanText1(charaMeta1?.illustratorName)} ${cleanText1(charaMeta1?.defaultImageName)}`
           : ''
       return (
         o.name.toLowerCase().includes(deferredSearch) ||
@@ -742,22 +750,24 @@ export function CollectiblesPage() {
               />
               {activeRow.field === 'characterId' ? (
                 <div className="mt-3">
-                  <label className="flex flex-col gap-1">
-                    <Text size="sm">{locale === 'zh' ? '所属作品' : 'Works'}</Text>
-                    <select
+                  <div className="relative z-[70]">
+                    <Text size="sm" DANGEROUS_className="mb-1 block">
+                      {locale === 'zh' ? '所属作品' : 'Works'}
+                    </Text>
+                    <Select
+                      className="h-11"
                       value={charaWorksFilter}
-                      onChange={(e) => setCharaWorksFilter(e.target.value)}
-                      className="border-kumo-border bg-kumo-base h-11 rounded-xl border px-3 text-sm text-kumo-default"
+                      onValueChange={(v) => setCharaWorksFilter(String(v ?? ''))}
                       aria-label={locale === 'zh' ? '所属作品筛选' : 'Works filter'}
                     >
-                      <option value="">{locale === 'zh' ? '全部作品' : 'All works'}</option>
+                      <Select.Option value="">{locale === 'zh' ? '全部作品' : 'All works'}</Select.Option>
                       {charaWorksList.map((one1) => (
-                        <option key={one1} value={one1}>
+                        <Select.Option key={one1} value={one1}>
                           {one1}
-                        </option>
+                        </Select.Option>
                       ))}
-                    </select>
-                  </label>
+                    </Select>
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -765,8 +775,8 @@ export function CollectiblesPage() {
             <div className="bg-kumo-recessed min-h-0 flex-1 overflow-y-auto px-4 py-4">
               {activeRow.field === 'characterId' && pickedCharaId != null ? (
                 <div className="mb-4 rounded-xl border border-kumo-border bg-kumo-base p-4">
-                  <div className="grid gap-4 lg:grid-cols-[160px_minmax(0,1fr)]">
-                    <div className="bg-kumo-recessed flex min-h-[160px] items-center justify-center overflow-hidden rounded-xl border border-kumo-border">
+                  <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
+                    <div className="bg-kumo-recessed mx-auto flex aspect-[4/5] w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-kumo-border">
                       {(() => {
                         const charaImg1 = chu3CollectibleImageUrl('characterId', pickedCharaId)
                         return charaImg1 ? (
@@ -774,7 +784,7 @@ export function CollectiblesPage() {
                             src={charaImg1}
                             crossOrigin={imgCross1(charaImg1)}
                             alt=""
-                            className="max-h-full max-w-full object-contain p-2"
+                            className="max-h-full max-w-full scale-[1.18] object-contain p-1"
                           />
                         ) : null
                       })()}
@@ -791,20 +801,8 @@ export function CollectiblesPage() {
                           <span>{cleanText1(selectedCharaMeta?.illustratorName) || '—'}</span>
                         </div>
                         <div>
-                          <span className="text-kumo-subtle">{locale === 'zh' ? '稀有度' : 'Rare'}: </span>
-                          <span>{text1(selectedCharaMeta?.rareType) || '—'}</span>
-                        </div>
-                        <div>
-                          <span className="text-kumo-subtle">{locale === 'zh' ? '排行榜角色' : 'Ranking'}: </span>
-                          <span>{bool1(selectedCharaMeta?.ranking) ? 'Yes' : 'No'}</span>
-                        </div>
-                        <div>
                           <span className="text-kumo-subtle">ID: </span>
                           <span>{pickedCharaId}</span>
-                        </div>
-                        <div>
-                          <span className="text-kumo-subtle">{locale === 'zh' ? '默认立绘' : 'Default image'}: </span>
-                          <span>{text1(selectedCharaMeta?.defaultImageName) || text1(selectedCharaMeta?.defaultImageId) || '—'}</span>
                         </div>
                       </div>
 
@@ -813,15 +811,17 @@ export function CollectiblesPage() {
                           <Text size="sm">{locale === 'zh' ? '角色等级' : 'Character level'}</Text>
                           <Input
                             type="number"
+                            className="h-11"
                             min={1}
                             max={999}
                             value={charaLv}
                             onChange={(e) => setCharaLv(e.target.value)}
                           />
                         </label>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <Button
                             size="sm"
+                            className="h-11 px-4"
                             disabled={saving || unlockingCharaId != null}
                             onClick={() => void applyCharacterChoice()}
                           >
@@ -845,33 +845,35 @@ export function CollectiblesPage() {
                         </div>
                       </div>
 
-                      {Array.isArray(selectedCharaMeta?.addImageList) && selectedCharaMeta.addImageList.length ? (
-                        <div className="mt-4">
-                          <Text size="sm" DANGEROUS_className="mb-2 font-medium">
-                            {locale === 'zh' ? '追加立绘' : 'Additional images'}
-                          </Text>
-                          <div className="space-y-1 text-sm text-kumo-subtle">
-                            {selectedCharaMeta.addImageList.slice(0, 8).map((one1, idx1) => (
-                              <div key={idx1}>
-                                {text1(one1.charaName) || text1(one1.imageName) || text1(one1.imageId) || `#${idx1 + 1}`}
+                      {validAddImages1.length || validRankRewards1.length ? (
+                        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                          {validAddImages1.length ? (
+                            <div>
+                              <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                                {locale === 'zh' ? '追加立绘' : 'Additional images'}
+                              </Text>
+                              <div className="space-y-1 text-sm text-kumo-subtle">
+                                {validAddImages1.slice(0, 8).map((one1, idx1) => (
+                                  <div key={idx1}>{one1}</div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
+                            </div>
+                          ) : null}
 
-                      {Array.isArray(selectedCharaMeta?.rankRewards) && selectedCharaMeta.rankRewards.length ? (
-                        <div className="mt-4">
-                          <Text size="sm" DANGEROUS_className="mb-2 font-medium">
-                            {locale === 'zh' ? 'Rank 奖励' : 'Rank rewards'}
-                          </Text>
-                          <div className="space-y-1 text-sm text-kumo-subtle">
-                            {selectedCharaMeta.rankRewards.slice(0, 8).map((one1, idx1) => (
-                              <div key={idx1}>
-                                Lv.{text1(one1.index) || '?'} · {text1(one1.rewardSkillSeedName) || text1(one1.type) || '—'}
+                          {validRankRewards1.length ? (
+                            <div>
+                              <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                                {locale === 'zh' ? 'Rank 奖励' : 'Rank rewards'}
+                              </Text>
+                              <div className="space-y-1 text-sm text-kumo-subtle">
+                                {validRankRewards1.slice(0, 8).map((one1, idx1) => (
+                                  <div key={idx1}>
+                                    Lv.{one1.lv || '?'} · {one1.reward}
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          ) : null}
                         </div>
                       ) : null}
                     </div>
