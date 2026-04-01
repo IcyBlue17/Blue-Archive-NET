@@ -20,6 +20,15 @@ const SUMMARY_KEYS: (keyof CardSummary)[] = ['chu3', 'mai2', 'ongeki', 'wacca', 
 /** 与后端 `CardController` 默认迁移列表一致；不在 UI 暴露以免误填。 */
 const DEFAULT_MIGRATE = 'mai2,chu3'
 
+function aimeDigits1(raw: string) {
+  return raw.replace(/\D/g, '').slice(0, 20)
+}
+
+function aimeCardFmt1(raw: string) {
+  const digits1 = aimeDigits1(raw)
+  return digits1.replace(/(.{4})(?=.)/g, '$1 ').trim()
+}
+
 function formatLogin(iso: string | undefined) {
   if (!iso) return '—'
   const d = new Date(iso)
@@ -50,7 +59,7 @@ export function LinkCardPage() {
     setErr(null)
     setMsg(null)
     try {
-      await cardApi.link({ cardId: cardId.trim(), migrate: DEFAULT_MIGRATE })
+      await cardApi.link({ cardId: aimeCardFmt1(cardId), migrate: DEFAULT_MIGRATE })
       setMsg('绑卡成功')
       await refresh()
       setCardId('')
@@ -121,7 +130,13 @@ export function LinkCardPage() {
         <div className="mt-4 flex max-w-md flex-col gap-3">
           <label className="flex flex-col gap-1">
             <Text size="sm">Access Code</Text>
-            <Input value={cardId} onChange={(e) => setCardId(e.target.value)} placeholder="卡号" />
+            <Input
+              value={cardId}
+              inputMode="numeric"
+              maxLength={24}
+              onChange={(e) => setCardId(aimeCardFmt1(e.target.value))}
+              placeholder="1234 5678 9012 3456 7890"
+            />
           </label>
           {msg ? <Text DANGEROUS_className="text-kumo-success">{msg}</Text> : null}
           {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
