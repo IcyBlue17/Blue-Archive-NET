@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useKumoToastManager } from '@cloudflare/kumo'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
-import { Select } from '@cloudflare/kumo/components/select'
 import { Switch } from '@cloudflare/kumo/components/switch'
 import { Text } from '@cloudflare/kumo/components/text'
 import { PageHeader } from '../../components/common/PageHeader'
@@ -201,6 +200,13 @@ function text1(v: unknown): string {
   return typeof v === 'string' ? v.trim() : v == null ? '' : String(v)
 }
 
+function cleanText1(v: unknown): string {
+  const s1 = text1(v)
+  if (!s1) return ''
+  if (s1 === 'Invalid' || s1 === '-1' || s1 === 'null' || s1 === 'undefined') return ''
+  return s1
+}
+
 function bool1(v: unknown): boolean {
   if (typeof v === 'boolean') return v
   if (typeof v === 'number') return v !== 0
@@ -236,7 +242,6 @@ export function CollectiblesPage() {
   const [modalPage, setModalPage] = useState(0)
   const [modalSearch, setModalSearch] = useState('')
   const [charaWorksFilter, setCharaWorksFilter] = useState('')
-  const [charaIllusFilter, setCharaIllusFilter] = useState('')
   const [charaLv, setCharaLv] = useState('1')
   const [pickedCharaId, setPickedCharaId] = useState<number | null>(null)
   const [unlockingCharaId, setUnlockingCharaId] = useState<number | null>(null)
@@ -371,23 +376,11 @@ export function CollectiblesPage() {
     })
     return [...set1].sort((a, b) => a.localeCompare(b, 'zh-CN'))
   }, [activeRow?.field, charaMetaMap, pickerOptionsFull])
-  const charaIllusList = useMemo(() => {
-    if (activeRow?.field !== 'characterId') return [] as string[]
-    const set1 = new Set<string>()
-    pickerOptionsFull.forEach((one1) => {
-      const meta1 = charaMetaMap[one1.itemId]
-      const illus1 = text1(meta1?.illustratorName)
-      if (illus1) set1.add(illus1)
-    })
-    return [...set1].sort((a, b) => a.localeCompare(b, 'zh-CN'))
-  }, [activeRow?.field, charaMetaMap, pickerOptionsFull])
-
   const filteredOptions = useMemo(() => {
     return pickerOptionsFull.filter((o) => {
       const charaMeta1 = activeRow?.field === 'characterId' ? charaMetaMap[o.itemId] : null
       if (activeRow?.field === 'characterId') {
         if (charaWorksFilter && text1(charaMeta1?.worksName) !== charaWorksFilter) return false
-        if (charaIllusFilter && text1(charaMeta1?.illustratorName) !== charaIllusFilter) return false
       }
       if (!deferredSearch) return true
       const extra1 =
@@ -400,7 +393,7 @@ export function CollectiblesPage() {
         extra1.toLowerCase().includes(deferredSearch)
       )
     })
-  }, [pickerOptionsFull, deferredSearch, activeRow?.field, charaMetaMap, charaIllusFilter, charaWorksFilter])
+  }, [pickerOptionsFull, deferredSearch, activeRow?.field, charaMetaMap, charaWorksFilter])
 
   const pageSize =
     activeRow && chu3CollectibleHasImage(activeRow.field)
@@ -443,7 +436,6 @@ export function CollectiblesPage() {
     setModalSearch('')
     setModalPage(0)
     setCharaWorksFilter('')
-    setCharaIllusFilter('')
     if (field === 'characterId') {
       const curCharaId = draft.characterId || numFromUser(user, 'characterId')
       setPickedCharaId(curCharaId > 0 ? curCharaId : null)
@@ -458,7 +450,6 @@ export function CollectiblesPage() {
     setModalField(null)
     setPickedCharaId(null)
     setCharaWorksFilter('')
-    setCharaIllusFilter('')
   }
 
   const onUnlockAllChange = (on: boolean) => {
@@ -750,31 +741,23 @@ export function CollectiblesPage() {
                 autoFocus
               />
               {activeRow.field === 'characterId' ? (
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <Select
-                    value={charaWorksFilter}
-                    onValueChange={(v) => setCharaWorksFilter(String(v ?? ''))}
-                    aria-label={locale === 'zh' ? '所属作品筛选' : 'Works filter'}
-                  >
-                    <Select.Option value="">{locale === 'zh' ? '全部作品' : 'All works'}</Select.Option>
-                    {charaWorksList.map((one1) => (
-                      <Select.Option key={one1} value={one1}>
-                        {one1}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                  <Select
-                    value={charaIllusFilter}
-                    onValueChange={(v) => setCharaIllusFilter(String(v ?? ''))}
-                    aria-label={locale === 'zh' ? '画师筛选' : 'Illustrator filter'}
-                  >
-                    <Select.Option value="">{locale === 'zh' ? '全部画师' : 'All illustrators'}</Select.Option>
-                    {charaIllusList.map((one1) => (
-                      <Select.Option key={one1} value={one1}>
-                        {one1}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                <div className="mt-3">
+                  <label className="flex flex-col gap-1">
+                    <Text size="sm">{locale === 'zh' ? '所属作品' : 'Works'}</Text>
+                    <select
+                      value={charaWorksFilter}
+                      onChange={(e) => setCharaWorksFilter(e.target.value)}
+                      className="border-kumo-border bg-kumo-base h-11 rounded-xl border px-3 text-sm text-kumo-default"
+                      aria-label={locale === 'zh' ? '所属作品筛选' : 'Works filter'}
+                    >
+                      <option value="">{locale === 'zh' ? '全部作品' : 'All works'}</option>
+                      {charaWorksList.map((one1) => (
+                        <option key={one1} value={one1}>
+                          {one1}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
               ) : null}
             </div>
@@ -801,11 +784,11 @@ export function CollectiblesPage() {
                       <div className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
                         <div>
                           <span className="text-kumo-subtle">{locale === 'zh' ? '所属作品' : 'Works'}: </span>
-                          <span>{text1(selectedCharaMeta?.worksName) || '—'}</span>
+                          <span>{cleanText1(selectedCharaMeta?.worksName) || '—'}</span>
                         </div>
                         <div>
                           <span className="text-kumo-subtle">{locale === 'zh' ? '画师' : 'Illustrator'}: </span>
-                          <span>{text1(selectedCharaMeta?.illustratorName) || '—'}</span>
+                          <span>{cleanText1(selectedCharaMeta?.illustratorName) || '—'}</span>
                         </div>
                         <div>
                           <span className="text-kumo-subtle">{locale === 'zh' ? '稀有度' : 'Rare'}: </span>

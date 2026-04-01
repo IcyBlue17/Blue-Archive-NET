@@ -287,7 +287,6 @@ export function Chu3MusicLibrary({
                 </Text>
                 <Text DANGEROUS_className="text-kumo-subtle mt-2 text-sm">{picked1.meta.composer || (locale === 'zh' ? '未知作曲' : 'Unknown composer')}</Text>
                 <div className="text-kumo-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                  {picked1.meta.ver ? <span>{picked1.meta.ver}</span> : null}
                   {firstGenre1(picked1.meta) ? <span>{firstGenre1(picked1.meta)}</span> : null}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
