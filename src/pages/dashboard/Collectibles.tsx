@@ -738,12 +738,13 @@ export function CollectiblesPage() {
             </div>
 
             <div className="border-kumo-border bg-kumo-base shrink-0 border-b px-4 py-3">
-              <div className={`grid gap-3 ${activeRow.field === 'characterId' ? 'md:grid-cols-[minmax(0,1fr)_220px]' : ''}`}>
+              <div className={`grid items-end gap-3 ${activeRow.field === 'characterId' ? 'md:grid-cols-[minmax(0,1fr)_220px]' : ''}`}>
                 <label className="flex flex-col gap-1">
                   <span className="text-kumo-subtle text-xs">
                     {locale === 'zh' ? '搜索名称或 ID' : 'Search name or ID'}
                   </span>
                   <Input
+                    className="h-11"
                     value={modalSearch}
                     onChange={(e) => setModalSearch(e.target.value)}
                     placeholder={locale === 'zh' ? '搜索…' : 'Search…'}
@@ -752,7 +753,7 @@ export function CollectiblesPage() {
                 </label>
                 {activeRow.field === 'characterId' ? (
                   <label className="flex flex-col gap-1">
-                    <Text size="sm">{locale === 'zh' ? '所属作品' : 'Works'}</Text>
+                    <span className="text-kumo-subtle text-xs">{locale === 'zh' ? '所属作品' : 'Works'}</span>
                     <select
                       value={charaWorksFilter}
                       onChange={(e) => setCharaWorksFilter(e.target.value)}
