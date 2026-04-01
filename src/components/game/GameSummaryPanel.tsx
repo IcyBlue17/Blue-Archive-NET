@@ -4,11 +4,6 @@ import type { GameName, GenericGameSummary } from '../../lib/types'
 import { formatDisplayRating } from '../../lib/gameRatingDisplay'
 import { RankDetailsTable } from './RankDetailsTable'
 
-function fmtNum(n: number, digits = 2) {
-  if (!Number.isFinite(n)) return '—'
-  return n.toFixed(digits)
-}
-
 function fmtInt(n: number) {
   if (!Number.isFinite(n)) return '—'
   return String(Math.round(n))
@@ -32,12 +27,12 @@ export function GameSummaryPanel({
     )
   }
 
-  const rankLabel = summary.serverRank > 0 ? `#${summary.serverRank}` : '—'
+  const rankLabel =
+    Number.isFinite(summary.serverRank) && summary.serverRank >= 0 ? `#${summary.serverRank + 1}` : '—'
 
   const stats: { label: string; value: string }[] = [
     { label: 'Rating', value: formatDisplayRating(summary.rating, game) },
     { label: '最高 Rating', value: formatDisplayRating(summary.ratingHighest, game) },
-    { label: 'ACC', value: `${fmtNum(summary.accuracy * 100, 2)}%` },
     { label: 'PC数', value: fmtInt(summary.plays) },
     { label: 'FC / AP', value: `${summary.fullCombo} / ${summary.allPerfect}` },
     { label: '服务器排名', value: rankLabel },
