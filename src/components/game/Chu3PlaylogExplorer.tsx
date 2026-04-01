@@ -9,7 +9,7 @@ import { musicJacketUrl } from '../../lib/musicCover'
 import type { MusicMetaLite } from '../../lib/scoring'
 import type { GamePlayRecord } from '../../lib/types'
 
-const PAGE_SIZE = 40
+const PAGE_SIZE = 20
 
 function pageNums1(page: number, total: number): number[] {
   const start1 = Math.max(1, page - 2)
@@ -115,6 +115,17 @@ export function Chu3PlaylogExplorer({
       ]
     : []
 
+  const infoRows1 = row1
+    ? [
+        { label: locale === 'zh' ? '成绩' : 'Score', value: fmtScore1(scoreNow1) },
+        { label: locale === 'zh' ? '段位' : 'Rank', value: rankNow1 },
+        { label: locale === 'zh' ? '单曲 Rating' : 'Chart rating', value: chartRt1 },
+        { label: locale === 'zh' ? '玩家 Rating 变化' : 'Player rating delta', value: delta1 },
+        { label: locale === 'zh' ? '时间' : 'Time', value: fmtTime1(playTime1(row1), locale) },
+        { label: locale === 'zh' ? 'Track' : 'Track', value: row1.track != null ? String(row1.track) : '—' },
+      ]
+    : []
+
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.95fr)]">
       <LayerCard className="p-4">
@@ -179,14 +190,14 @@ export function Chu3PlaylogExplorer({
         </div>
       </LayerCard>
 
-      <LayerCard className="p-4">
+      <LayerCard className="p-4 xl:self-start">
         {row1 ? (
           <>
-            <div className="flex gap-4">
-              <img src={cover1} crossOrigin={imgCross1(cover1)} alt="" width={120} height={120} className="h-[120px] w-[120px] shrink-0 rounded-xl object-cover" />
+            <div className="flex gap-3">
+              <img src={cover1} crossOrigin={imgCross1(cover1)} alt="" width={88} height={88} className="h-[88px] w-[88px] shrink-0 rounded-xl object-cover" />
               <div className="min-w-0 flex-1">
                 <div className="text-kumo-subtle text-xs">#{row1.musicId}</div>
-                <Text variant="heading3" DANGEROUS_className="mt-1 break-words">
+                <Text variant="heading3" DANGEROUS_className="mt-1 break-words text-[1.35rem]">
                   {meta1?.name ?? `Music ${row1.musicId}`}
                 </Text>
                 <Text DANGEROUS_className="text-kumo-subtle mt-1 text-sm">{meta1?.composer || (locale === 'zh' ? '未知作曲' : 'Unknown composer')}</Text>
@@ -198,17 +209,13 @@ export function Chu3PlaylogExplorer({
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl bg-kumo-surface-secondary/50 p-3">
-                <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '成绩 / 段位' : 'Score / Rank'}</div>
-                <div className="mt-1 text-2xl font-semibold">{fmtScore1(scoreNow1)}</div>
-                <div className="text-kumo-subtle mt-1 text-sm">{rankNow1}</div>
-              </div>
-              <div className="rounded-xl bg-kumo-surface-secondary/50 p-3">
-                <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '单曲 Rating' : 'Chart rating'}</div>
-                <div className="mt-1 text-2xl font-semibold">{chartRt1}</div>
-                <div className="text-kumo-subtle mt-1 text-sm">{locale === 'zh' ? `玩家 Rating 变化 ${delta1}` : `Player rating delta ${delta1}`}</div>
-              </div>
+            <div className="border-kumo-border mt-4 overflow-hidden rounded-xl border">
+              {infoRows1.map((item1) => (
+                <div key={item1.label} className="border-kumo-border grid grid-cols-[130px_1fr] gap-3 border-b px-3 py-2 text-sm last:border-b-0">
+                  <div className="text-kumo-subtle">{item1.label}</div>
+                  <div className="font-medium text-kumo-text">{item1.value}</div>
+                </div>
+              ))}
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
@@ -222,11 +229,11 @@ export function Chu3PlaylogExplorer({
 
             <div className="mt-5">
               <Text DANGEROUS_className="mb-2 text-sm font-medium">{locale === 'zh' ? '判定统计' : 'Judge counts'}</Text>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="border-kumo-border overflow-hidden rounded-xl border">
                 {judgeRows1.map((item1) => (
-                  <div key={item1.label} className="rounded-xl bg-kumo-surface-secondary/50 p-3">
-                    <div className="text-kumo-subtle text-xs">{item1.label}</div>
-                    <div className="mt-1 text-lg font-semibold">{item1.value ?? '—'}</div>
+                  <div key={item1.label} className="border-kumo-border grid grid-cols-[130px_1fr] gap-3 border-b px-3 py-2 text-sm last:border-b-0">
+                    <div className="text-kumo-subtle">{item1.label}</div>
+                    <div className="font-medium text-kumo-text">{item1.value ?? '—'}</div>
                   </div>
                 ))}
               </div>
@@ -234,11 +241,11 @@ export function Chu3PlaylogExplorer({
 
             <div className="mt-5">
               <Text DANGEROUS_className="mb-2 text-sm font-medium">{locale === 'zh' ? '各键型比率' : 'Lane rates'}</Text>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="border-kumo-border overflow-hidden rounded-xl border">
                 {rateRows1.map((item1) => (
-                  <div key={item1.label} className="rounded-xl bg-kumo-surface-secondary/50 p-3">
-                    <div className="text-kumo-subtle text-xs">{item1.label}</div>
-                    <div className="mt-1 text-lg font-semibold">{fmtRate1(item1.value)}</div>
+                  <div key={item1.label} className="border-kumo-border grid grid-cols-[130px_1fr] gap-3 border-b px-3 py-2 text-sm last:border-b-0">
+                    <div className="text-kumo-subtle">{item1.label}</div>
+                    <div className="font-medium text-kumo-text">{fmtRate1(item1.value)}</div>
                   </div>
                 ))}
               </div>

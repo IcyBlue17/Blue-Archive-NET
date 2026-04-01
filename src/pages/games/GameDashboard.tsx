@@ -148,7 +148,7 @@ export function GameDashboardPage() {
 
   const playQuery1 = useQuery<GamePlayRecord[]>({
     queryKey: qk.gamePlaylog(username1, game1),
-    enabled: !!username1 && game1 === 'chu3' && section1 === 'plays',
+    enabled: !!username1 && game1 === 'chu3' && (section1 === 'plays' || section1 === 'songs'),
     placeholderData: (old1) => old1,
     queryFn: async () => gameApi.recent(username1, 'chu3'),
   })
@@ -234,6 +234,7 @@ export function GameDashboardPage() {
               <Chu3MusicLibrary
                 musicById={musicById1}
                 detailRows={songQuery1.data ?? []}
+                records={playQuery1.data ?? []}
                 loading={showSongsLoading1}
                 error={songErr1}
                 locale={loc1}
