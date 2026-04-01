@@ -72,6 +72,21 @@ export function imgUrl1(raw?: string | null): string {
   }
 }
 
+/** 强制把静态资源路径挂到 image host；用于少数需要保留 `/d/...` 目录但不走 bypass 的场景。 */
+export function imgUrlOnHost1(raw?: string | null): string {
+  const src1 = String(raw ?? '').trim()
+  if (!src1) return ''
+  if (/^(data|blob|about):/i.test(src1)) return src1
+  try {
+    const base1 = imgHost1 || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+    const url1 = src1.startsWith('/') ? new URL(src1, `${base1}/`) : new URL(src1)
+    if (imageCdnOn1()) return new URL(`${url1.pathname}${url1.search}${url1.hash}`, `${imgHost1}/`).toString()
+    return url1.toString()
+  } catch {
+    return src1
+  }
+}
+
 export function imgCross1(raw?: string | null): 'use-credentials' | undefined {
   if (!imageAuthOn1()) return undefined
   const src1 = imgUrl1(raw)

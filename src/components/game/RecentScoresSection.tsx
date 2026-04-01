@@ -36,7 +36,7 @@ const RecentScoreRow = memo(function RecentScoreRow({
     ? roundFloor(row.achievement, game, 1)
     : (row.achievement / 10000).toFixed(4)
   const showEndRating = game === 'wacca' || game === 'chu3' || game === 'ongeki'
-  const jacket1 = musicJacketUrl(game, row.musicId)
+  const jacket1 = musicJacketUrl(game, row.musicId, game === 'chu3')
 
   return (
     <div
