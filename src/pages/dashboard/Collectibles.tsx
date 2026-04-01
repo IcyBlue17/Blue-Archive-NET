@@ -207,6 +207,14 @@ function cleanText1(v: unknown): string {
   return s1
 }
 
+function rewardText1(v: unknown): string {
+  const s1 = cleanText1(v)
+  if (!s1) return ''
+  if (s1.includes('[OTHER]')) return ''
+  if (s1.includes('限界突破の証')) return ''
+  return s1
+}
+
 function charaMetaMap1(allItems: Record<string, Record<string, { name?: string }>>): Record<number, Chu3CharacterMeta> {
   const raw1 = allItems.chara as Record<string, Chu3CharacterMeta> | undefined
   const out1: Record<number, Chu3CharacterMeta> = {}
@@ -370,9 +378,9 @@ export function CollectiblesPage() {
     return selectedCharaMeta.rankRewards
       .map((one1) => ({
         lv: cleanText1(one1.index),
-        reward: cleanText1(one1.rewardSkillSeedName),
+        reward: rewardText1(one1.rewardSkillSeedName),
       }))
-      .filter((one1) => !!one1.reward && !one1.reward.startsWith('[OTHER]'))
+      .filter((one1) => !!one1.reward)
   }, [selectedCharaMeta])
   const charaWorksList = useMemo(() => {
     if (activeRow?.field !== 'characterId') return [] as string[]
