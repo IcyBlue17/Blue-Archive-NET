@@ -371,7 +371,7 @@ export function CollectiblesPage() {
     return selectedCharaMeta.rankRewards
       .map((one1) => ({
         lv: cleanText1(one1.index),
-        reward: cleanText1(one1.rewardSkillSeedName) || cleanText1(one1.type),
+        reward: cleanText1(one1.rewardSkillSeedName),
       }))
       .filter((one1) => !!one1.reward)
   }, [selectedCharaMeta])
