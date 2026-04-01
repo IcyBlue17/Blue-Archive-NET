@@ -73,6 +73,7 @@ export default function App() {
                       <Route path="/ranking/:game" element={<RankingPage />} />
                       <Route path="/games" element={<Navigate to="/games/chu3" replace />} />
                       <Route path="/games/:game" element={<GameDashboardPage />} />
+                      <Route path="/games/:game/:section" element={<GameDashboardPage />} />
                       <Route path="/team" element={<Chu3TeamPage />} />
                       <Route path="/friends" element={<Chu3FriendsPage />} />
                       <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />

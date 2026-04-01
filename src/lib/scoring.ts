@@ -65,7 +65,7 @@ const multTable: Record<GameName, (number | string)[][]> = {
 }
 
 export function getMult(achievement: number, game: GameName) {
-  let ach = achievement / 10000
+  const ach = achievement / 10000
   const mt = multTable[game]
   for (let i = 0; i < mt.length; i++) {
     if (ach >= (mt[i][0] as number)) return mt[i]
@@ -75,7 +75,7 @@ export function getMult(achievement: number, game: GameName) {
 
 export function roundFloor(achievement: number, game: GameName, digits = 2) {
   const mult = getMult(achievement, game)
-  let ach = achievement / 10000
+  const ach = achievement / 10000
   const rounded = ach.toFixed(digits)
   if (
     getMult(+rounded * 10000, game)[2] === mult[2] &&
@@ -100,6 +100,11 @@ export function chusanRating(lv: number, score: number) {
 
 export interface MusicMetaLite {
   name?: string | null
+  composer?: string | null
+  ver?: string | number | null
+  genre?: string | null
+  worldsEndTag?: string | null
+  worldsEndStars?: number | null
   notes?: { lv?: number | null }[]
 }
 
@@ -131,7 +136,7 @@ export function parseComposition(
   const mult = +tup[1]
   const rank = String(tup[2])
 
-  let diff = meta?.notes?.[diffId === 10 ? 0 : diffId]?.lv ?? undefined
+  const diff = meta?.notes?.[diffId === 10 ? 0 : diffId]?.lv ?? undefined
 
   function calcDxChange(): string | undefined {
     if (diff === undefined || diff === null) return undefined

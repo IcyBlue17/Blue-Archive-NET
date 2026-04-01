@@ -5,7 +5,9 @@ import type {
   Chu3TeamRankEntry,
   Chu3TeamRequestBox,
   Chu3TeamSummary,
+  Chu3UserMusicDetail,
   GameName,
+  GamePlayRecord,
   GenericGameSummary,
   GenericRankingPlayer,
   TrendEntry,
@@ -27,11 +29,17 @@ export async function ranking(game: GameName, page?: number) {
 }
 
 export async function recent(username: string, game: GameName) {
-  return userPost(`/api/v2/game/${game}/recent`, { username }) as Promise<unknown[]>
+  return userPost(`/api/v2/game/${game}/recent`, { username }) as Promise<GamePlayRecord[]>
 }
 
-export async function playlog(username: string, game: GameName) {
-  return userPost(`/api/v2/game/${game}/playlog`, { username }) as Promise<unknown[]>
+export async function playlog(game: GameName, id: number) {
+  return userPost(`/api/v2/game/${game}/playlog`, { id: String(id) }) as Promise<GamePlayRecord>
+}
+
+export async function userMusicFromList(username: string, game: GameName, musicList: number[]) {
+  return userPost(`/api/v2/game/${game}/user-music-from-list`, { username }, { json: musicList }) as Promise<
+    Chu3UserMusicDetail[]
+  >
 }
 
 export async function changeName(game: GameName, newName: string) {

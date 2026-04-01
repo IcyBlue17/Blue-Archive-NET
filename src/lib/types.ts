@@ -57,19 +57,99 @@ export interface TrendEntry {
   plays?: number
 }
 
+export interface MusicMetaNote {
+  lv?: number | null
+  designer?: string | null
+  lv_id?: number | null
+  notes?: number | null
+}
+
+export interface MusicMeta {
+  name?: string | null
+  composer?: string | null
+  artist?: string | null
+  bpm?: number | string | null
+  genre?: string | null
+  ver?: string | number | null
+  notes?: MusicMetaNote[]
+  worldsEndTag?: string
+  worldsEndStars?: number
+}
+
+export type AllMusicMap = Record<string, MusicMeta>
+
 export interface GenericGamePlaylog {
   musicId: number
   level: number
   playDate: string
   achievement: number
   maxCombo: number
-  totalCombo: number
+  totalCombo?: number
   afterRating: number
   beforeRating: number
   isFullCombo?: boolean
   isAllPerfect?: boolean
   isAllJustice?: boolean
   worldsEndTag?: string
+}
+
+export interface GamePlayRecord extends GenericGamePlaylog {
+  id?: number
+  romVersion?: string | null
+  orderId?: number
+  sortNumber?: number
+  userPlayDate?: string
+  placeId?: number
+  customId?: number
+  score?: number
+  rank?: number
+  track?: number
+  maxChain?: number
+  playerRating?: number
+  judgeGuilty?: number
+  judgeAttack?: number
+  judgeJustice?: number
+  judgeCritical?: number
+  judgeHeaven?: number
+  rateTap?: number
+  rateHold?: number
+  rateSlide?: number
+  rateAir?: number
+  rateFlick?: number
+  isNewRecord?: boolean
+  isContinue?: boolean
+  isFreeToPlay?: boolean
+  isClear?: boolean
+  skillId?: number
+  skillLevel?: number
+  skillEffect?: number
+  characterId?: number
+  charaIllustId?: number
+  playKind?: number
+  placeName?: string
+  commonId?: number
+  regionId?: number
+  machineType?: number
+  ticketId?: number
+  fullChainKind?: number
+}
+
+export interface Chu3UserMusicDetail {
+  musicId: number
+  level: number
+  playCount: number
+  scoreMax: number
+  missCount: number
+  maxComboCount: number
+  isFullCombo?: boolean
+  isAllJustice?: boolean
+  isSuccess?: number | boolean
+  fullChain: number
+  maxChain: number
+  scoreRank: number
+  isLock?: boolean
+  theoryCount: number
+  ext1: number
 }
 
 export interface RankCount {
