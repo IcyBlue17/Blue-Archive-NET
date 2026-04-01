@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useKumoToastManager } from '@cloudflare/kumo'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
+import { Select } from '@cloudflare/kumo/components/select'
 import { Switch } from '@cloudflare/kumo/components/switch'
 import { Text } from '@cloudflare/kumo/components/text'
 import { PageHeader } from '../../components/common/PageHeader'
@@ -180,6 +181,44 @@ type Chu3CollectibleLoad = {
   ownedCharacterLvs: Record<number, number>
 }
 
+type Chu3CharacterMeta = {
+  name?: string
+  worksId?: number | string
+  worksName?: string
+  illustratorId?: number | string
+  illustratorName?: string
+  rareType?: number | string
+  ranking?: boolean | number | string
+  defaultImageId?: number | string
+  defaultImageName?: string
+  addImages?: string
+  addImageList?: Array<Record<string, unknown>>
+  rankRewards?: Array<Record<string, unknown>>
+  [key: string]: unknown
+}
+
+function text1(v: unknown): string {
+  return typeof v === 'string' ? v.trim() : v == null ? '' : String(v)
+}
+
+function bool1(v: unknown): boolean {
+  if (typeof v === 'boolean') return v
+  if (typeof v === 'number') return v !== 0
+  const s1 = text1(v).toLowerCase()
+  return s1 === '1' || s1 === 'true' || s1 === 'yes' || s1 === 'on'
+}
+
+function charaMetaMap1(allItems: Record<string, Record<string, { name?: string }>>): Record<number, Chu3CharacterMeta> {
+  const raw1 = allItems.chara as Record<string, Chu3CharacterMeta> | undefined
+  const out1: Record<number, Chu3CharacterMeta> = {}
+  if (!raw1) return out1
+  for (const [id1, row1] of Object.entries(raw1)) {
+    const num1 = parseInt(id1, 10)
+    if (!Number.isNaN(num1)) out1[num1] = row1
+  }
+  return out1
+}
+
 export function CollectiblesPage() {
   const { t, locale } = useI18n()
   const toast = useKumoToastManager()
@@ -196,6 +235,8 @@ export function CollectiblesPage() {
   const [modalField, setModalField] = useState<string | null>(null)
   const [modalPage, setModalPage] = useState(0)
   const [modalSearch, setModalSearch] = useState('')
+  const [charaWorksFilter, setCharaWorksFilter] = useState('')
+  const [charaIllusFilter, setCharaIllusFilter] = useState('')
   const [charaLv, setCharaLv] = useState('1')
   const [pickedCharaId, setPickedCharaId] = useState<number | null>(null)
   const [unlockingCharaId, setUnlockingCharaId] = useState<number | null>(null)
@@ -318,14 +359,48 @@ export function CollectiblesPage() {
   )
 
   const pickerOptionsFull = activeRow?.options ?? []
+  const charaMetaMap = useMemo(() => charaMetaMap1(allItems), [allItems])
+  const selectedCharaMeta = pickedCharaId != null ? charaMetaMap[pickedCharaId] ?? null : null
+  const charaWorksList = useMemo(() => {
+    if (activeRow?.field !== 'characterId') return [] as string[]
+    const set1 = new Set<string>()
+    pickerOptionsFull.forEach((one1) => {
+      const meta1 = charaMetaMap[one1.itemId]
+      const works1 = text1(meta1?.worksName)
+      if (works1) set1.add(works1)
+    })
+    return [...set1].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+  }, [activeRow?.field, charaMetaMap, pickerOptionsFull])
+  const charaIllusList = useMemo(() => {
+    if (activeRow?.field !== 'characterId') return [] as string[]
+    const set1 = new Set<string>()
+    pickerOptionsFull.forEach((one1) => {
+      const meta1 = charaMetaMap[one1.itemId]
+      const illus1 = text1(meta1?.illustratorName)
+      if (illus1) set1.add(illus1)
+    })
+    return [...set1].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+  }, [activeRow?.field, charaMetaMap, pickerOptionsFull])
 
   const filteredOptions = useMemo(() => {
-    if (!deferredSearch) return pickerOptionsFull
-    return pickerOptionsFull.filter(
-      (o) =>
-        o.name.toLowerCase().includes(deferredSearch) || String(o.itemId).includes(deferredSearch),
-    )
-  }, [pickerOptionsFull, deferredSearch])
+    return pickerOptionsFull.filter((o) => {
+      const charaMeta1 = activeRow?.field === 'characterId' ? charaMetaMap[o.itemId] : null
+      if (activeRow?.field === 'characterId') {
+        if (charaWorksFilter && text1(charaMeta1?.worksName) !== charaWorksFilter) return false
+        if (charaIllusFilter && text1(charaMeta1?.illustratorName) !== charaIllusFilter) return false
+      }
+      if (!deferredSearch) return true
+      const extra1 =
+        activeRow?.field === 'characterId'
+          ? `${text1(charaMeta1?.worksName)} ${text1(charaMeta1?.illustratorName)} ${text1(charaMeta1?.defaultImageName)}`
+          : ''
+      return (
+        o.name.toLowerCase().includes(deferredSearch) ||
+        String(o.itemId).includes(deferredSearch) ||
+        extra1.toLowerCase().includes(deferredSearch)
+      )
+    })
+  }, [pickerOptionsFull, deferredSearch, activeRow?.field, charaMetaMap, charaIllusFilter, charaWorksFilter])
 
   const pageSize =
     activeRow && chu3CollectibleHasImage(activeRow.field)
@@ -367,6 +442,8 @@ export function CollectiblesPage() {
   function openModal(field: string) {
     setModalSearch('')
     setModalPage(0)
+    setCharaWorksFilter('')
+    setCharaIllusFilter('')
     if (field === 'characterId') {
       const curCharaId = draft.characterId || numFromUser(user, 'characterId')
       setPickedCharaId(curCharaId > 0 ? curCharaId : null)
@@ -380,6 +457,8 @@ export function CollectiblesPage() {
   function closeModal() {
     setModalField(null)
     setPickedCharaId(null)
+    setCharaWorksFilter('')
+    setCharaIllusFilter('')
   }
 
   const onUnlockAllChange = (on: boolean) => {
@@ -671,52 +750,152 @@ export function CollectiblesPage() {
                 autoFocus
               />
               {activeRow.field === 'characterId' ? (
-                <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px] sm:items-end">
-                  <label className="flex flex-col gap-1">
-                    <Text size="sm">{locale === 'zh' ? '角色等级' : 'Character level'}</Text>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={999}
-                      value={charaLv}
-                      onChange={(e) => setCharaLv(e.target.value)}
-                    />
-                  </label>
-                </div>
-              ) : null}
-              {activeRow.field === 'characterId' ? (
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <Text size="sm" DANGEROUS_className="text-kumo-subtle">
-                    {pickedCharaId == null
-                      ? locale === 'zh'
-                        ? '还没有选中角色'
-                        : 'No character selected yet'
-                      : locale === 'zh'
-                        ? `当前选择：${pickedCharaName}，已有等级 Lv.${pickedCharaLv}`
-                        : `Selected: ${pickedCharaName}, current level Lv.${pickedCharaLv}`}
-                  </Text>
-                  <Button
-                    size="sm"
-                    disabled={pickedCharaId == null || saving || unlockingCharaId != null}
-                    onClick={() => void applyCharacterChoice()}
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Select
+                    value={charaWorksFilter}
+                    onValueChange={(v) => setCharaWorksFilter(String(v ?? ''))}
+                    aria-label={locale === 'zh' ? '所属作品筛选' : 'Works filter'}
                   >
-                    {pickedCharaId == null
-                      ? locale === 'zh'
-                        ? '先选角色'
-                        : 'Pick a character'
-                      : pickedCharaOwned
-                        ? locale === 'zh'
-                          ? '应用等级并选中'
-                          : 'Apply level and select'
-                        : locale === 'zh'
-                          ? '解锁并选中'
-                          : 'Unlock and select'}
-                  </Button>
+                    <Select.Option value="">{locale === 'zh' ? '全部作品' : 'All works'}</Select.Option>
+                    {charaWorksList.map((one1) => (
+                      <Select.Option key={one1} value={one1}>
+                        {one1}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  <Select
+                    value={charaIllusFilter}
+                    onValueChange={(v) => setCharaIllusFilter(String(v ?? ''))}
+                    aria-label={locale === 'zh' ? '画师筛选' : 'Illustrator filter'}
+                  >
+                    <Select.Option value="">{locale === 'zh' ? '全部画师' : 'All illustrators'}</Select.Option>
+                    {charaIllusList.map((one1) => (
+                      <Select.Option key={one1} value={one1}>
+                        {one1}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </div>
               ) : null}
             </div>
 
             <div className="bg-kumo-recessed min-h-0 flex-1 overflow-y-auto px-4 py-4">
+              {activeRow.field === 'characterId' && pickedCharaId != null ? (
+                <div className="mb-4 rounded-xl border border-kumo-border bg-kumo-base p-4">
+                  <div className="grid gap-4 lg:grid-cols-[160px_minmax(0,1fr)]">
+                    <div className="bg-kumo-recessed flex min-h-[160px] items-center justify-center overflow-hidden rounded-xl border border-kumo-border">
+                      {(() => {
+                        const charaImg1 = chu3CollectibleImageUrl('characterId', pickedCharaId)
+                        return charaImg1 ? (
+                          <img
+                            src={charaImg1}
+                            crossOrigin={imgCross1(charaImg1)}
+                            alt=""
+                            className="max-h-full max-w-full object-contain p-2"
+                          />
+                        ) : null
+                      })()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xl font-semibold text-kumo-default">{pickedCharaName}</div>
+                      <div className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                        <div>
+                          <span className="text-kumo-subtle">{locale === 'zh' ? '所属作品' : 'Works'}: </span>
+                          <span>{text1(selectedCharaMeta?.worksName) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-kumo-subtle">{locale === 'zh' ? '画师' : 'Illustrator'}: </span>
+                          <span>{text1(selectedCharaMeta?.illustratorName) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-kumo-subtle">{locale === 'zh' ? '稀有度' : 'Rare'}: </span>
+                          <span>{text1(selectedCharaMeta?.rareType) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-kumo-subtle">{locale === 'zh' ? '排行榜角色' : 'Ranking'}: </span>
+                          <span>{bool1(selectedCharaMeta?.ranking) ? 'Yes' : 'No'}</span>
+                        </div>
+                        <div>
+                          <span className="text-kumo-subtle">ID: </span>
+                          <span>{pickedCharaId}</span>
+                        </div>
+                        <div>
+                          <span className="text-kumo-subtle">{locale === 'zh' ? '默认立绘' : 'Default image'}: </span>
+                          <span>{text1(selectedCharaMeta?.defaultImageName) || text1(selectedCharaMeta?.defaultImageId) || '—'}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-end">
+                        <label className="flex flex-col gap-1">
+                          <Text size="sm">{locale === 'zh' ? '角色等级' : 'Character level'}</Text>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={999}
+                            value={charaLv}
+                            onChange={(e) => setCharaLv(e.target.value)}
+                          />
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            disabled={saving || unlockingCharaId != null}
+                            onClick={() => void applyCharacterChoice()}
+                          >
+                            {pickedCharaOwned
+                              ? locale === 'zh'
+                                ? '应用等级并选中'
+                                : 'Apply level and select'
+                              : locale === 'zh'
+                                ? '解锁并选中'
+                                : 'Unlock and select'}
+                          </Button>
+                          <Text size="sm" DANGEROUS_className="self-center text-kumo-subtle">
+                            {pickedCharaOwned
+                              ? locale === 'zh'
+                                ? `已拥有 Lv.${pickedCharaLv}`
+                                : `Owned Lv.${pickedCharaLv}`
+                              : locale === 'zh'
+                                ? '未拥有'
+                                : 'Locked'}
+                          </Text>
+                        </div>
+                      </div>
+
+                      {Array.isArray(selectedCharaMeta?.addImageList) && selectedCharaMeta.addImageList.length ? (
+                        <div className="mt-4">
+                          <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                            {locale === 'zh' ? '追加立绘' : 'Additional images'}
+                          </Text>
+                          <div className="space-y-1 text-sm text-kumo-subtle">
+                            {selectedCharaMeta.addImageList.slice(0, 8).map((one1, idx1) => (
+                              <div key={idx1}>
+                                {text1(one1.charaName) || text1(one1.imageName) || text1(one1.imageId) || `#${idx1 + 1}`}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {Array.isArray(selectedCharaMeta?.rankRewards) && selectedCharaMeta.rankRewards.length ? (
+                        <div className="mt-4">
+                          <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                            {locale === 'zh' ? 'Rank 奖励' : 'Rank rewards'}
+                          </Text>
+                          <div className="space-y-1 text-sm text-kumo-subtle">
+                            {selectedCharaMeta.rankRewards.slice(0, 8).map((one1, idx1) => (
+                              <div key={idx1}>
+                                Lv.{text1(one1.index) || '?'} · {text1(one1.rewardSkillSeedName) || text1(one1.type) || '—'}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
               {filteredOptions.length === 0 ? (
                 <Text DANGEROUS_className="text-kumo-subtle text-sm">
                   {locale === 'zh' ? '没有匹配的收藏品。' : 'No matches.'}

@@ -3,6 +3,7 @@ import { Button } from '@cloudflare/kumo/components/button'
 import { Checkbox } from '@cloudflare/kumo/components/checkbox'
 import { Input } from '@cloudflare/kumo/components/input'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
+import { Select } from '@cloudflare/kumo/components/select'
 import { Text } from '@cloudflare/kumo/components/text'
 import { chartRating1, diffLabelByIdx1, fmtScore1, formatLv1, playTime1, rank1, score1 } from '../../lib/chu3PlaylogView'
 import { imgCross1 } from '../../lib/imgSign'
@@ -12,6 +13,16 @@ import type { Chu3UserMusicDetail, GamePlayRecord } from '../../lib/types'
 
 const PAGE_SIZE = 12
 const DIFF_IDS1 = [0, 1, 2, 3, 4, 10] as const
+const CHU3_GENRES1 = [
+  'POPS & ANIME',
+  'niconico',
+  '東方Project',
+  'VARIETY',
+  'イロドリミドリ',
+  'ゲキマイ',
+  'ORIGINAL',
+  '自制譜',
+] as const
 
 type SongRow1 = {
   musicId: number
@@ -38,6 +49,33 @@ function showDiff1(meta: MusicMetaLite, bestMap1: Map<number, Chu3UserMusicDetai
   return meta.notes?.[diffId] != null || bestMap1.has(diffId)
 }
 
+function firstGenre1(meta: MusicMetaLite): string {
+  const raw1 = typeof (meta as { genre?: unknown }).genre === 'string' ? (meta as { genre?: string }).genre : ''
+  const g1 = raw1?.trim()
+  if (g1) return g1
+  const list1 = (meta as { genreNames?: unknown }).genreNames
+  if (Array.isArray(list1)) {
+    for (const one1 of list1) {
+      if (typeof one1 === 'string' && one1.trim()) return one1.trim()
+      if (one1 && typeof one1 === 'object') {
+        const name1 = typeof (one1 as { str?: unknown }).str === 'string' ? String((one1 as { str?: unknown }).str) : ''
+        if (name1.trim()) return name1.trim()
+      }
+    }
+  }
+  return ''
+}
+
+function orderedGenres1(rows: SongRow1[]): string[] {
+  const set1 = new Set<string>()
+  rows.forEach((row1) => {
+    const g1 = firstGenre1(row1.meta)
+    if (g1) set1.add(g1)
+  })
+  const extra1 = [...set1].filter((one1) => !CHU3_GENRES1.includes(one1 as (typeof CHU3_GENRES1)[number])).sort()
+  return [...CHU3_GENRES1.filter((one1) => set1.has(one1)), ...extra1]
+}
+
 export function Chu3MusicLibrary({
   musicById,
   detailRows,
@@ -55,6 +93,7 @@ export function Chu3MusicLibrary({
 }) {
   const [key1, setKey1] = useState('')
   const [onlyPlayed1, setOnlyPlayed1] = useState(false)
+  const [genre1, setGenre1] = useState('')
   const [page1, setPage1] = useState(1)
   const [pickMusicId1, setPickMusicId1] = useState<number | null>(null)
   const keySlow1 = useDeferredValue(key1.trim().toLowerCase())
@@ -112,10 +151,13 @@ export function Chu3MusicLibrary({
   const filtered1 = useMemo(() => {
     return rows1.filter((row1) => {
       if (onlyPlayed1 && row1.playCount1 <= 0) return false
+      if (genre1 && firstGenre1(row1.meta) !== genre1) return false
       if (!keySlow1) return true
       return row1.search1.includes(keySlow1)
     })
-  }, [keySlow1, onlyPlayed1, rows1])
+  }, [genre1, keySlow1, onlyPlayed1, rows1])
+
+  const genreList1 = useMemo(() => orderedGenres1(rows1), [rows1])
 
   const totalPage1 = Math.max(1, Math.ceil(filtered1.length / PAGE_SIZE))
   const list1 = filtered1.slice((page1 - 1) * PAGE_SIZE, page1 * PAGE_SIZE)
@@ -134,7 +176,7 @@ export function Chu3MusicLibrary({
 
   useEffect(() => {
     setPage1(1)
-  }, [keySlow1, onlyPlayed1])
+  }, [genre1, keySlow1, onlyPlayed1])
 
   useEffect(() => {
     if (page1 > totalPage1) setPage1(totalPage1)
@@ -158,6 +200,14 @@ export function Chu3MusicLibrary({
             <Text variant="heading3">{locale === 'zh' ? '乐曲列表' : 'Song list'}</Text>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Input value={key1} onChange={(e) => setKey1(e.target.value)} placeholder={locale === 'zh' ? '搜索歌曲 / 作曲 / ID' : 'Search song / composer / ID'} />
+              <Select value={genre1} onValueChange={(value1) => setGenre1(String(value1 ?? ''))} aria-label={locale === 'zh' ? '分类筛选' : 'Genre filter'}>
+                <Select.Option value="">{locale === 'zh' ? '全部分类' : 'All genres'}</Select.Option>
+                {genreList1.map((one1) => (
+                  <Select.Option key={one1} value={one1}>
+                    {one1}
+                  </Select.Option>
+                ))}
+              </Select>
               <Checkbox controlFirst checked={onlyPlayed1} onCheckedChange={setOnlyPlayed1} label={locale === 'zh' ? '只看有记录' : 'Only played'} />
             </div>
           </div>
@@ -203,6 +253,10 @@ export function Chu3MusicLibrary({
                       </div>
                       <div className="mt-1 truncate text-base font-semibold">{row1.meta.name ?? `Music ${row1.musicId}`}</div>
                       <div className="text-kumo-subtle mt-1 truncate text-sm">{row1.meta.composer || (locale === 'zh' ? '未知作曲' : 'Unknown composer')}</div>
+                      <div className="text-kumo-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                        {row1.meta.ver ? <span>{row1.meta.ver}</span> : null}
+                        {firstGenre1(row1.meta) ? <span>{firstGenre1(row1.meta)}</span> : null}
+                      </div>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {DIFF_IDS1.filter((diffId1) => showDiff1(row1.meta, row1.bestMap1, diffId1)).map((idx1) => (
                           <span key={`${row1.musicId}-${idx1}`} className="rounded-full bg-kumo-background px-2 py-1 text-xs">
@@ -232,7 +286,10 @@ export function Chu3MusicLibrary({
                   {picked1.meta.name ?? `Music ${picked1.musicId}`}
                 </Text>
                 <Text DANGEROUS_className="text-kumo-subtle mt-2 text-sm">{picked1.meta.composer || (locale === 'zh' ? '未知作曲' : 'Unknown composer')}</Text>
-                <Text DANGEROUS_className="text-kumo-subtle mt-1 text-sm">{picked1.meta.ver || '—'}</Text>
+                <div className="text-kumo-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                  {picked1.meta.ver ? <span>{picked1.meta.ver}</span> : null}
+                  {firstGenre1(picked1.meta) ? <span>{firstGenre1(picked1.meta)}</span> : null}
+                </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-kumo-fill px-2 py-1">{locale === 'zh' ? `总游玩 ${picked1.playCount1}` : `Plays ${picked1.playCount1}`}</span>
                 </div>
