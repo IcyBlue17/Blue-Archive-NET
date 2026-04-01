@@ -151,7 +151,7 @@ export function parseComposition(
     mult,
     rank,
     difficulty: diff,
-    img: musicJacketUrl(game, musicId, game === 'chu3'),
+    img: musicJacketUrl(game, musicId),
     ratingChange: calcDxChange(),
   }
 }
