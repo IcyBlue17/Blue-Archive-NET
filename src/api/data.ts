@@ -4,6 +4,7 @@ import type { GameName } from '../lib/types'
 import { publicFetchJson } from './client'
 
 export async function allMusic(game: GameName) {
+  if (game === 'chu3') return publicFetchJson(chu3AssetUrl1('d/chu3/00/all-music.json'))
   return publicFetchJson(dataUrl(`/d/${game}/00/all-music.json`).toString())
 }
 
