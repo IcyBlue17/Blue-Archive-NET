@@ -131,12 +131,7 @@ export function Chu3MusicLibrary({
       <LayerCard className="p-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <Text variant="heading3">{locale === 'zh' ? '乐曲列表' : 'Song list'}</Text>
-              <Text DANGEROUS_className="text-kumo-subtle mt-1 text-sm">
-                {locale === 'zh' ? `共 ${filtered1.length} 首乐曲` : `${filtered1.length} songs`}
-              </Text>
-            </div>
+            <Text variant="heading3">{locale === 'zh' ? '乐曲列表' : 'Song list'}</Text>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Input value={key1} onChange={(e) => setKey1(e.target.value)} placeholder={locale === 'zh' ? '搜索歌曲 / 作曲 / ID' : 'Search song / composer / ID'} />
               <Checkbox controlFirst checked={onlyPlayed1} onCheckedChange={setOnlyPlayed1} label={locale === 'zh' ? '只看有记录' : 'Only played'} />

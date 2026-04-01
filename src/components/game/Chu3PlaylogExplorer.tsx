@@ -120,10 +120,7 @@ export function Chu3PlaylogExplorer({
       <LayerCard className="p-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <Text variant="heading3">{locale === 'zh' ? '游玩记录' : 'Play history'}</Text>
-              <Text DANGEROUS_className="text-kumo-subtle mt-1 text-sm">{locale === 'zh' ? `共 ${filtered1.length} 条记录` : `${filtered1.length} records`}</Text>
-            </div>
+            <Text variant="heading3">{locale === 'zh' ? '游玩记录' : 'Play history'}</Text>
             <Input value={key1} onChange={(e) => setKey1(e.target.value)} placeholder={locale === 'zh' ? '搜索歌曲 / 时间 / ID' : 'Search song / time / ID'} />
           </div>
 
