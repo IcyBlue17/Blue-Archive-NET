@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useKumoToastManager } from '@cloudflare/kumo'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
-import { Select } from '@cloudflare/kumo/components/select'
 import { Switch } from '@cloudflare/kumo/components/switch'
 import { Text } from '@cloudflare/kumo/components/text'
 import { PageHeader } from '../../components/common/PageHeader'
@@ -373,7 +372,7 @@ export function CollectiblesPage() {
         lv: cleanText1(one1.index),
         reward: cleanText1(one1.rewardSkillSeedName),
       }))
-      .filter((one1) => !!one1.reward)
+      .filter((one1) => !!one1.reward && !one1.reward.startsWith('[OTHER]'))
   }, [selectedCharaMeta])
   const charaWorksList = useMemo(() => {
     if (activeRow?.field !== 'characterId') return [] as string[]
@@ -739,37 +738,37 @@ export function CollectiblesPage() {
             </div>
 
             <div className="border-kumo-border bg-kumo-base shrink-0 border-b px-4 py-3">
-              <label className="text-kumo-subtle mb-1 block text-xs">
-                {locale === 'zh' ? '搜索名称或 ID' : 'Search name or ID'}
-              </label>
-              <Input
-                value={modalSearch}
-                onChange={(e) => setModalSearch(e.target.value)}
-                placeholder={locale === 'zh' ? '搜索…' : 'Search…'}
-                autoFocus
-              />
-              {activeRow.field === 'characterId' ? (
-                <div className="mt-3">
-                  <div className="relative z-[70]">
-                    <Text size="sm" DANGEROUS_className="mb-1 block">
-                      {locale === 'zh' ? '所属作品' : 'Works'}
-                    </Text>
-                    <Select
-                      className="h-11"
+              <div className={`grid gap-3 ${activeRow.field === 'characterId' ? 'md:grid-cols-[minmax(0,1fr)_220px]' : ''}`}>
+                <label className="flex flex-col gap-1">
+                  <span className="text-kumo-subtle text-xs">
+                    {locale === 'zh' ? '搜索名称或 ID' : 'Search name or ID'}
+                  </span>
+                  <Input
+                    value={modalSearch}
+                    onChange={(e) => setModalSearch(e.target.value)}
+                    placeholder={locale === 'zh' ? '搜索…' : 'Search…'}
+                    autoFocus
+                  />
+                </label>
+                {activeRow.field === 'characterId' ? (
+                  <label className="flex flex-col gap-1">
+                    <Text size="sm">{locale === 'zh' ? '所属作品' : 'Works'}</Text>
+                    <select
                       value={charaWorksFilter}
-                      onValueChange={(v) => setCharaWorksFilter(String(v ?? ''))}
+                      onChange={(e) => setCharaWorksFilter(e.target.value)}
+                      className="border-kumo-border bg-kumo-base h-11 rounded-xl border px-3 text-sm text-kumo-default"
                       aria-label={locale === 'zh' ? '所属作品筛选' : 'Works filter'}
                     >
-                      <Select.Option value="">{locale === 'zh' ? '全部作品' : 'All works'}</Select.Option>
+                      <option value="">{locale === 'zh' ? '全部作品' : 'All works'}</option>
                       {charaWorksList.map((one1) => (
-                        <Select.Option key={one1} value={one1}>
+                        <option key={one1} value={one1}>
                           {one1}
-                        </Select.Option>
+                        </option>
                       ))}
-                    </Select>
-                  </div>
-                </div>
-              ) : null}
+                    </select>
+                  </label>
+                ) : null}
+              </div>
             </div>
 
             <div className="bg-kumo-recessed min-h-0 flex-1 overflow-y-auto px-4 py-4">
