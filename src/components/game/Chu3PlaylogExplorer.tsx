@@ -166,7 +166,7 @@ export function Chu3PlaylogExplorer({
                       <div className="truncate font-semibold">{meta1.name ?? `Music ${row1.musicId}`}</div>
                       <div className="text-kumo-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                         <span>{diffLabel1(row1.level, meta1)}</span>
-                        <span>Lv {formatLv1(meta1, row1.level === 10 ? 0 : row1.level)}</span>
+                        <span>Lv {formatLv1(meta1, row1.level)}</span>
                         <span>{fmtScore1(scoreNow2)}</span>
                         <span>{rank1(scoreNow2)}</span>
                       </div>
@@ -195,7 +195,7 @@ export function Chu3PlaylogExplorer({
                 <Text DANGEROUS_className="text-kumo-subtle mt-1 text-sm">{meta1?.composer || (locale === 'zh' ? '未知作曲' : 'Unknown composer')}</Text>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-kumo-fill px-2 py-1">{diffLabel1(row1.level, meta1)}</span>
-                  <span className="rounded-full bg-kumo-fill px-2 py-1">Lv {formatLv1(meta1, row1.level === 10 ? 0 : row1.level)}</span>
+                  <span className="rounded-full bg-kumo-fill px-2 py-1">Lv {formatLv1(meta1, row1.level)}</span>
                   <span className="rounded-full bg-kumo-fill px-2 py-1">{fmtTime1(playTime1(row1), locale)}</span>
                 </div>
               </div>
@@ -216,7 +216,6 @@ export function Chu3PlaylogExplorer({
 
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
               {row1.isNewRecord ? <span className="rounded-full bg-pink-500/15 px-2 py-1 text-pink-700 dark:text-pink-300">New Record</span> : null}
-              {row1.isAllPerfect ? <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-emerald-700 dark:text-emerald-300">AP</span> : null}
               {row1.isAllJustice ? <span className="rounded-full bg-sky-500/15 px-2 py-1 text-sky-700 dark:text-sky-300">AJ</span> : null}
               {row1.isFullCombo ? <span className="rounded-full bg-kumo-accent/15 px-2 py-1 text-kumo-accent">FC</span> : null}
               {row1.isClear ? <span className="rounded-full bg-kumo-fill px-2 py-1">{locale === 'zh' ? '通关' : 'Clear'}</span> : null}

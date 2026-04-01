@@ -36,6 +36,5 @@ export const qk = {
   gameAllMusic: (game: GameName) => ['game-all-music', game] as const,
   gameLibrary: (username: string, game: GameName) => ['game-library', username, game] as const,
   gamePlaylog: (username: string, game: GameName) => ['game-playlog', username, game] as const,
-  gamePlaylogDetail: (game: GameName, id: number) => ['game-playlog-detail', game, id] as const,
   collectiblesChu3: ['collectibles', 'chu3'] as const,
 }

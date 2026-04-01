@@ -230,14 +230,15 @@ export function GameDashboardPage() {
                 <LayerCard.Secondary>提示</LayerCard.Secondary>
                 <p className="text-kumo-subtle mt-2 text-sm">{songErr1}</p>
               </LayerCard>
-            ) : null}
-            <Chu3MusicLibrary
-              musicById={musicById1}
-              detailRows={songQuery1.data ?? []}
-              loading={showSongsLoading1}
-              error={null}
-              locale={loc1}
-            />
+            ) : (
+              <Chu3MusicLibrary
+                musicById={musicById1}
+                detailRows={songQuery1.data ?? []}
+                loading={showSongsLoading1}
+                error={songErr1}
+                locale={loc1}
+              />
+            )}
           </>
         )
       ) : null}
@@ -252,14 +253,15 @@ export function GameDashboardPage() {
                 <LayerCard.Secondary>提示</LayerCard.Secondary>
                 <p className="text-kumo-subtle mt-2 text-sm">{playErr1}</p>
               </LayerCard>
-            ) : null}
-            <Chu3PlaylogExplorer
-              musicById={musicById1}
-              records={playQuery1.data ?? []}
-              loading={showPlaysLoading1}
-              error={null}
-              locale={loc1}
-            />
+            ) : (
+              <Chu3PlaylogExplorer
+                musicById={musicById1}
+                records={playQuery1.data ?? []}
+                loading={showPlaysLoading1}
+                error={playErr1}
+                locale={loc1}
+              />
+            )}
           </>
         )
       ) : null}
