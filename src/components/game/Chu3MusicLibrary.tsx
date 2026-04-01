@@ -10,7 +10,7 @@ import { musicJacketUrl } from '../../lib/musicCover'
 import type { MusicMetaLite } from '../../lib/scoring'
 import type { Chu3UserMusicDetail, GamePlayRecord } from '../../lib/types'
 
-const PAGE_SIZE = 18
+const PAGE_SIZE = 12
 const DIFF_IDS1 = [0, 1, 2, 3, 4, 10] as const
 
 type SongRow1 = {
@@ -148,8 +148,8 @@ export function Chu3MusicLibrary({
   const pickCover1 = picked1 ? musicJacketUrl('chu3', picked1.musicId) : ''
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(340px,0.9fr)]">
-      <LayerCard className="p-4">
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.9fr)]">
+      <LayerCard className="min-w-0 p-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <Text variant="heading3">{locale === 'zh' ? '乐曲列表' : 'Song list'}</Text>
@@ -192,7 +192,7 @@ export function Chu3MusicLibrary({
                   }`}
                 >
                   <div className="flex gap-3">
-                    <img src={cover1} crossOrigin={imgCross1(cover1)} alt="" width={72} height={72} loading="lazy" decoding="async" className="h-[72px] w-[72px] shrink-0 rounded-lg object-cover" />
+                    <img src={cover1} crossOrigin={imgCross1(cover1)} alt="" width={60} height={60} loading="lazy" decoding="async" className="h-[60px] w-[60px] shrink-0 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-kumo-subtle text-xs">#{row1.musicId}</span>
@@ -218,7 +218,7 @@ export function Chu3MusicLibrary({
         </div>
       </LayerCard>
 
-      <LayerCard className="p-4">
+      <LayerCard className="min-w-0 p-4">
         {picked1 ? (
           <>
             <div className="flex gap-4">
@@ -259,7 +259,7 @@ export function Chu3MusicLibrary({
                     {best1 ? (
                       <div className="mt-3 space-y-2">
                         <div className="rounded-lg bg-kumo-surface-secondary/50 p-3">
-                          <div className="grid grid-cols-[96px_1fr] gap-2 text-sm">
+                          <div className="grid grid-cols-[84px_1fr] gap-2 text-sm sm:grid-cols-[96px_1fr]">
                             <div className="text-kumo-subtle">{locale === 'zh' ? '最好成绩' : 'Best score'}</div>
                             <div className="font-semibold">{fmtScore1(scoreNow1)} · {rank1(scoreNow1)}</div>
                             <div className="text-kumo-subtle">{locale === 'zh' ? '单曲 Rating' : 'Chart rating'}</div>

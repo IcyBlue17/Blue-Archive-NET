@@ -76,7 +76,26 @@ export function fmtRate1(raw?: number): string {
 
 export function fmtTime1(raw: string, locale: 'zh' | 'en'): string {
   if (!raw) return '—'
-  const d1 = new Date(raw)
+  const hasTz1 = /(z|[+-]\d{2}:?\d{2})$/i.test(raw.trim())
+  let d1 = hasTz1 ? new Date(raw) : new Date(Number.NaN)
+  if (Number.isNaN(d1.getTime())) {
+    const m1 = raw.trim().match(
+      /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[ t](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/i,
+    )
+    if (m1) {
+      const [, yy1, mm1, dd1, hh1 = '0', mi1 = '0', ss1 = '0'] = m1
+      d1 = new Date(
+        Date.UTC(
+          Number(yy1),
+          Number(mm1) - 1,
+          Number(dd1),
+          Number(hh1) - 9,
+          Number(mi1),
+          Number(ss1),
+        ),
+      )
+    }
+  }
   if (Number.isNaN(d1.getTime())) return raw
   return d1.toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US')
 }

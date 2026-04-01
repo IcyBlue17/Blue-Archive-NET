@@ -9,7 +9,7 @@ import { musicJacketUrl } from '../../lib/musicCover'
 import type { MusicMetaLite } from '../../lib/scoring'
 import type { GamePlayRecord } from '../../lib/types'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 12
 
 function pageNums1(page: number, total: number): number[] {
   const start1 = Math.max(1, page - 2)
@@ -127,8 +127,8 @@ export function Chu3PlaylogExplorer({
     : []
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.95fr)]">
-      <LayerCard className="p-4">
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.32fr)_minmax(320px,0.88fr)]">
+      <LayerCard className="min-w-0 p-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <Text variant="heading3">{locale === 'zh' ? '游玩记录' : 'Play history'}</Text>
@@ -169,7 +169,7 @@ export function Chu3PlaylogExplorer({
                   }`}
                 >
                   <div className="flex gap-3">
-                    <img src={cover2} crossOrigin={imgCross1(cover2)} alt="" width={64} height={64} loading="lazy" decoding="async" className="h-16 w-16 shrink-0 rounded-lg object-cover" />
+                    <img src={cover2} crossOrigin={imgCross1(cover2)} alt="" width={56} height={56} loading="lazy" decoding="async" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-semibold">{meta1.name ?? `Music ${row1.musicId}`}</div>
                       <div className="text-kumo-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
@@ -190,7 +190,7 @@ export function Chu3PlaylogExplorer({
         </div>
       </LayerCard>
 
-      <LayerCard className="p-4 xl:self-start">
+      <LayerCard className="min-w-0 p-4 xl:self-start">
         {row1 ? (
           <>
             <div className="flex gap-3">
@@ -211,7 +211,7 @@ export function Chu3PlaylogExplorer({
 
             <div className="border-kumo-border mt-4 overflow-hidden rounded-xl border">
               {infoRows1.map((item1) => (
-                <div key={item1.label} className="border-kumo-border grid grid-cols-[130px_1fr] gap-3 border-b px-3 py-2 text-sm last:border-b-0">
+                <div key={item1.label} className="border-kumo-border grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
                   <div className="text-kumo-subtle">{item1.label}</div>
                   <div className="font-medium text-kumo-text">{item1.value}</div>
                 </div>
@@ -231,7 +231,7 @@ export function Chu3PlaylogExplorer({
               <Text DANGEROUS_className="mb-2 text-sm font-medium">{locale === 'zh' ? '判定统计' : 'Judge counts'}</Text>
               <div className="border-kumo-border overflow-hidden rounded-xl border">
                 {judgeRows1.map((item1) => (
-                  <div key={item1.label} className="border-kumo-border grid grid-cols-[130px_1fr] gap-3 border-b px-3 py-2 text-sm last:border-b-0">
+                  <div key={item1.label} className="border-kumo-border grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
                     <div className="text-kumo-subtle">{item1.label}</div>
                     <div className="font-medium text-kumo-text">{item1.value ?? '—'}</div>
                   </div>
@@ -243,7 +243,7 @@ export function Chu3PlaylogExplorer({
               <Text DANGEROUS_className="mb-2 text-sm font-medium">{locale === 'zh' ? '各键型比率' : 'Lane rates'}</Text>
               <div className="border-kumo-border overflow-hidden rounded-xl border">
                 {rateRows1.map((item1) => (
-                  <div key={item1.label} className="border-kumo-border grid grid-cols-[130px_1fr] gap-3 border-b px-3 py-2 text-sm last:border-b-0">
+                  <div key={item1.label} className="border-kumo-border grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
                     <div className="text-kumo-subtle">{item1.label}</div>
                     <div className="font-medium text-kumo-text">{fmtRate1(item1.value)}</div>
                   </div>
