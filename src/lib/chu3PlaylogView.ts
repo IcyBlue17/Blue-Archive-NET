@@ -46,8 +46,10 @@ export function chartRating1(meta: MusicMetaLite | undefined, level: number, row
 }
 
 export function diffLabel1(level: number, meta?: MusicMetaLite): string {
-  if (level === 10 || (meta?.worldsEndTag && meta.worldsEndTag !== 'Invalid' && (meta.notes?.length ?? 0) <= 1)) {
-    return meta?.worldsEndTag ? `WE ${meta.worldsEndTag}` : 'WE'
+  const tag1 = meta?.worldsEndTag?.trim()
+  const goodTag1 = tag1 && tag1 !== 'Invalid' ? tag1 : ''
+  if (level === 10 || (goodTag1 && (meta?.notes?.length ?? 0) <= 1)) {
+    return goodTag1 ? `WE ${goodTag1}` : 'WE'
   }
   return CHU3_DIFFS[noteIdx1(level)] ?? `#${level}`
 }
@@ -57,7 +59,10 @@ export function diffLabelByIdx1(idx: number, meta?: MusicMetaLite): string {
 }
 
 export function formatLv1(meta: MusicMetaLite | undefined, idx: number): string {
-  if (idx === 10) return meta?.worldsEndTag || 'WE'
+  if (idx === 10) {
+    const tag1 = meta?.worldsEndTag?.trim()
+    return tag1 && tag1 !== 'Invalid' ? tag1 : 'WE'
+  }
   const raw1 = meta?.notes?.[idx]?.lv
   const lv1 = Number(raw1)
   if (!Number.isFinite(lv1)) return '—'

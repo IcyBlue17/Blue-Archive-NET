@@ -31,7 +31,10 @@ function pageNums1(page: number, total: number): number[] {
 }
 
 function showDiff1(meta: MusicMetaLite, bestMap1: Map<number, Chu3UserMusicDetail>, diffId: number) {
-  if (diffId === 10) return !!meta.worldsEndTag || bestMap1.has(10)
+  if (diffId === 10) {
+    const tag1 = meta.worldsEndTag?.trim()
+    return (tag1 != null && tag1 !== '' && tag1 !== 'Invalid') || bestMap1.has(10)
+  }
   return meta.notes?.[diffId] != null || bestMap1.has(diffId)
 }
 
@@ -241,7 +244,7 @@ export function Chu3MusicLibrary({
                 const best1 = picked1.bestMap1.get(idx1)
                 const bestPlay1 = picked1.bestPlayMap1.get(idx1)
                 const scoreNow1 = Number(best1?.scoreMax ?? 0)
-                const chartRt1 = best1 ? chartRating1(picked1.meta, idx1, bestPlay1 ?? { score: scoreNow1 }) : '—'
+                const chartRt1 = best1 ? chartRating1(picked1.meta, idx1, { score: scoreNow1 }) : '—'
                 return (
                   <div key={`${picked1.musicId}-${idx1}`} className="border-kumo-border rounded-xl border p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
