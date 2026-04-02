@@ -7,11 +7,18 @@ import { imgUrl1 } from './imgSign'
  */
 
 export type Chu3JsonEntry = { id: number; name: string; category?: number }
+export type Chu3StageJsonEntry = {
+  stageId: number
+  name?: string | null
+  imagePath?: string | null
+  isEnabled: boolean
+  defaultHave: boolean
+}
 export type Chu3AllItemMeta = { name?: string; imagePath?: string | null }
 export type Chu3AllItems = Record<string, Record<string, Chu3AllItemMeta>>
 
-const resolvedCache = new Map<string, Chu3JsonEntry[]>()
-const inflight = new Map<string, Promise<Chu3JsonEntry[]>>()
+const resolvedCache = new Map<string, unknown>()
+const inflight = new Map<string, Promise<unknown>>()
 
 function fixBase1(raw: unknown): string {
   const s1 = String(raw ?? '').trim()
@@ -115,16 +122,15 @@ export function chu3CollectibleHasImage(field: string): boolean {
   return FIELD_IMAGE[field] != null
 }
 
-export async function fetchChu3AssetJson(jsonFile: string): Promise<Chu3JsonEntry[]> {
-  const cached = resolvedCache.get(jsonFile)
-  if (cached) return cached
-  let p = inflight.get(jsonFile)
+export async function fetchChu3AssetJson<T = Chu3JsonEntry[]>(jsonFile: string): Promise<T> {
+  if (resolvedCache.has(jsonFile)) return resolvedCache.get(jsonFile) as T
+  let p = inflight.get(jsonFile) as Promise<T> | undefined
   if (!p) {
     p = (async () => {
       try {
         const res = await fetch(chu3AssetUrl1(jsonFile))
         if (!res.ok) throw new Error(`chu3-assets: failed to load ${jsonFile} (${res.status})`)
-        const data = (await res.json()) as Chu3JsonEntry[]
+        const data = (await res.json()) as T
         resolvedCache.set(jsonFile, data)
         return data
       } finally {
@@ -134,6 +140,10 @@ export async function fetchChu3AssetJson(jsonFile: string): Promise<Chu3JsonEntr
     inflight.set(jsonFile, p)
   }
   return p
+}
+
+export async function loadChu3StageCatalog(): Promise<Chu3StageJsonEntry[]> {
+  return fetchChu3AssetJson<Chu3StageJsonEntry[]>('stage.json')
 }
 
 /** 名称查找：名牌 / 称号 / 地图图标 / 系统语音 / 企鹅部件（avatar 全表按 id） */
@@ -315,7 +325,7 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
     key: 'stage',
     field: 'stageId',
     labelZh: '舞台',
-    jsonFile: null,
+    jsonFile: 'stage.json',
     hasImage: true,
     imageDir: 'stage',
     imagePrefix: 'CHU_UI_Stage_',

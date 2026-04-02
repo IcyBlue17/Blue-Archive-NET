@@ -185,16 +185,6 @@ export interface GenericGameSummary {
   stageId?: number
 }
 
-export interface Chu3GameStage {
-  id: number
-  version: number
-  stageId: number
-  name?: string | null
-  imagePath?: string | null
-  isEnabled: boolean
-  defaultHave: boolean
-}
-
 export interface Chu3RivalEntry {
   rivalExtId: number
   userName: string

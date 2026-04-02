@@ -18,8 +18,10 @@ import {
   chu3CollectibleHasImage,
   chu3CollectibleImageUrl,
   loadChu3CatalogBundle,
+  loadChu3StageCatalog,
   type Chu3CatalogBundle,
   type Chu3NameLookups,
+  type Chu3StageJsonEntry,
 } from '../../lib/chu3Assets'
 import { imgCross1 } from '../../lib/imgSign'
 import {
@@ -32,7 +34,6 @@ import {
   type Chu3UserboxSelectRow,
 } from '../../lib/chu3Userbox'
 import { useI18n } from '../../lib/i18n'
-import type { Chu3GameStage } from '../../lib/types'
 
 const UNLOCK_ALL_STORAGE_KEY = 'chu3-collectibles-unlock-all'
 
@@ -151,25 +152,30 @@ function draftFromUser(u: Record<string, unknown>): Record<string, number> {
 
 function mergeStageItems1(
   allItems: Chu3AllItems,
-  stageRows: Chu3GameStage[],
+  stageRows: Chu3StageJsonEntry[],
 ): Chu3AllItems {
   if (!stageRows.length) return allItems
   const stage1 = { ...(allItems.stage ?? {}) }
   let dirty1 = !allItems.stage
   for (const row1 of stageRows) {
-    const id1 = row1.stageId
+    const id1 =
+      typeof row1.stageId === 'number' ? row1.stageId : parseInt(String(row1.stageId), 10)
     if (!Number.isFinite(id1) || id1 <= 0) continue
-    const name1 = typeof row1.name === 'string' && row1.name.trim() ? row1.name.trim() : `Stage ${id1}`
-    const imagePath1 =
-      typeof row1.imagePath === 'string' && row1.imagePath.trim() ? row1.imagePath.trim().replace(/^\/+/, '') : null
     const old1 = stage1[String(id1)]
+    const oldName1 = typeof old1?.name === 'string' ? old1.name.trim() : ''
+    const oldImg1 = typeof old1?.imagePath === 'string' && old1.imagePath.trim() ? old1.imagePath.trim() : null
+    const name1 = typeof row1.name === 'string' && row1.name.trim() ? row1.name.trim() : oldName1 || `Stage ${id1}`
+    const imagePath1 =
+      typeof row1.imagePath === 'string' && row1.imagePath.trim()
+        ? row1.imagePath.trim().replace(/^\/+/, '')
+        : oldImg1
     const next1 = { ...old1 }
     let rowDirty1 = false
-    if (!old1?.name || !old1.name.trim()) {
+    if (next1.name !== name1) {
       next1.name = name1
       rowDirty1 = true
     }
-    if (imagePath1 && old1?.imagePath !== imagePath1) {
+    if ((next1.imagePath ?? null) !== imagePath1) {
       next1.imagePath = imagePath1
       rowDirty1 = true
     }
@@ -327,11 +333,11 @@ export function CollectiblesPage() {
     queryKey: qk.collectiblesChu3,
     placeholderData: (old) => old,
     queryFn: async () => {
-      const [box, allRaw, bundle, stageRes] = await Promise.all([
+      const [box, allRaw, bundle, stageRows] = await Promise.all([
         gameApi.userBox(),
         dataApi.allItems('chu3'),
         loadChu3CatalogBundle(),
-        gameApi.chu3StageList(),
+        loadChu3StageCatalog(),
       ])
       const items = (box.items ?? []) as Chu3UserItem[]
       const u = (box.user ?? {}) as Record<string, unknown>
@@ -355,7 +361,7 @@ export function CollectiblesPage() {
       }
       const equippedChar = numFromUser(u, 'characterId')
       const ai0 = allRaw as Chu3AllItems
-      const ai = mergeStageItems1(ai0, stageRes.gameStageList ?? [])
+      const ai = mergeStageItems1(ai0, stageRows)
       return {
         allItems: ai,
         user: u,
