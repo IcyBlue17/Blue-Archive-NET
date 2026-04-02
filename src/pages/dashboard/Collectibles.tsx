@@ -14,6 +14,7 @@ import { qk } from '../../lib/query'
 import {
   buildChu3CatalogOptions,
   bundleToLookups,
+  type Chu3AllItems,
   chu3CollectibleHasImage,
   chu3CollectibleImageUrl,
   loadChu3CatalogBundle,
@@ -31,13 +32,12 @@ import {
   type Chu3UserboxSelectRow,
 } from '../../lib/chu3Userbox'
 import { useI18n } from '../../lib/i18n'
+import type { Chu3GameStage } from '../../lib/types'
 
 const UNLOCK_ALL_STORAGE_KEY = 'chu3-collectibles-unlock-all'
 
-/** 本页不展示舞台和边框（网页侧没必要改） */
-const COLLECTIBLES_FIELD_ORDER = CHU3_APPEARANCE_FIELD_ORDER.filter(
-  (f) => f !== 'stageId' && f !== 'frameId',
-)
+/** 本页不展示边框（网页侧没必要改） */
+const COLLECTIBLES_FIELD_ORDER = CHU3_APPEARANCE_FIELD_ORDER.filter((f) => f !== 'frameId')
 
 /** 无 webp 预览：不占大图位、不显示「无预览图」 */
 const TEXT_ONLY_PREVIEW_FIELDS = new Set([
@@ -55,6 +55,7 @@ const CHU3_LABELS_EN: Record<string, string> = {
   trophyIdSub2: 'Title 3',
   mapIconId: 'Map icon',
   voiceId: 'System voice',
+  stageId: 'Stage',
   avatarWear: 'Avatar outfit',
   avatarHead: 'Avatar head',
   avatarFace: 'Avatar face',
@@ -75,7 +76,7 @@ function buildAllCollectibleRows(
   items: Chu3UserItem[],
   charIds: number[],
   equippedChar: number,
-  allItems: Record<string, Record<string, { name?: string }>>,
+  allItems: Chu3AllItems,
   u: Record<string, unknown>,
 ): Chu3UserboxSelectRow[] {
   const base = buildChu3AppearanceSelectRows(items, charIds, equippedChar, allItems)
@@ -96,7 +97,7 @@ function buildAllCollectibleRows(
 function resolveCollectibleName(
   field: string,
   itemId: number,
-  allItems: Record<string, Record<string, { name?: string }>>,
+  allItems: Chu3AllItems,
   lookups: Chu3NameLookups | null,
 ): string {
   if (itemId < 0) return '—'
@@ -148,6 +149,37 @@ function draftFromUser(u: Record<string, unknown>): Record<string, number> {
   return d
 }
 
+function mergeStageItems1(
+  allItems: Chu3AllItems,
+  stageRows: Chu3GameStage[],
+): Chu3AllItems {
+  if (!stageRows.length) return allItems
+  const stage1 = { ...(allItems.stage ?? {}) }
+  let dirty1 = !allItems.stage
+  for (const row1 of stageRows) {
+    const id1 = row1.stageId
+    if (!Number.isFinite(id1) || id1 <= 0) continue
+    const name1 = typeof row1.name === 'string' && row1.name.trim() ? row1.name.trim() : `Stage ${id1}`
+    const imagePath1 =
+      typeof row1.imagePath === 'string' && row1.imagePath.trim() ? row1.imagePath.trim().replace(/^\/+/, '') : null
+    const old1 = stage1[String(id1)]
+    const next1 = { ...old1 }
+    let rowDirty1 = false
+    if (!old1?.name || !old1.name.trim()) {
+      next1.name = name1
+      rowDirty1 = true
+    }
+    if (imagePath1 && old1?.imagePath !== imagePath1) {
+      next1.imagePath = imagePath1
+      rowDirty1 = true
+    }
+    if (!rowDirty1) continue
+    stage1[String(id1)] = next1
+    dirty1 = true
+  }
+  return dirty1 ? { ...allItems, stage: stage1 } : allItems
+}
+
 /** 0-based page indices + ellipsis markers for pagination bar */
 function buildPaginationItems(current: number, total: number): (number | 'ellipsis')[] {
   if (total <= 1) return []
@@ -169,12 +201,16 @@ function buildPaginationItems(current: number, total: number): (number | 'ellips
   return out
 }
 
+function isWidePreviewField1(field: string): boolean {
+  return field === 'nameplateId' || field === 'stageId'
+}
+
 type Chu3CollectibleLoad = {
   lockedRows: Chu3UserboxSelectRow[]
   catalogBundle: Chu3CatalogBundle
   user: Record<string, unknown>
   draft: Record<string, number>
-  allItems: Record<string, Record<string, { name?: string }>>
+  allItems: Chu3AllItems
   lookups: Chu3NameLookups
   ownedCharacters: number[]
   ownedCharacterLvs: Record<number, number>
@@ -215,7 +251,7 @@ function rewardText1(v: unknown): string {
   return s1
 }
 
-function charaMetaMap1(allItems: Record<string, Record<string, { name?: string }>>): Record<number, Chu3CharacterMeta> {
+function charaMetaMap1(allItems: Chu3AllItems): Record<number, Chu3CharacterMeta> {
   const raw1 = allItems.chara as Record<string, Chu3CharacterMeta> | undefined
   const out1: Record<number, Chu3CharacterMeta> = {}
   if (!raw1) return out1
@@ -234,7 +270,7 @@ export function CollectiblesPage() {
   const [catalogBundle, setCatalogBundle] = useState<Chu3CatalogBundle | null>(null)
   const [user, setUser] = useState<Record<string, unknown>>({})
   const [draft, setDraft] = useState<Record<string, number>>(() => draftFromUser({}))
-  const [allItems, setAllItems] = useState<Record<string, Record<string, { name?: string }>>>({})
+  const [allItems, setAllItems] = useState<Chu3AllItems>({})
   const [lookups, setLookups] = useState<Chu3NameLookups | null>(null)
   const [ownedCharacters, setOwnedCharacters] = useState<number[]>([])
   const [ownedCharacterLvs, setOwnedCharacterLvs] = useState<Record<number, number>>({})
@@ -291,10 +327,11 @@ export function CollectiblesPage() {
     queryKey: qk.collectiblesChu3,
     placeholderData: (old) => old,
     queryFn: async () => {
-      const [box, allRaw, bundle] = await Promise.all([
+      const [box, allRaw, bundle, stageRes] = await Promise.all([
         gameApi.userBox(),
         dataApi.allItems('chu3'),
         loadChu3CatalogBundle(),
+        gameApi.chu3StageList(),
       ])
       const items = (box.items ?? []) as Chu3UserItem[]
       const u = (box.user ?? {}) as Record<string, unknown>
@@ -317,7 +354,8 @@ export function CollectiblesPage() {
         }
       }
       const equippedChar = numFromUser(u, 'characterId')
-      const ai = allRaw as Record<string, Record<string, { name?: string }>>
+      const ai0 = allRaw as Chu3AllItems
+      const ai = mergeStageItems1(ai0, stageRes.gameStageList ?? [])
       return {
         allItems: ai,
         user: u,
@@ -655,11 +693,12 @@ export function CollectiblesPage() {
           {displayRows.map((row) => {
             const cur = numFromUser(effectiveUser, row.field)
             const name = resolveCollectibleName(row.field, cur, allItems, lookups)
-            const img = chu3CollectibleImageUrl(row.field, cur)
+            const img = chu3CollectibleImageUrl(row.field, cur, allItems)
             const hasImg = chu3CollectibleHasImage(row.field)
             const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(row.field)
             const emptyUnlocks = row.options.length === 0
             const isCharacter = row.field === 'characterId'
+            const isWidePreview = isWidePreviewField1(row.field)
             const canChange = unlockAll ? catalogBundle != null && row.options.length > 0 : !emptyUnlocks || cur > 0
             return (
               <div
@@ -683,7 +722,7 @@ export function CollectiblesPage() {
                   ) : (
                     <div
                       className={`border-kumo-border bg-kumo-recessed flex flex-1 items-center justify-center overflow-hidden rounded-lg border ${
-                        row.field === 'nameplateId'
+                        isWidePreview
                           ? 'min-h-[88px] px-1 py-2'
                           : isCharacter
                             ? 'aspect-square min-h-[180px] max-h-[240px]'
@@ -698,7 +737,7 @@ export function CollectiblesPage() {
                           crossOrigin={imgCross1(img)}
                           alt=""
                           className={
-                            row.field === 'nameplateId'
+                            isWidePreview
                               ? 'max-h-20 w-full object-contain object-center'
                               : isCharacter
                                 ? 'max-h-full max-w-full object-contain p-1'
@@ -786,7 +825,7 @@ export function CollectiblesPage() {
                   <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
                     <div className="bg-kumo-recessed mx-auto flex aspect-[4/5] w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-kumo-border">
                       {(() => {
-                        const charaImg1 = chu3CollectibleImageUrl('characterId', pickedCharaId)
+                        const charaImg1 = chu3CollectibleImageUrl('characterId', pickedCharaId, allItems)
                         return charaImg1 ? (
                           <img
                             src={charaImg1}
@@ -897,7 +936,7 @@ export function CollectiblesPage() {
                 <div
                   className={
                     chu3CollectibleHasImage(activeRow.field)
-                      ? activeRow.field === 'nameplateId'
+                      ? isWidePreviewField1(activeRow.field)
                         ? 'grid grid-cols-1 gap-4 sm:grid-cols-2'
                         : 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
                       : 'grid grid-cols-1 gap-2 sm:grid-cols-2'
@@ -908,12 +947,12 @@ export function CollectiblesPage() {
                     const isPicked = activeRow.field === 'characterId' && pickedCharaId === o.itemId
                     const isOwnedCharacter = activeRow.field !== 'characterId' || ownedCharacterSet.has(o.itemId)
                     const charaLvNow = activeRow.field === 'characterId' ? (ownedCharacterLvs[o.itemId] ?? 1) : 0
-                    const img = chu3CollectibleImageUrl(activeRow.field, o.itemId)
+                    const img = chu3CollectibleImageUrl(activeRow.field, o.itemId, allItems)
                     const displayName = resolveCollectibleName(activeRow.field, o.itemId, allItems, lookups)
                     const hasImg = chu3CollectibleHasImage(activeRow.field)
                     const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(activeRow.field)
-                    const isNameplate = activeRow.field === 'nameplateId'
                     const isCharacter = activeRow.field === 'characterId'
+                    const isWidePreview = isWidePreviewField1(activeRow.field)
                     return (
                       <Button
                         key={o.itemId}
@@ -956,7 +995,7 @@ export function CollectiblesPage() {
                         ) : (
                           <div
                             className={`bg-kumo-recessed flex items-center justify-center ${
-                              isNameplate
+                              isWidePreview
                                 ? 'min-h-[100px] px-2 py-3'
                                 : isCharacter
                                   ? 'aspect-square min-h-[220px] max-h-[280px]'
@@ -969,7 +1008,7 @@ export function CollectiblesPage() {
                                 crossOrigin={imgCross1(img)}
                                 alt=""
                                 className={
-                                  isNameplate
+                                  isWidePreview
                                     ? 'max-h-24 w-full object-contain object-center'
                                     : isCharacter
                                       ? 'max-h-full max-w-full object-contain p-2'

@@ -1,5 +1,6 @@
 import type {
   Chu3RivalEntry,
+  Chu3GameStage,
   Chu3TeamDetail,
   Chu3TeamJoinResult,
   Chu3TeamRankEntry,
@@ -85,6 +86,15 @@ export async function unlockChu3Character(characterId: number, level: number) {
     characterId: String(characterId),
     level: String(level),
   }) as Promise<{ characterId: number; level: number; isNewUnlock: boolean }>
+}
+
+export async function chu3StageList(version?: number) {
+  const p1: Record<string, string> = {}
+  if (typeof version === 'number') p1.version = String(version)
+  return userPost('/api/v2/game/chu3/stage-list', p1) as Promise<{
+    length: number
+    gameStageList: Chu3GameStage[]
+  }>
 }
 
 export async function chu3UserDetail(username: string) {

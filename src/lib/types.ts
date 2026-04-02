@@ -182,6 +182,17 @@ export interface GenericGameSummary {
   rival?: boolean
   rivalExtId?: number | null
   favorites?: number[]
+  stageId?: number
+}
+
+export interface Chu3GameStage {
+  id: number
+  version: number
+  stageId: number
+  name?: string | null
+  imagePath?: string | null
+  isEnabled: boolean
+  defaultHave: boolean
 }
 
 export interface Chu3RivalEntry {
@@ -196,6 +207,7 @@ export interface Chu3RivalEntry {
   charaIllustId: number
   nameplateId: number
   frameId: number
+  stageId: number
   trophyId: number
   classEmblemBase: number
   classEmblemMedal: number

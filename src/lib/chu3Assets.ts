@@ -7,6 +7,8 @@ import { imgUrl1 } from './imgSign'
  */
 
 export type Chu3JsonEntry = { id: number; name: string; category?: number }
+export type Chu3AllItemMeta = { name?: string; imagePath?: string | null }
+export type Chu3AllItems = Record<string, Record<string, Chu3AllItemMeta>>
 
 const resolvedCache = new Map<string, Chu3JsonEntry[]>()
 const inflight = new Map<string, Promise<Chu3JsonEntry[]>>()
@@ -25,6 +27,13 @@ function assetPath1(one: string): string {
 
 export function chu3AssetUrl1(one: string): string {
   return imgUrl1(assetPath1(one))
+}
+
+function assetImageUrl1(raw: unknown): string | null {
+  const s1 = String(raw ?? '').trim()
+  if (!s1) return null
+  if (/^https?:\/\//i.test(s1)) return s1
+  return chu3AssetUrl1(s1.replace(/^\/+/, ''))
 }
 
 export function padChu3Id8(id: number): string {
@@ -80,6 +89,7 @@ const FIELD_IMAGE: Partial<
   },
   mapIconId: { dir: 'mapIcon', prefix: 'CHU_UI_MapIcon_' },
   voiceId: { dir: 'systemVoice', prefix: 'CHU_UI_SystemVoice_' },
+  stageId: { dir: 'stage', prefix: 'CHU_UI_Stage_' },
   avatarWear: { dir: 'avatar', prefix: 'CHU_UI_Avatar_Icon_' },
   avatarHead: { dir: 'avatar', prefix: 'CHU_UI_Avatar_Icon_' },
   avatarFace: { dir: 'avatar', prefix: 'CHU_UI_Avatar_Icon_' },
@@ -89,9 +99,10 @@ const FIELD_IMAGE: Partial<
   avatarBack: { dir: 'avatar', prefix: 'CHU_UI_Avatar_Icon_' },
 }
 
-export function chu3CollectibleImageUrl(field: string, itemId: number): string | null {
+export function chu3CollectibleImageUrl(field: string, itemId: number, allItems?: Chu3AllItems): string | null {
   if (itemId < 0) return null
   if (itemId === 0 && field !== 'characterId') return null
+  if (field === 'stageId') return assetImageUrl1(allItems?.stage?.[String(itemId)]?.imagePath)
   if (field === 'characterId') return chu3CharacterImageUrl(itemId, '00')
   const meta = FIELD_IMAGE[field]
   if (!meta) return null
@@ -186,7 +197,7 @@ const AVATAR_FIELD_TO_CATEGORY: Record<string, number> = {
 }
 
 function allItemsKeysToOptions(
-  allItems: Record<string, Record<string, { name?: string }>>,
+  allItems: Chu3AllItems,
   key: string,
 ): { itemId: number; name: string }[] {
   const o = allItems[key]
@@ -201,7 +212,7 @@ function allItemsKeysToOptions(
 export function buildChu3CatalogOptions(
   field: string,
   bundle: Chu3CatalogBundle,
-  allItems: Record<string, Record<string, { name?: string }>>,
+  allItems: Chu3AllItems,
 ): { itemId: number; name: string }[] {
   switch (field) {
     case 'nameplateId':
@@ -299,6 +310,15 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
     hasImage: true,
     imageDir: 'systemVoice',
     imagePrefix: 'CHU_UI_SystemVoice_',
+  },
+  {
+    key: 'stage',
+    field: 'stageId',
+    labelZh: '舞台',
+    jsonFile: null,
+    hasImage: true,
+    imageDir: 'stage',
+    imagePrefix: 'CHU_UI_Stage_',
   },
   {
     key: 'avatarWear',
