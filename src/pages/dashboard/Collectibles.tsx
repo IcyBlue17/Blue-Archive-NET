@@ -150,6 +150,15 @@ function draftFromUser(u: Record<string, unknown>): Record<string, number> {
   return d
 }
 
+function stageImgPath1(raw: unknown): string | null {
+  const s1 = typeof raw === 'string' ? raw.trim() : String(raw ?? '').trim()
+  if (!s1) return null
+  if (/^https?:\/\//i.test(s1)) return s1
+  const path1 = s1.replace(/^\/+/, '')
+  if (!path1) return null
+  return path1.includes('/') ? path1 : `stage/${path1}`
+}
+
 function mergeStageItems1(
   allItems: Chu3AllItems,
   stageRows: Chu3StageJsonEntry[],
@@ -158,17 +167,14 @@ function mergeStageItems1(
   const stage1 = { ...(allItems.stage ?? {}) }
   let dirty1 = !allItems.stage
   for (const row1 of stageRows) {
-    const id1 =
-      typeof row1.stageId === 'number' ? row1.stageId : parseInt(String(row1.stageId), 10)
+    const rawId1 = row1.stageId ?? row1.id
+    const id1 = typeof rawId1 === 'number' ? rawId1 : parseInt(String(rawId1), 10)
     if (!Number.isFinite(id1) || id1 <= 0) continue
     const old1 = stage1[String(id1)]
     const oldName1 = typeof old1?.name === 'string' ? old1.name.trim() : ''
-    const oldImg1 = typeof old1?.imagePath === 'string' && old1.imagePath.trim() ? old1.imagePath.trim() : null
+    const oldImg1 = stageImgPath1(old1?.imagePath ?? old1?.imageFile)
     const name1 = typeof row1.name === 'string' && row1.name.trim() ? row1.name.trim() : oldName1 || `Stage ${id1}`
-    const imagePath1 =
-      typeof row1.imagePath === 'string' && row1.imagePath.trim()
-        ? row1.imagePath.trim().replace(/^\/+/, '')
-        : oldImg1
+    const imagePath1 = stageImgPath1(row1.imagePath ?? row1.imageFile) ?? oldImg1
     const next1 = { ...old1 }
     let rowDirty1 = false
     if (next1.name !== name1) {

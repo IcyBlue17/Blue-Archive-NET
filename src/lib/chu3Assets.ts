@@ -8,13 +8,15 @@ import { imgUrl1 } from './imgSign'
 
 export type Chu3JsonEntry = { id: number; name: string; category?: number }
 export type Chu3StageJsonEntry = {
-  stageId: number
+  stageId?: number
+  id?: number
   name?: string | null
   imagePath?: string | null
-  isEnabled: boolean
-  defaultHave: boolean
+  imageFile?: string | null
+  isEnabled?: boolean
+  defaultHave?: boolean
 }
-export type Chu3AllItemMeta = { name?: string; imagePath?: string | null }
+export type Chu3AllItemMeta = { name?: string; imagePath?: string | null; imageFile?: string | null }
 export type Chu3AllItems = Record<string, Record<string, Chu3AllItemMeta>>
 
 const resolvedCache = new Map<string, unknown>()
@@ -41,6 +43,15 @@ function assetImageUrl1(raw: unknown): string | null {
   if (!s1) return null
   if (/^https?:\/\//i.test(s1)) return s1
   return chu3AssetUrl1(s1.replace(/^\/+/, ''))
+}
+
+function stageImagePath1(raw: unknown): string | null {
+  const s1 = String(raw ?? '').trim()
+  if (!s1) return null
+  if (/^https?:\/\//i.test(s1)) return s1
+  const path1 = s1.replace(/^\/+/, '')
+  if (!path1) return null
+  return path1.includes('/') ? path1 : `stage/${path1}`
 }
 
 export function padChu3Id8(id: number): string {
@@ -109,7 +120,10 @@ const FIELD_IMAGE: Partial<
 export function chu3CollectibleImageUrl(field: string, itemId: number, allItems?: Chu3AllItems): string | null {
   if (itemId < 0) return null
   if (itemId === 0 && field !== 'characterId') return null
-  if (field === 'stageId') return assetImageUrl1(allItems?.stage?.[String(itemId)]?.imagePath)
+  if (field === 'stageId') {
+    const row1 = allItems?.stage?.[String(itemId)]
+    return assetImageUrl1(stageImagePath1(row1?.imagePath ?? row1?.imageFile))
+  }
   if (field === 'characterId') return chu3CharacterImageUrl(itemId, '00')
   const meta = FIELD_IMAGE[field]
   if (!meta) return null
