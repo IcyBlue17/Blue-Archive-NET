@@ -4,6 +4,7 @@ import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'
 import * as gameApi from '../../api/game'
 import { detailSet } from '../../api/settings'
+import { fmtNameErr1 } from '../../lib/censor'
 import { CHU3_USERBOX_LABELS } from '../../lib/chu3Userbox'
 
 /** 仅游戏内名称；收藏品外观已迁移至 `/collectibles`。 */
@@ -40,7 +41,7 @@ export function Chu3AppearanceSettings() {
       setMsg('已保存')
       await reload()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : '保存失败')
+      setErr(field === 'userName' ? fmtNameErr1(e, '改名') : e instanceof Error ? e.message : '保存失败')
     } finally {
       setSaving(null)
     }

@@ -6,6 +6,7 @@ import { Input } from '@cloudflare/kumo/components/input'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { Text } from '@cloudflare/kumo/components/text'
 import { TURNSTILE_SITE_KEY } from '../../lib/config'
+import { fmtNameErr1 } from '../../lib/censor'
 import { useI18n } from '../../lib/i18n'
 import * as userApi from '../../api/user'
 
@@ -32,7 +33,7 @@ export function RegisterPage() {
       })
       nav('/login', { replace: true, state: { registered: true } })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Register failed')
+      setError(fmtNameErr1(err, t('register')))
     } finally {
       setPending(false)
     }

@@ -5,6 +5,7 @@ import { Text } from '@cloudflare/kumo/components/text'
 import * as gameApi from '../../api/game'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import type { GameOption } from '../../lib/types'
+import { fmtNameErr1 } from '../../lib/censor'
 import { GameOptionFields } from './GameOptionFields'
 
 export function Mai2ExtraSettings({
@@ -24,6 +25,7 @@ export function Mai2ExtraSettings({
   const [nameDirty, setNameDirty] = useState(false)
   const [nameSaving, setNameSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [nameErr1, setNameErr1] = useState<string | null>(null)
 
   useEffect(() => {
     if (!username) return
@@ -37,11 +39,14 @@ export function Mai2ExtraSettings({
   }, [username])
 
   async function saveName() {
+    setNameErr1(null)
     setNameSaving(true)
     try {
       const r = await gameApi.changeName('mai2', inGameName.trim())
       setInGameName(r.newName)
       setNameDirty(false)
+    } catch (e) {
+      setNameErr1(fmtNameErr1(e, locale === 'zh' ? '改名' : 'Rename'))
     } finally {
       setNameSaving(false)
     }
@@ -65,6 +70,7 @@ export function Mai2ExtraSettings({
   return (
     <div className="flex flex-col gap-6">
       {err ? <Text DANGEROUS_className="text-kumo-danger text-sm">{err}</Text> : null}
+      {nameErr1 ? <Text DANGEROUS_className="text-kumo-danger text-sm">{nameErr1}</Text> : null}
 
       <div className="flex max-w-xl flex-col gap-2">
         <label className="flex flex-col gap-1">
