@@ -73,6 +73,14 @@ function isOauthProviderId(value: string): value is OauthProviderId {
   return value in OAUTH_PROVIDER_DISPLAY_NAME
 }
 
+function oauthShowName1(row1: oauthApi.OAuthLinkedAccount) {
+  const name1 = row1.providerName?.trim()
+  if (name1) return name1
+  const email1 = row1.providerEmail?.trim()
+  if (email1) return email1
+  return null
+}
+
 export function SettingsPage() {
   const { page } = useParams<{ page?: string }>()
   const navigate = useNavigate()
@@ -243,7 +251,7 @@ export function SettingsPage() {
                         const ProviderIcon = providerId ? OAUTH_PROVIDER_ICON[providerId] : null
                         const providerIconClass = providerId ? OAUTH_PROVIDER_ICON_CLASS[providerId] : ''
                         const providerName = providerId ? OAUTH_PROVIDER_DISPLAY_NAME[providerId] : a.provider
-                        const providerSubtitle = a.providerName || a.providerEmail || a.providerUserId
+                        const providerSubtitle = oauthShowName1(a)
                         return (
                           <li
                             key={a.provider}
