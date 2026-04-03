@@ -111,27 +111,21 @@ export function LoginPage() {
         </Button>
       </form>
 
-      <div className="relative my-5">
-        <div className="absolute inset-0 flex items-center">
-          <div className="border-kumo-border w-full border-t" />
-        </div>
-        <div className="relative flex justify-center">
-          <Text size="sm" DANGEROUS_className="bg-kumo-background px-2 text-kumo-subtle">
-            {t('auth.dividerOr')}
-          </Text>
-        </div>
+      <div className="my-5 flex items-center gap-3">
+        <div className="border-kumo-border flex-1 border-t" />
+        <Text size="sm" DANGEROUS_className="shrink-0 text-kumo-subtle">
+          {t('auth.dividerOr')}
+        </Text>
+        <div className="border-kumo-border flex-1 border-t" />
       </div>
       <OAuthButtons mode="login" enabledProviderIds={oauthProviders} />
 
-      <div className="relative my-5">
-        <div className="absolute inset-0 flex items-center">
-          <div className="border-kumo-border w-full border-t" />
-        </div>
-        <div className="relative flex justify-center">
-          <Text size="sm" DANGEROUS_className="bg-kumo-background px-2 text-kumo-subtle">
-            {t('auth.dividerOr')}
-          </Text>
-        </div>
+      <div className="my-5 flex items-center gap-3">
+        <div className="border-kumo-border flex-1 border-t" />
+        <Text size="sm" DANGEROUS_className="shrink-0 text-kumo-subtle">
+          {t('auth.dividerOr')}
+        </Text>
+        <div className="border-kumo-border flex-1 border-t" />
       </div>
 
       <div>

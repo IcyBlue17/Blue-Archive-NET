@@ -1,3 +1,4 @@
+import type { Icon } from '@phosphor-icons/react'
 import { AppleLogo, GithubLogo, GoogleLogo, WindowsLogo } from '@phosphor-icons/react'
 import { Text } from '@cloudflare/kumo/components/text'
 import { OAUTH_API_ORIGIN } from '../../lib/config'
@@ -10,59 +11,30 @@ const BIND_MAX_AGE = 300
 export const OAUTH_PROVIDER_ORDER = ['google', 'microsoft', 'github', 'apple'] as const
 export type OauthProviderId = (typeof OAUTH_PROVIDER_ORDER)[number]
 
+const PROVIDER_DISPLAY_NAME: Record<OauthProviderId, string> = {
+  google: 'Google',
+  microsoft: 'Microsoft',
+  github: 'GitHub',
+  apple: 'Apple',
+}
+
+const PROVIDER_ICON: Record<OauthProviderId, Icon> = {
+  google: GoogleLogo,
+  microsoft: WindowsLogo,
+  github: GithubLogo,
+  apple: AppleLogo,
+}
+
+const PROVIDER_COLOR: Record<OauthProviderId, string> = {
+  google: '#EA4335',
+  microsoft: '#00A4EF',
+  github: 'currentColor',
+  apple: 'currentColor',
+}
+
 function setBindTokenCookie(value: string) {
   const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : ''
   document.cookie = `${BIND_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${BIND_MAX_AGE}; SameSite=Lax${secure}`
-}
-
-function providerDisplayName(provider: string, locale: 'zh' | 'en'): string {
-  const p = provider.toLowerCase()
-  if (locale === 'zh') {
-    if (p === 'google') return 'Google'
-    if (p === 'microsoft') return 'Microsoft'
-    if (p === 'github') return 'GitHub'
-    if (p === 'apple') return 'Apple'
-  }
-  if (p === 'google') return 'Google'
-  if (p === 'microsoft') return 'Microsoft'
-  if (p === 'github') return 'GitHub'
-  if (p === 'apple') return 'Apple'
-  return provider.charAt(0).toUpperCase() + provider.slice(1)
-}
-
-function ProviderMark({ id }: { id: string }) {
-  const p = id.toLowerCase()
-  const wrap =
-    'flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-border bg-kumo-background'
-  if (p === 'google') {
-    return (
-      <span className={wrap} aria-hidden>
-        <GoogleLogo className="size-6 text-[#EA4335]" weight="fill" />
-      </span>
-    )
-  }
-  if (p === 'microsoft') {
-    return (
-      <span className={wrap} aria-hidden>
-        <WindowsLogo className="size-6 text-[#00A4EF]" weight="fill" />
-      </span>
-    )
-  }
-  if (p === 'github') {
-    return (
-      <span className={wrap} aria-hidden>
-        <GithubLogo className="size-6 text-kumo-text" weight="fill" />
-      </span>
-    )
-  }
-  if (p === 'apple') {
-    return (
-      <span className={wrap} aria-hidden>
-        <AppleLogo className="size-6 text-kumo-text" weight="fill" />
-      </span>
-    )
-  }
-  return <span className={wrap} aria-hidden />
 }
 
 export type OAuthButtonsProps = {
@@ -82,10 +54,9 @@ export function OAuthButtons({
   getToken,
   disabled,
 }: OAuthButtonsProps) {
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
   const enabled = new Set(enabledProviderIds.map((x) => x.toLowerCase()))
   const excluded = new Set(excludeProviderIds.map((x) => x.toLowerCase()))
-  const loc = locale === 'en' ? 'en' : 'zh'
 
   async function go(provider: string) {
     const origin = OAUTH_API_ORIGIN().replace(/\/$/, '')
@@ -105,11 +76,11 @@ export function OAuthButtons({
       {OAUTH_PROVIDER_ORDER.map((id) => {
         if (excluded.has(id)) return null
         const isOn = enabled.has(id)
-        const name = providerDisplayName(id, loc)
+        const name = PROVIDER_DISPLAY_NAME[id]
         const label = t('auth.oauthContinue').replace('{name}', name)
         const bindBlocked = mode === 'bind' && !getToken
-        const hint =
-          !isOn ? t('auth.oauthNotConfiguredHint') : bindBlocked ? t('auth.oauthBindNeedToken') : undefined
+        const hint = !isOn ? t('auth.oauthNotConfiguredHint') : bindBlocked ? t('auth.oauthBindNeedToken') : undefined
+        const ProviderIcon = PROVIDER_ICON[id]
         return (
           <button
             key={id}
@@ -127,7 +98,12 @@ export function OAuthButtons({
                 : 'cursor-not-allowed opacity-55')
             }
           >
-            <ProviderMark id={id} />
+            <span
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-border bg-kumo-background"
+              aria-hidden
+            >
+              <ProviderIcon className="size-6" weight="fill" color={PROVIDER_COLOR[id]} />
+            </span>
             <Text size="sm" DANGEROUS_className="min-w-0 flex-1 font-medium">
               {label}
             </Text>
