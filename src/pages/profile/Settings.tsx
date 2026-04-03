@@ -56,6 +56,13 @@ function SettingListSkeleton() {
   )
 }
 
+function passkeyTime1(raw1: string | undefined, locale1: 'zh' | 'en') {
+  if (!raw1) return ''
+  const d1 = new Date(raw1)
+  if (Number.isNaN(d1.getTime())) return raw1
+  return d1.toLocaleString(locale1 === 'zh' ? 'zh-CN' : 'en-US')
+}
+
 export function SettingsPage() {
   const { page } = useParams<{ page?: string }>()
   const navigate = useNavigate()
@@ -279,9 +286,16 @@ export function SettingsPage() {
                           key={c.credentialId}
                           className="flex items-center justify-between gap-2 rounded-lg border border-kumo-border px-3 py-2"
                         >
-                          <Text size="sm" DANGEROUS_className="truncate">
-                            {c.label || c.credentialId.slice(0, 16) + '…'}
-                          </Text>
+                          <div className="min-w-0">
+                            <Text size="sm" DANGEROUS_className="truncate">
+                              {c.label || c.credentialId.slice(0, 16) + '…'}
+                            </Text>
+                            {c.createdAt ? (
+                              <Text size="sm" DANGEROUS_className="text-kumo-subtle truncate">
+                                {passkeyTime1(c.createdAt, locale)}
+                              </Text>
+                            ) : null}
+                          </div>
                           <Button
                             type="button"
                             variant="ghost"
