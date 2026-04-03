@@ -1,8 +1,15 @@
-import { FaApple, FaGithub, FaGoogle, FaMicrosoft } from 'react-icons/fa6'
-import type { IconType } from 'react-icons'
+import type { ComponentType, SVGProps } from 'react'
 import { Text } from '@cloudflare/kumo/components/text'
 import { OAUTH_API_ORIGIN } from '../../lib/config'
 import { useI18n } from '../../lib/i18n'
+// @ts-expect-error virtual icon from local unplugin-icons
+import AppleLogo from '~icons/logos/apple'
+// @ts-expect-error virtual icon from local unplugin-icons
+import GithubLogo from '~icons/simple-icons/github'
+// @ts-expect-error virtual icon from local unplugin-icons
+import GoogleLogo from '~icons/logos/google-icon'
+// @ts-expect-error virtual icon from local unplugin-icons
+import MicrosoftLogo from '~icons/logos/microsoft-icon'
 
 const BIND_COOKIE = 'bind_token'
 const BIND_MAX_AGE = 300
@@ -18,18 +25,20 @@ const PROVIDER_DISPLAY_NAME: Record<OauthProviderId, string> = {
   apple: 'Apple',
 }
 
-const PROVIDER_ICON: Record<OauthProviderId, IconType> = {
-  google: FaGoogle,
-  microsoft: FaMicrosoft,
-  github: FaGithub,
-  apple: FaApple,
+type OauthIcon = ComponentType<SVGProps<SVGSVGElement>>
+
+const PROVIDER_ICON: Record<OauthProviderId, OauthIcon> = {
+  google: GoogleLogo,
+  microsoft: MicrosoftLogo,
+  github: GithubLogo,
+  apple: AppleLogo,
 }
 
-const PROVIDER_COLOR: Record<OauthProviderId, string> = {
-  google: '#4285F4',
-  microsoft: '#00A4EF',
-  github: 'currentColor',
-  apple: 'currentColor',
+const PROVIDER_ICON_CLASS: Record<OauthProviderId, string> = {
+  google: 'size-6',
+  microsoft: 'size-6',
+  github: 'size-6 text-[#181717] dark:text-white',
+  apple: 'size-6',
 }
 
 function setBindTokenCookie(value: string) {
@@ -102,14 +111,14 @@ export function OAuthButtons({
               className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-border bg-kumo-background"
               aria-hidden
             >
-              <ProviderIcon size={24} color={PROVIDER_COLOR[id]} />
+              <ProviderIcon className={PROVIDER_ICON_CLASS[id]} aria-hidden />
             </span>
             <Text size="sm" DANGEROUS_className="min-w-0 flex-1 font-medium">
               {label}
             </Text>
           </button>
-        )
-      })}
+        )}
+      )}
     </div>
   )
 }
