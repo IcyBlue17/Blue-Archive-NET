@@ -20,6 +20,9 @@ export const queryClient = new QueryClient({
 })
 
 export const qk = {
+  oauthProviders: ['oauth-providers'] as const,
+  oauthLinked: ['oauth-linked'] as const,
+  passkeys: ['passkeys'] as const,
   me: ['me'] as const,
   adminStatus: ['admin-status'] as const,
   settings: ['settings'] as const,

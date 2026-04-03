@@ -12,6 +12,7 @@ import { AdminGuard } from './components/admin/AdminGuard'
 import { isLoggedIn } from './api/client'
 import { AuthProvider } from './hooks/useAuth'
 import { LoginPage } from './pages/auth/Login'
+import { OAuthCallbackPage } from './pages/auth/OAuthCallback'
 import { RegisterPage } from './pages/auth/Register'
 import { ResetPasswordPage } from './pages/auth/ResetPassword'
 import { VerifyEmailPage } from './pages/auth/VerifyEmail'
@@ -54,6 +55,7 @@ export default function App() {
                   <Route element={<AuthLayout />}>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
                     <Route path="/verify" element={<VerifyEmailPage />} />
                     <Route path="/change-password" element={<ChangePasswordFromEmailPage />} />

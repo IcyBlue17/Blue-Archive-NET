@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Key, Trash } from '@phosphor-icons/react'
+import { startRegistration } from '@simplewebauthn/browser'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'
 import { Tabs } from '@cloudflare/kumo/components/tabs'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
+import * as oauthApi from '../../api/oauth'
+import * as passkeyApi from '../../api/passkey'
+import { OAuthButtons } from '../../components/auth/OAuthButtons'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
 import { ChusanExtraSettings } from '../../components/settings/ChusanExtraSettings'
 import { GameOptionFields } from '../../components/settings/GameOptionFields'
 import { GlobalGameSettingsSection } from '../../components/settings/GlobalGameSettingsSection'
 import { Mai2ExtraSettings } from '../../components/settings/Mai2ExtraSettings'
-import { useAuth } from '../../hooks/useAuth'
+import { readToken, useAuth } from '../../hooks/useAuth'
 import { qk } from '../../lib/query'
 import * as settingsApi from '../../api/settings'
 import * as userApi from '../../api/user'
@@ -54,6 +59,7 @@ function SettingListSkeleton() {
 export function SettingsPage() {
   const { page } = useParams<{ page?: string }>()
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const { t, locale } = useI18n()
   const { user: me, refresh, loading: loadingUser } = useAuth()
   const tab = SETTING_TABS.some((x) => x.value === page)
@@ -63,6 +69,28 @@ export function SettingsPage() {
   const [bio, setBio] = useState('')
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const [pkMsg, setPkMsg] = useState<string | null>(null)
+  const [pkErr, setPkErr] = useState<string | null>(null)
+  const [pkBusy, setPkBusy] = useState(false)
+
+  const providersQuery = useQuery({
+    queryKey: qk.oauthProviders,
+    queryFn: () => oauthApi.getProviders(),
+    enabled: tab === 'profile',
+    staleTime: 60_000,
+  })
+
+  const linkedQuery = useQuery({
+    queryKey: qk.oauthLinked,
+    queryFn: () => oauthApi.getLinkedAccounts(),
+    enabled: tab === 'profile' && !!me,
+  })
+
+  const passkeysQuery = useQuery({
+    queryKey: qk.passkeys,
+    queryFn: () => passkeyApi.passkeyList(),
+    enabled: tab === 'profile' && !!me,
+  })
 
   const optQuery = useQuery({
     queryKey: qk.settings,
@@ -74,6 +102,50 @@ export function SettingsPage() {
     setDisplayName(me?.displayName || '')
     setBio(me?.profileBio || '')
   }, [me?.displayName, me?.profileBio])
+
+  async function unlinkOauth(provider: string) {
+    setPkErr(null)
+    setPkMsg(null)
+    try {
+      await oauthApi.unlinkAccount(provider)
+      await qc.invalidateQueries({ queryKey: qk.oauthLinked })
+      setPkMsg(t('auth.oauthUnlinked'))
+    } catch (e) {
+      setPkErr(e instanceof Error ? e.message : 'failed')
+    }
+  }
+
+  async function addPasskey() {
+    setPkErr(null)
+    setPkMsg(null)
+    setPkBusy(true)
+    try {
+      const optionsJSON = await passkeyApi.passkeyRegisterOptions()
+      const att = await startRegistration({ optionsJSON })
+      await passkeyApi.passkeyRegisterVerify(att)
+      await qc.invalidateQueries({ queryKey: qk.passkeys })
+      setPkMsg(t('auth.passkeyAdded'))
+    } catch (e) {
+      setPkErr(e instanceof Error ? e.message : t('auth.passkeyError'))
+    } finally {
+      setPkBusy(false)
+    }
+  }
+
+  async function removePasskey(credentialId: string) {
+    setPkErr(null)
+    setPkMsg(null)
+    setPkBusy(true)
+    try {
+      await passkeyApi.passkeyRemove(credentialId)
+      await qc.invalidateQueries({ queryKey: qk.passkeys })
+      setPkMsg(t('auth.passkeyRemoved'))
+    } catch (e) {
+      setPkErr(e instanceof Error ? e.message : t('auth.passkeyError'))
+    } finally {
+      setPkBusy(false)
+    }
+  }
 
   async function saveProfile() {
     setErr(null)
@@ -134,6 +206,99 @@ export function SettingsPage() {
               <Text DANGEROUS_className="text-kumo-subtle text-sm">
                 {t('settings.profile.email')}: {me?.email ?? '—'}
               </Text>
+
+              <div className="border-kumo-border mt-6 border-t pt-4">
+                <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                  {t('settings.profile.oauthSection')}
+                </Text>
+                {linkedQuery.isPending ? (
+                  <SkeletonBox className="h-10 w-full rounded-lg" />
+                ) : (
+                  <ul className="mb-3 space-y-2">
+                    {(linkedQuery.data ?? []).length === 0 ? (
+                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                        {t('settings.profile.oauthEmpty')}
+                      </Text>
+                    ) : (
+                      (linkedQuery.data ?? []).map((a) => (
+                        <li
+                          key={a.provider}
+                          className="flex items-center justify-between gap-2 rounded-lg border border-kumo-border px-3 py-2"
+                        >
+                          <Text size="sm">{a.provider}</Text>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={pkBusy}
+                            onClick={() => void unlinkOauth(a.provider)}
+                          >
+                            {t('auth.oauthUnlink')}
+                          </Button>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                )}
+                <OAuthButtons
+                  mode="bind"
+                  enabledProviderIds={providersQuery.data ?? []}
+                  excludeProviderIds={(linkedQuery.data ?? []).map((l) => l.provider)}
+                  getToken={() => readToken() ?? ''}
+                  disabled={pkBusy || !readToken()}
+                />
+              </div>
+
+              <div className="border-kumo-border mt-6 border-t pt-4">
+                <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                  {t('settings.profile.passkeySection')}
+                </Text>
+                {pkMsg ? <Text DANGEROUS_className="text-kumo-success mb-2 text-sm">{pkMsg}</Text> : null}
+                {pkErr ? <Text DANGEROUS_className="text-kumo-danger mb-2 text-sm">{pkErr}</Text> : null}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="mb-3 gap-2"
+                  disabled={pkBusy}
+                  onClick={() => void addPasskey()}
+                >
+                  <Key className="size-4" weight="duotone" aria-hidden />
+                  {t('auth.passkeyAdd')}
+                </Button>
+                {passkeysQuery.isPending ? (
+                  <SkeletonBox className="h-10 w-full rounded-lg" />
+                ) : (
+                  <ul className="space-y-2">
+                    {(passkeysQuery.data ?? []).length === 0 ? (
+                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                        {t('settings.profile.passkeyEmpty')}
+                      </Text>
+                    ) : (
+                      (passkeysQuery.data ?? []).map((c) => (
+                        <li
+                          key={c.credentialId}
+                          className="flex items-center justify-between gap-2 rounded-lg border border-kumo-border px-3 py-2"
+                        >
+                          <Text size="sm" DANGEROUS_className="truncate">
+                            {c.label || c.credentialId.slice(0, 16) + '…'}
+                          </Text>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            shape="square"
+                            aria-label={t('auth.passkeyRemove')}
+                            disabled={pkBusy}
+                            onClick={() => void removePasskey(c.credentialId)}
+                          >
+                            <Trash className="size-4" weight="regular" />
+                          </Button>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                )}
+              </div>
             </div>
           )}
         </LayerCard>

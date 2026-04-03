@@ -5,6 +5,8 @@ import { imgUrl1 } from './imgSign'
 export const APP_NAME = (import.meta.env.VITE_APP_NAME as string)?.trim() || 'Blue Archive'
 
 export const AQUA_HOST = (import.meta.env.VITE_AQUA_HOST as string)?.trim() || ''
+/** Optional override: OAuth2 `/oauth2/authorization/*` lives on this origin when different from API. */
+export const OAUTH_HOST = (import.meta.env.VITE_OAUTH_HOST as string)?.trim() || ''
 export const DATA_HOST = (import.meta.env.VITE_DATA_HOST as string)?.trim() || ''
 
 /** 与 aquaNet 默认一致：曲图 / `all-items.json` 等静态资源来自官方 CDN。 */
@@ -22,6 +24,16 @@ export function apiUrl(path: string): URL {
   const p = path.startsWith('/') ? path : `/${path}`
   return new URL(p, apiBase())
 }
+
+/** Backend origin used for Spring OAuth2 authorize redirects (`/oauth2/authorization/{provider}`). */
+export function oauthApiOrigin(): string {
+  const h = OAUTH_HOST.replace(/\/$/, '')
+  if (h) return h
+  return apiBase()
+}
+
+/** @alias {@link oauthApiOrigin} */
+export const OAUTH_API_ORIGIN = oauthApiOrigin
 
 export function dataUrl(path: string): URL {
   const p = path.startsWith('/') ? path : `/${path}`

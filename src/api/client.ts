@@ -47,6 +47,31 @@ function parseError(text: string): Error {
   }
 }
 
+/** GET without auth (e.g. public OAuth provider list). */
+export async function publicGet(path: string): Promise<unknown> {
+  const url = path.startsWith('http') ? path : apiUrl(path).toString()
+  const res = await fetch(url)
+  const text = await res.text()
+  if (!res.ok) throw parseError(text)
+  if (!text) return null
+  return JSON.parse(text) as unknown
+}
+
+/** GET with `token` query param when logged in. */
+export async function userGet(path: string, params: Record<string, string> = {}): Promise<unknown> {
+  const merged = withTokenParams(params)
+  const url = apiUrl(path)
+  url.search = new URLSearchParams(merged).toString()
+  const res = await fetch(url.toString())
+  const text = await res.text()
+  if (!res.ok) {
+    handleInvalidToken(text)
+    throw parseError(text)
+  }
+  if (!text) return null
+  return JSON.parse(text) as unknown
+}
+
 /**
  * User-facing API: POST with query params (including token), optional JSON body.
  */
