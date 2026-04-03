@@ -27,7 +27,12 @@ export function OAuthCallbackPage() {
     }
     if (token) {
       setToken(token)
-      void refresh().then(() => nav('/home', { replace: true }))
+      void refresh()
+        .then(() => nav('/home', { replace: true }))
+        .catch((e) => {
+          setNote(e instanceof Error ? e.message : String(e))
+          window.setTimeout(() => nav('/login', { replace: true }), 2000)
+        })
       return
     }
     setNote(t('auth.oauthCallbackMissing'))
