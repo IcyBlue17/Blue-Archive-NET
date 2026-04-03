@@ -1,5 +1,5 @@
-import type { Icon } from '@phosphor-icons/react'
-import { AppleLogo, GithubLogo, GoogleLogo, WindowsLogo } from '@phosphor-icons/react'
+import { FaApple, FaGithub, FaGoogle, FaMicrosoft } from 'react-icons/fa6'
+import type { IconType } from 'react-icons'
 import { Text } from '@cloudflare/kumo/components/text'
 import { OAUTH_API_ORIGIN } from '../../lib/config'
 import { useI18n } from '../../lib/i18n'
@@ -18,15 +18,15 @@ const PROVIDER_DISPLAY_NAME: Record<OauthProviderId, string> = {
   apple: 'Apple',
 }
 
-const PROVIDER_ICON: Record<OauthProviderId, Icon> = {
-  google: GoogleLogo,
-  microsoft: WindowsLogo,
-  github: GithubLogo,
-  apple: AppleLogo,
+const PROVIDER_ICON: Record<OauthProviderId, IconType> = {
+  google: FaGoogle,
+  microsoft: FaMicrosoft,
+  github: FaGithub,
+  apple: FaApple,
 }
 
 const PROVIDER_COLOR: Record<OauthProviderId, string> = {
-  google: '#EA4335',
+  google: '#4285F4',
   microsoft: '#00A4EF',
   github: 'currentColor',
   apple: 'currentColor',
@@ -102,7 +102,7 @@ export function OAuthButtons({
               className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-border bg-kumo-background"
               aria-hidden
             >
-              <ProviderIcon className="size-6" weight="fill" color={PROVIDER_COLOR[id]} />
+              <ProviderIcon size={24} color={PROVIDER_COLOR[id]} />
             </span>
             <Text size="sm" DANGEROUS_className="min-w-0 flex-1 font-medium">
               {label}
