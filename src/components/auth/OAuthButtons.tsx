@@ -11,8 +11,6 @@ import GoogleLogo from '~icons/logos/google-icon'
 // @ts-expect-error virtual icon from local unplugin-icons
 import MicrosoftLogo from '~icons/logos/microsoft-icon'
 
-const BIND_COOKIE = 'bind_token'
-const BIND_MAX_AGE = 300
 
 /** Fixed order to match Spring registration ids + product expectation (like reference UI). */
 export const OAUTH_PROVIDER_ORDER = ['google', 'microsoft', 'github', 'apple'] as const
@@ -41,11 +39,6 @@ const PROVIDER_ICON_CLASS: Record<OauthProviderId, string> = {
   apple: 'size-6',
 }
 
-function setBindTokenCookie(value: string) {
-  const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : ''
-  document.cookie = `${BIND_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${BIND_MAX_AGE}; SameSite=Lax${secure}`
-}
-
 export type OAuthButtonsProps = {
   mode: 'login' | 'bind'
   /** Providers the server has enabled (non-empty client-id). */
@@ -69,14 +62,16 @@ export function OAuthButtons({
 
   async function go(provider: string) {
     const origin = OAUTH_API_ORIGIN().replace(/\/$/, '')
-    const url = `${origin}/oauth2/authorization/${encodeURIComponent(provider)}`
     if (mode === 'bind') {
       const tokenFn = getToken
       if (!tokenFn) return
       const tok = await Promise.resolve(tokenFn())
       if (!tok) return
-      setBindTokenCookie(tok)
+      const url = `${origin}/api/v2/user/oauth/bind/${encodeURIComponent(provider)}?token=${encodeURIComponent(tok)}`
+      window.location.assign(url)
+      return
     }
+    const url = `${origin}/oauth2/authorization/${encodeURIComponent(provider)}`
     window.location.assign(url)
   }
 
