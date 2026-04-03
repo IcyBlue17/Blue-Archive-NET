@@ -243,6 +243,7 @@ export function SettingsPage() {
                         const ProviderIcon = providerId ? OAUTH_PROVIDER_ICON[providerId] : null
                         const providerIconClass = providerId ? OAUTH_PROVIDER_ICON_CLASS[providerId] : ''
                         const providerName = providerId ? OAUTH_PROVIDER_DISPLAY_NAME[providerId] : a.provider
+                        const providerSubtitle = a.providerName || a.providerEmail || a.providerUserId
                         return (
                           <li
                             key={a.provider}
@@ -264,9 +265,9 @@ export function SettingsPage() {
                               <Text size="sm" DANGEROUS_className="font-medium">
                                 {providerName}
                               </Text>
-                              {a.providerUserId ? (
+                              {providerSubtitle ? (
                                 <Text size="sm" DANGEROUS_className="text-kumo-subtle truncate">
-                                  {a.providerUserId}
+                                  {providerSubtitle}
                                 </Text>
                               ) : null}
                             </div>

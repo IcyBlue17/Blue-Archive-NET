@@ -3,6 +3,8 @@ import { publicGet, userGet, userPost } from './client'
 export type OAuthLinkedAccount = {
   provider: string
   providerUserId?: string
+  providerEmail?: string
+  providerName?: string
 }
 
 function parseProviders(raw: unknown): string[] {
@@ -23,9 +25,13 @@ function parseLinked(raw: unknown): OAuthLinkedAccount[] {
       const provider = o.provider
       if (typeof provider !== 'string') continue
       const providerUserId = o.providerUserId
+      const providerEmail = o.providerEmail
+      const providerName = o.providerName
       out.push({
         provider,
         ...(typeof providerUserId === 'string' ? { providerUserId } : {}),
+        ...(typeof providerEmail === 'string' ? { providerEmail } : {}),
+        ...(typeof providerName === 'string' ? { providerName } : {}),
       })
     }
     return out
