@@ -16,7 +16,7 @@ import MicrosoftLogo from '~icons/logos/microsoft-icon'
 export const OAUTH_PROVIDER_ORDER = ['google', 'microsoft', 'github', 'apple'] as const
 export type OauthProviderId = (typeof OAUTH_PROVIDER_ORDER)[number]
 
-const PROVIDER_DISPLAY_NAME: Record<OauthProviderId, string> = {
+export const OAUTH_PROVIDER_DISPLAY_NAME: Record<OauthProviderId, string> = {
   google: 'Google',
   microsoft: 'Microsoft',
   github: 'GitHub',
@@ -25,14 +25,14 @@ const PROVIDER_DISPLAY_NAME: Record<OauthProviderId, string> = {
 
 type OauthIcon = ComponentType<SVGProps<SVGSVGElement>>
 
-const PROVIDER_ICON: Record<OauthProviderId, OauthIcon> = {
+export const OAUTH_PROVIDER_ICON: Record<OauthProviderId, OauthIcon> = {
   google: GoogleLogo,
   microsoft: MicrosoftLogo,
   github: GithubLogo,
   apple: AppleLogo,
 }
 
-const PROVIDER_ICON_CLASS: Record<OauthProviderId, string> = {
+export const OAUTH_PROVIDER_ICON_CLASS: Record<OauthProviderId, string> = {
   google: 'size-6',
   microsoft: 'size-6',
   github: 'size-6 text-[#181717] dark:text-white',
@@ -80,11 +80,11 @@ export function OAuthButtons({
       {OAUTH_PROVIDER_ORDER.map((id) => {
         if (excluded.has(id)) return null
         const isOn = enabled.has(id)
-        const name = PROVIDER_DISPLAY_NAME[id]
+        const name = OAUTH_PROVIDER_DISPLAY_NAME[id]
         const label = t('auth.oauthContinue').replace('{name}', name)
         const bindBlocked = mode === 'bind' && !getToken
         const hint = !isOn ? t('auth.oauthNotConfiguredHint') : bindBlocked ? t('auth.oauthBindNeedToken') : undefined
-        const ProviderIcon = PROVIDER_ICON[id]
+        const ProviderIcon = OAUTH_PROVIDER_ICON[id]
         return (
           <button
             key={id}
@@ -106,7 +106,7 @@ export function OAuthButtons({
               className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-border bg-kumo-background"
               aria-hidden
             >
-              <ProviderIcon className={PROVIDER_ICON_CLASS[id]} aria-hidden />
+              <ProviderIcon className={OAUTH_PROVIDER_ICON_CLASS[id]} aria-hidden />
             </span>
             <Text size="sm" DANGEROUS_className="min-w-0 flex-1 font-medium">
               {label}

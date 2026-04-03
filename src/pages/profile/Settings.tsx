@@ -10,7 +10,13 @@ import { Tabs } from '@cloudflare/kumo/components/tabs'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import * as oauthApi from '../../api/oauth'
 import * as passkeyApi from '../../api/passkey'
-import { OAuthButtons } from '../../components/auth/OAuthButtons'
+import {
+  OAUTH_PROVIDER_DISPLAY_NAME,
+  OAUTH_PROVIDER_ICON,
+  OAUTH_PROVIDER_ICON_CLASS,
+  type OauthProviderId,
+  OAuthButtons,
+} from '../../components/auth/OAuthButtons'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
 import { ChusanExtraSettings } from '../../components/settings/ChusanExtraSettings'
@@ -61,6 +67,10 @@ function passkeyTime1(raw1: string | undefined, locale1: 'zh' | 'en') {
   const d1 = new Date(raw1)
   if (Number.isNaN(d1.getTime())) return raw1
   return d1.toLocaleString(locale1 === 'zh' ? 'zh-CN' : 'en-US')
+}
+
+function isOauthProviderId(value: string): value is OauthProviderId {
+  return value in OAUTH_PROVIDER_DISPLAY_NAME
 }
 
 export function SettingsPage() {
@@ -227,23 +237,51 @@ export function SettingsPage() {
                         {t('settings.profile.oauthEmpty')}
                       </Text>
                     ) : (
-                      (linkedQuery.data ?? []).map((a) => (
-                        <li
-                          key={a.provider}
-                          className="flex items-center justify-between gap-2 rounded-lg border border-kumo-border px-3 py-2"
-                        >
-                          <Text size="sm">{a.provider}</Text>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            disabled={pkBusy}
-                            onClick={() => void unlinkOauth(a.provider)}
+                      (linkedQuery.data ?? []).map((a) => {
+                        const provider = a.provider.toLowerCase()
+                        const providerId: OauthProviderId | null = isOauthProviderId(provider) ? provider : null
+                        const ProviderIcon = providerId ? OAUTH_PROVIDER_ICON[providerId] : null
+                        const providerIconClass = providerId ? OAUTH_PROVIDER_ICON_CLASS[providerId] : ''
+                        const providerName = providerId ? OAUTH_PROVIDER_DISPLAY_NAME[providerId] : a.provider
+                        return (
+                          <li
+                            key={a.provider}
+                            className="border-kumo-border bg-kumo-background flex items-center gap-3 rounded-xl border px-4 py-3"
                           >
-                            {t('auth.oauthUnlink')}
-                          </Button>
-                        </li>
-                      ))
+                            <span
+                              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-border bg-kumo-background"
+                              aria-hidden
+                            >
+                              {ProviderIcon ? (
+                                <ProviderIcon className={providerIconClass} aria-hidden />
+                              ) : (
+                                <Text size="sm" DANGEROUS_className="font-semibold uppercase">
+                                  {a.provider.slice(0, 1)}
+                                </Text>
+                              )}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <Text size="sm" DANGEROUS_className="font-medium">
+                                {providerName}
+                              </Text>
+                              {a.providerUserId ? (
+                                <Text size="sm" DANGEROUS_className="text-kumo-subtle truncate">
+                                  {a.providerUserId}
+                                </Text>
+                              ) : null}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              disabled={pkBusy}
+                              onClick={() => void unlinkOauth(a.provider)}
+                            >
+                              {t('auth.oauthUnlink')}
+                            </Button>
+                          </li>
+                        )
+                      })
                     )}
                   </ul>
                 )}
