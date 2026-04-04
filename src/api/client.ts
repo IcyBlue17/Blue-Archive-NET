@@ -41,9 +41,12 @@ function handleInvalidToken(text: string) {
 function parseError(text: string): Error {
   try {
     const j = JSON.parse(text) as { error?: string; message?: string }
-    return new Error(j.error || j.message || text)
+    // Sanitize error message - remove HTML and limit length
+    const msg = (j.error || j.message || text).replace(/<[^>]*>/g, '').slice(0, 500)
+    return new Error(msg)
   } catch {
-    return new Error(text)
+    // Sanitize raw text as well
+    return new Error(text.replace(/<[^>]*>/g, '').slice(0, 500))
   }
 }
 

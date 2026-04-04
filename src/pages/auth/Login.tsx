@@ -53,7 +53,9 @@ export function LoginPage() {
       await refresh()
       nav('/home', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      // Sanitize error message for display
+      const msg = err instanceof Error ? err.message : 'Login failed'
+      setError(msg.replace(/<[^>]*>/g, '').slice(0, 200))
     } finally {
       setPending(false)
     }
@@ -71,7 +73,9 @@ export function LoginPage() {
       await refresh()
       nav('/home', { replace: true })
     } catch (err) {
-      setPkErr(err instanceof Error ? err.message : t('auth.passkeyError'))
+      // Sanitize error message for display
+      const msg = err instanceof Error ? err.message : t('auth.passkeyError')
+      setPkErr(msg.replace(/<[^>]*>/g, '').slice(0, 200))
     } finally {
       setPkPending(false)
     }
