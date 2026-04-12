@@ -6,18 +6,6 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://aqua.icybit.cn/api/:path*"
-    },
-    {
-      "source": "/uploads/:path*",
-      "destination": "https://aqua.icybit.cn/uploads/:path*"
-    },
-    {
-      "source": "/d/:path*",
-      "destination": "https://aqua.icybit.cn/d/:path*"
-    },
-    {
       "source": "/((?!api/|uploads/|d/|.*\\..*).*)",
       "destination": "/"
     }

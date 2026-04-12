@@ -171,16 +171,21 @@ export async function userPostStream(
 }
 
 function adminHeaders(): HeadersInit {
-  const token = getToken()
-  if (!token) throw new Error('Not logged in')
   return {
-    Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',
   }
 }
 
+function adminUrl1(path: string): URL {
+  const token1 = getToken()
+  if (!token1) throw new Error('Not logged in')
+  const url1 = apiUrl(path)
+  url1.searchParams.set('token', token1)
+  return url1
+}
+
 export async function adminGet(path: string): Promise<unknown> {
-  const res = await fetch(apiUrl(path), { headers: adminHeaders() })
+  const res = await fetch(adminUrl1(path).toString())
   const text = await res.text()
   if (!res.ok) throw parseError(text)
   if (!text) return null
@@ -192,9 +197,10 @@ export async function adminJson(
   path: string,
   body?: unknown,
 ): Promise<unknown> {
-  const res = await fetch(apiUrl(path), {
+  const head1 = body !== undefined ? adminHeaders() : undefined
+  const res = await fetch(adminUrl1(path).toString(), {
     method,
-    headers: adminHeaders(),
+    headers: head1,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
   const text = await res.text()
