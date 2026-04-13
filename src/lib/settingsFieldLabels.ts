@@ -60,6 +60,10 @@ const LABELS: Record<string, { zh: { name: string; desc: string }; en: { name: s
     zh: { name: '队伍名称', desc: '自定义资料页顶部显示的文字。' },
     en: { name: 'Team Name', desc: 'Customize the text displayed on the top of your profile.' },
   },
+  chusanUnlockMusic: {
+    zh: { name: '解锁全部乐曲', desc: '解锁全部乐曲（含隐藏曲、联动曲）。' },
+    en: { name: 'Unlock All Music', desc: 'Unlock all music (including hidden and collab songs).' },
+  },
   chusanInfinitePenguins: {
     zh: { name: '无限企鹅像', desc: '将角色等级提示用企鹅像设为 999。' },
     en: {
