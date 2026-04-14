@@ -43,10 +43,6 @@ export function ChusanExtraSettings({
   const [lastFile1, setLastFile1] = useState('')
   const inputRef1 = useRef<HTMLInputElement | null>(null)
   const basicOptions = useMemo(() => options.filter((o) => o.key !== 'chusanTeamName'), [options])
-  const loginRewardOptions = useMemo(
-    () => options.filter((o) => o.key !== 'chusanLoginRewardItems'),
-    [options],
-  )
 
   const matchingUrl = String(options.find((o) => o.key === 'chusanMatchingServer')?.value ?? '')
 
@@ -175,18 +171,7 @@ export function ChusanExtraSettings({
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
           {locale === 'zh' ? '登录奖励' : 'Login rewards'}
         </h3>
-        <blockquote className="border-kumo-border text-kumo-subtle mb-3 border-l-2 pl-3 text-sm">
-          {locale === 'zh'
-            ? '这里不是每日签到，而是每次 GameLogin 都会直发到背包。'
-            : 'These are granted directly to inventory on every GameLogin, not once per day.'}
-        </blockquote>
-        <GameOptionFields
-          options={loginRewardOptions}
-          gameFilter={(g) => g === 'chu3-login-reward'}
-          locale={locale}
-          onSet={onSet}
-        />
-        <ChusanLoginRewardSettings options={options} locale={locale} onSet={onSet} />
+        <ChusanLoginRewardSettings options={options} locale={locale} onSet={onSet} onReload={onReload} />
       </section>
 
       <section>
