@@ -168,6 +168,23 @@ export function ChusanExtraSettings({
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
+          {locale === 'zh' ? '登录奖励' : 'Login rewards'}
+        </h3>
+        <blockquote className="border-kumo-border text-kumo-subtle mb-3 border-l-2 pl-3 text-sm">
+          {locale === 'zh'
+            ? '这里不是每日签到，而是每次 GameLogin 都会直发到背包。'
+            : 'These are granted directly to inventory on every GameLogin, not once per day.'}
+        </blockquote>
+        <GameOptionFields
+          options={options}
+          gameFilter={(g) => g === 'chu3-login-reward'}
+          locale={locale}
+          onSet={onSet}
+        />
+      </section>
+
+      <section>
+        <h3 className="text-kumo-text mb-2 text-base font-semibold">
           {locale === 'zh' ? '战队' : 'Team'}
         </h3>
         <blockquote className="border-kumo-border text-kumo-subtle mb-3 border-l-2 pl-3 text-sm">
