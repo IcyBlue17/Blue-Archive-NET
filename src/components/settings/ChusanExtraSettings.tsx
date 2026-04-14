@@ -1,19 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link as RouterLink } from 'react-router-dom'
-import { cn } from '@cloudflare/kumo'
-import { useKumoToastManager } from '@cloudflare/kumo'
-import { Button, buttonVariants } from '@cloudflare/kumo/components/button'
-import { Link } from '@cloudflare/kumo/components/link'
-import { Select } from '@cloudflare/kumo/components/select'
-import { Text } from '@cloudflare/kumo/components/text'
-import * as dataApi from '../../api/data'
-import * as gameApi from '../../api/game'
-import { CHU3_MATCHINGS } from '../../lib/config'
-import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
-import type { ChusanMatchingOption, GameOption } from '../../lib/types'
-import { Chu3AppearanceSettings } from './Chu3AppearanceSettings'
-import { ChusanLoginRewardSettings } from './ChusanLoginRewardSettings'
-import { GameOptionFields } from './GameOptionFields'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
+import { cn } from "@cloudflare/kumo";
+import { useKumoToastManager } from "@cloudflare/kumo";
+import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
+import { Link } from "@cloudflare/kumo/components/link";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Text } from "@cloudflare/kumo/components/text";
+import * as dataApi from "../../api/data";
+import * as gameApi from "../../api/game";
+import { CHU3_MATCHINGS } from "../../lib/config";
+import type { SettingFieldLocale } from "../../lib/settingsFieldLabels";
+import type { ChusanMatchingOption, GameOption } from "../../lib/types";
+import { Chu3AppearanceSettings } from "./Chu3AppearanceSettings";
+import { ChusanLoginRewardSettings } from "./ChusanLoginRewardSettings";
+import { GameOptionFields } from "./GameOptionFields";
 
 export function ChusanExtraSettings({
   username,
@@ -23,110 +23,133 @@ export function ChusanExtraSettings({
   onReload,
   err,
 }: {
-  username: string
-  options: GameOption[]
-  locale: SettingFieldLocale
-  onSet: (key: string, value: string) => Promise<void>
-  onReload: () => Promise<void>
-  err: string | null
+  username: string;
+  options: GameOption[];
+  locale: SettingFieldLocale;
+  onSet: (key: string, value: string) => Promise<void>;
+  onReload: () => Promise<void>;
+  err: string | null;
 }) {
-  const toast = useKumoToastManager()
-  const [linkedVerse, setLinkedVerse] = useState(false)
-  const [overlay, setOverlay] = useState(false)
-  const [custom, setCustom] = useState(false)
-  const [symbolChat, setSymbolChat] = useState<Record<string, { name: string }>>({})
-  const [symbols, setSymbols] = useState<Record<number, string>>({ 1: '', 2: '', 3: '', 4: '' })
-  const [symbolDirty, setSymbolDirty] = useState<Record<number, boolean>>({})
-  const [symSaving, setSymSaving] = useState<number | null>(null)
-  const [exporting, setExporting] = useState(false)
-  const [importing, setImporting] = useState(false)
-  const [lastFile1, setLastFile1] = useState('')
-  const inputRef1 = useRef<HTMLInputElement | null>(null)
-  const basicOptions = useMemo(() => options.filter((o) => o.key !== 'chusanTeamName'), [options])
+  const toast = useKumoToastManager();
+  const [linkedVerse, setLinkedVerse] = useState(false);
+  const [overlay, setOverlay] = useState(false);
+  const [custom, setCustom] = useState(false);
+  const [symbolChat, setSymbolChat] = useState<
+    Record<string, { name: string }>
+  >({});
+  const [symbols, setSymbols] = useState<Record<number, string>>({
+    1: "",
+    2: "",
+    3: "",
+    4: "",
+  });
+  const [symbolDirty, setSymbolDirty] = useState<Record<number, boolean>>({});
+  const [symSaving, setSymSaving] = useState<number | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [lastFile1, setLastFile1] = useState("");
+  const inputRef1 = useRef<HTMLInputElement | null>(null);
+  const basicOptions = useMemo(
+    () => options.filter((o) => o.key !== "chusanTeamName"),
+    [options],
+  );
 
-  const matchingUrl = String(options.find((o) => o.key === 'chusanMatchingServer')?.value ?? '')
+  const matchingUrl = String(
+    options.find((o) => o.key === "chusanMatchingServer")?.value ?? "",
+  );
 
   useEffect(() => {
-    if (!username) return
+    if (!username) return;
     void gameApi
-      .userSummary(username, 'chu3')
+      .userSummary(username, "chu3")
       .then((s) => {
-        const parts = (s.lastVersion || '0.0.0').split('.')
-        setLinkedVerse(parts[0] === '2' && parseInt(parts[1] || '0', 10) >= 40)
+        const parts = (s.lastVersion || "0.0.0").split(".");
+        setLinkedVerse(parts[0] === "2" && parseInt(parts[1] || "0", 10) >= 40);
       })
-      .catch(() => setLinkedVerse(false))
-  }, [username])
+      .catch(() => setLinkedVerse(false));
+  }, [username]);
 
   useEffect(() => {
-    if (matchingUrl && !CHU3_MATCHINGS.some((m) => m.matching === matchingUrl)) setCustom(true)
-    else if (CHU3_MATCHINGS.some((m) => m.matching === matchingUrl)) setCustom(false)
-  }, [matchingUrl])
+    if (matchingUrl && !CHU3_MATCHINGS.some((m) => m.matching === matchingUrl))
+      setCustom(true);
+    else if (CHU3_MATCHINGS.some((m) => m.matching === matchingUrl))
+      setCustom(false);
+  }, [matchingUrl]);
 
   useEffect(() => {
-    void dataApi.allItems('chu3').then((raw: unknown) => {
-      const o = raw as { symbolChat?: Record<string, { name: string }> }
-      setSymbolChat(o?.symbolChat ?? {})
-    })
-  }, [])
+    void dataApi.allItems("chu3").then((raw: unknown) => {
+      const o = raw as { symbolChat?: Record<string, { name: string }> };
+      setSymbolChat(o?.symbolChat ?? {});
+    });
+  }, []);
 
   useEffect(() => {
-    const next: Record<number, string> = { 1: '', 2: '', 3: '', 4: '' }
+    const next: Record<number, string> = { 1: "", 2: "", 3: "", 4: "" };
     for (const o of options) {
-      const m = /^chusanSymbolChat(\d+)$/.exec(o.key)
-      if (m && o.value != null && o.value !== '') next[parseInt(m[1], 10)] = String(o.value)
+      const m = /^chusanSymbolChat(\d+)$/.exec(o.key);
+      if (m && o.value != null && o.value !== "")
+        next[parseInt(m[1], 10)] = String(o.value);
     }
-    setSymbols(next)
-    setSymbolDirty({})
-  }, [options])
+    setSymbols(next);
+    setSymbolDirty({});
+  }, [options]);
 
   async function pickMatching(opt: ChusanMatchingOption) {
-    await onSet('chusanMatchingReflector', opt.reflector)
-    await onSet('chusanMatchingServer', opt.matching)
-    setCustom(false)
-    setOverlay(false)
-    await onReload()
+    await onSet("chusanMatchingReflector", opt.reflector);
+    await onSet("chusanMatchingServer", opt.matching);
+    setCustom(false);
+    setOverlay(false);
+    await onReload();
   }
 
   function clickCustom() {
-    setCustom(true)
-    setOverlay(false)
+    setCustom(true);
+    setOverlay(false);
   }
 
   async function doExport() {
-    setExporting(true)
+    setExporting(true);
     try {
-      const data = await gameApi.exportGame('chu3')
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `export-chu3-${username}.json`
-      a.click()
-      URL.revokeObjectURL(a.href)
+      const data = await gameApi.exportGame("chu3");
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `export-chu3-${username}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
     } finally {
-      setExporting(false)
+      setExporting(false);
     }
   }
 
   async function doImport1(file1: File) {
-    setImporting(true)
-    setLastFile1(file1.name)
+    setImporting(true);
+    setLastFile1(file1.name);
     try {
-      const text1 = await file1.text()
-      const json1 = JSON.parse(text1) as unknown
-      await gameApi.importGame('chu3', json1)
+      const text1 = await file1.text();
+      const json1 = JSON.parse(text1) as unknown;
+      await gameApi.importGame("chu3", json1);
       toast.add({
-        title: locale === 'zh' ? '导入成功' : 'Import completed',
-        description: locale === 'zh' ? 'CHUNITHM 存档已导入。' : 'CHUNITHM save imported.',
-      })
-      await onReload()
+        title: locale === "zh" ? "导入成功" : "Import completed",
+        description:
+          locale === "zh" ? "CHUNITHM 存档已导入。" : "CHUNITHM save imported.",
+      });
+      await onReload();
     } catch (e) {
       toast.add({
-        title: locale === 'zh' ? '导入失败' : 'Import failed',
-        description: e instanceof Error ? e.message : locale === 'zh' ? '导入失败' : 'Import failed',
-        variant: 'error',
-      })
+        title: locale === "zh" ? "导入失败" : "Import failed",
+        description:
+          e instanceof Error
+            ? e.message
+            : locale === "zh"
+              ? "导入失败"
+              : "Import failed",
+        variant: "error",
+      });
     } finally {
-      setImporting(false)
+      setImporting(false);
     }
   }
 
@@ -136,32 +159,34 @@ export function ChusanExtraSettings({
         .filter(([id]) => parseInt(id, 10) !== 0)
         .sort((a, b) => parseInt(a[0], 10) - parseInt(b[0], 10)),
     [symbolChat],
-  )
+  );
 
   async function saveSymbol(slot: number) {
-    const key = `chusanSymbolChat${slot}`
-    const raw = symbols[slot]
-    setSymSaving(slot)
+    const key = `chusanSymbolChat${slot}`;
+    const raw = symbols[slot];
+    setSymSaving(slot);
     try {
-      await onSet(key, raw === '' ? '0' : raw)
-      setSymbolDirty((d) => ({ ...d, [slot]: false }))
-      await onReload()
+      await onSet(key, raw === "" ? "0" : raw);
+      setSymbolDirty((d) => ({ ...d, [slot]: false }));
+      await onReload();
     } finally {
-      setSymSaving(null)
+      setSymSaving(null);
     }
   }
 
   return (
     <div className="flex flex-col gap-8">
-      {err ? <Text DANGEROUS_className="text-kumo-danger text-sm">{err}</Text> : null}
+      {err ? (
+        <Text DANGEROUS_className="text-kumo-danger text-sm">{err}</Text>
+      ) : null}
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === 'zh' ? 'CHUNITHM 基础' : 'CHUNITHM basics'}
+          {locale === "zh" ? "CHUNITHM 基础" : "CHUNITHM basics"}
         </h3>
         <GameOptionFields
           options={basicOptions}
-          gameFilter={(g) => g === 'chu3'}
+          gameFilter={(g) => g === "chu3"}
           locale={locale}
           onSet={onSet}
         />
@@ -169,43 +194,40 @@ export function ChusanExtraSettings({
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === 'zh' ? '登录奖励' : 'Login rewards'}
+          {locale === "zh" ? "登录奖励" : "Login rewards"}
         </h3>
-        <ChusanLoginRewardSettings options={options} locale={locale} onSet={onSet} onReload={onReload} />
+        <ChusanLoginRewardSettings
+          options={options}
+          locale={locale}
+          onSet={onSet}
+          onReload={onReload}
+        />
       </section>
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === 'zh' ? '战队' : 'Team'}
+          {locale === "zh" ? "战队" : "Team"}
         </h3>
-        <blockquote className="border-kumo-border text-kumo-subtle mb-3 border-l-2 pl-3 text-sm">
-          {locale === 'zh'
-            ? '战队现在有独立页面，支持创建、申请加入、审核成员和管理资料。'
-            : 'Teams now have a dedicated page for create, join requests, member review and management.'}
-        </blockquote>
         <RouterLink
           to="/team"
-          className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }))}
+          className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
         >
-          {locale === 'zh' ? '前往战队页' : 'Open team page'}
+          {locale === "zh" ? "前往战队页" : "Open team page"}
         </RouterLink>
       </section>
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === 'zh' ? '全国对战 & Linked Verse' : 'National matching & Linked Verse'}
+          {locale === "zh"
+            ? "全国对战 & Linked Verse"
+            : "National matching & Linked Verse"}
         </h3>
-        <blockquote className="border-kumo-border text-kumo-subtle mb-3 border-l-2 pl-3 text-sm">
-          {locale === 'zh'
-            ? '对战服相关设置可能影响机台连线，请与服主说明后修改。'
-            : 'Matching settings affect cab connectivity; coordinate with your server operator.'}
-        </blockquote>
 
         {linkedVerse ? (
           <>
             <GameOptionFields
               options={options}
-              gameFilter={(g) => g === 'chu3-linked-verse'}
+              gameFilter={(g) => g === "chu3-linked-verse"}
               locale={locale}
               onSet={onSet}
             />
@@ -213,19 +235,23 @@ export function ChusanExtraSettings({
         ) : null}
 
         <div className="mt-4">
-          <Button variant="secondary" size="sm" onClick={() => setOverlay(true)}>
-            {locale === 'zh' ? '选择对战服预设…' : 'Choose matching preset…'}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setOverlay(true)}
+          >
+            {locale === "zh" ? "选择对战服预设…" : "Choose matching preset…"}
           </Button>
         </div>
 
         {custom ? (
           <div className="mt-4">
             <Text DANGEROUS_className="mb-2" size="sm">
-              {locale === 'zh' ? '自定义对战服务器' : 'Custom matching server'}
+              {locale === "zh" ? "自定义对战服务器" : "Custom matching server"}
             </Text>
             <GameOptionFields
               options={options}
-              gameFilter={(g) => g === 'chu3-matching'}
+              gameFilter={(g) => g === "chu3-matching"}
               locale={locale}
               onSet={onSet}
             />
@@ -235,27 +261,27 @@ export function ChusanExtraSettings({
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === 'zh' ? '对战快捷表情' : 'Symbol chat'}
+          {locale === "zh" ? "对战快捷表情" : "Symbol chat"}
         </h3>
         {[1, 2, 3, 4].map((slot) => (
           <div key={slot} className="mb-4 flex max-w-xl flex-col gap-2">
             <span className="text-sm font-medium">
-              {locale === 'zh' ? `快捷表情 #${slot}` : `Symbol chat #${slot}`}
+              {locale === "zh" ? `快捷表情 #${slot}` : `Symbol chat #${slot}`}
             </span>
             <div className="flex flex-wrap items-center gap-2">
               <Select
                 className="min-w-[12rem]"
                 aria-label={
-                  locale === 'zh' ? `快捷表情 #${slot}` : `Symbol chat #${slot}`
+                  locale === "zh" ? `快捷表情 #${slot}` : `Symbol chat #${slot}`
                 }
-                value={symbols[slot] ?? ''}
+                value={symbols[slot] ?? ""}
                 onValueChange={(v) => {
-                  setSymbols((s) => ({ ...s, [slot]: String(v ?? '') }))
-                  setSymbolDirty((d) => ({ ...d, [slot]: true }))
+                  setSymbols((s) => ({ ...s, [slot]: String(v ?? "") }));
+                  setSymbolDirty((d) => ({ ...d, [slot]: true }));
                 }}
               >
                 <Select.Option value="">
-                  {locale === 'zh' ? '（默认）' : '(default)'}
+                  {locale === "zh" ? "（默认）" : "(default)"}
                 </Select.Option>
                 {symbolSelectOptions.map(([id, meta]) => (
                   <Select.Option key={id} value={id}>
@@ -270,7 +296,7 @@ export function ChusanExtraSettings({
                   disabled={symSaving === slot}
                   onClick={() => void saveSymbol(slot)}
                 >
-                  {locale === 'zh' ? '保存' : 'Save'}
+                  {locale === "zh" ? "保存" : "Save"}
                 </Button>
               ) : null}
             </div>
@@ -286,13 +312,15 @@ export function ChusanExtraSettings({
           variant="inline"
           className="text-kumo-accent text-sm font-medium"
         >
-          {locale === 'zh' ? '前往收藏品页面设置 →' : 'Open Collectibles page →'}
+          {locale === "zh"
+            ? "前往收藏品页面设置 →"
+            : "Open Collectibles page →"}
         </Link>
       </div>
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === 'zh' ? '导入 / 导出' : 'Import / Export'}
+          {locale === "zh" ? "导入 / 导出" : "Import / Export"}
         </h3>
         <input
           ref={inputRef1}
@@ -300,28 +328,38 @@ export function ChusanExtraSettings({
           accept=".json,application/json"
           className="hidden"
           onChange={(e) => {
-            const file1 = e.target.files?.[0]
-            if (file1) void doImport1(file1)
-            e.currentTarget.value = ''
+            const file1 = e.target.files?.[0];
+            if (file1) void doImport1(file1);
+            e.currentTarget.value = "";
           }}
         />
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="secondary" disabled={importing} onClick={() => inputRef1.current?.click()}>
+          <Button
+            variant="secondary"
+            disabled={importing}
+            onClick={() => inputRef1.current?.click()}
+          >
             {importing
-              ? locale === 'zh'
-                ? '导入中…'
-                : 'Importing…'
-              : locale === 'zh'
-                ? '导入 CHUNITHM 存档 (JSON)'
-                : 'Import CHUNITHM save (JSON)'}
+              ? locale === "zh"
+                ? "导入中…"
+                : "Importing…"
+              : locale === "zh"
+                ? "导入存档"
+                : "Import CHUNITHM save"}
           </Button>
-          <Button variant="secondary" disabled={exporting} onClick={() => void doExport()}>
-            {locale === 'zh' ? '导出 CHUNITHM 存档 (JSON)' : 'Export CHUNITHM save (JSON)'}
+          <Button
+            variant="secondary"
+            disabled={exporting}
+            onClick={() => void doExport()}
+          >
+            {locale === "zh" ? "导出存档" : "Export CHUNITHM"}
           </Button>
         </div>
         {lastFile1 ? (
           <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
-            {locale === 'zh' ? `最近选择：${lastFile1}` : `Last file: ${lastFile1}`}
+            {locale === "zh"
+              ? `最近选择：${lastFile1}`
+              : `Last file: ${lastFile1}`}
           </Text>
         ) : null}
       </section>
@@ -338,11 +376,8 @@ export function ChusanExtraSettings({
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="text-kumo-text mb-2 text-lg font-semibold">
-              {locale === 'zh' ? '选择对战服' : 'Matching server'}
+              {locale === "zh" ? "选择对战服" : "Matching server"}
             </h4>
-            <p className="text-kumo-subtle mb-4 text-sm">
-              {locale === 'zh' ? '点选后自动写入 Matching / Reflector URL。' : 'Applies matching & reflector URLs.'}
-            </p>
             <div className="flex flex-wrap gap-3">
               {CHU3_MATCHINGS.map((opt) => (
                 <div
@@ -350,59 +385,81 @@ export function ChusanExtraSettings({
                   role="button"
                   tabIndex={0}
                   className={cn(
-                    buttonVariants({ variant: 'secondary' }),
-                    'h-auto cursor-pointer flex-col items-stretch rounded-lg p-4 text-left',
-                    !custom && matchingUrl === opt.matching && 'ring-kumo-accent ring-2',
+                    buttonVariants({ variant: "secondary" }),
+                    "h-auto cursor-pointer flex-col items-stretch rounded-lg p-4 text-left",
+                    !custom &&
+                      matchingUrl === opt.matching &&
+                      "ring-kumo-accent ring-2",
                   )}
                   onClick={() => void pickMatching(opt)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      void pickMatching(opt)
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      void pickMatching(opt);
                     }
                   }}
                 >
                   <div className="font-semibold">{opt.name}</div>
                   <div className="text-kumo-accent mt-2 text-xs">
-                    <Link href={opt.ui} target="_blank" rel="noreferrer" variant="inline">
+                    <Link
+                      href={opt.ui}
+                      target="_blank"
+                      rel="noreferrer"
+                      variant="inline"
+                    >
                       UI
                     </Link>
-                    {' · '}
-                    <Link href={opt.guide} target="_blank" rel="noreferrer" variant="inline">
-                      {locale === 'zh' ? '教程' : 'Guide'}
+                    {" · "}
+                    <Link
+                      href={opt.guide}
+                      target="_blank"
+                      rel="noreferrer"
+                      variant="inline"
+                    >
+                      {locale === "zh" ? "教程" : "Guide"}
                     </Link>
                   </div>
-                  <div className="text-kumo-subtle mt-2 text-xs">{opt.coop.join(' / ')}</div>
+                  <div className="text-kumo-subtle mt-2 text-xs">
+                    {opt.coop.join(" / ")}
+                  </div>
                 </div>
               ))}
               <div
                 role="button"
                 tabIndex={0}
                 className={cn(
-                  buttonVariants({ variant: 'secondary' }),
-                  'h-auto cursor-pointer flex-col items-stretch rounded-lg p-4 text-left',
-                  custom && 'ring-kumo-accent ring-2',
+                  buttonVariants({ variant: "secondary" }),
+                  "h-auto cursor-pointer flex-col items-stretch rounded-lg p-4 text-left",
+                  custom && "ring-kumo-accent ring-2",
                 )}
                 onClick={clickCustom}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    clickCustom()
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    clickCustom();
                   }
                 }}
               >
-                <div className="font-semibold">{locale === 'zh' ? '自定义' : 'Custom'}</div>
+                <div className="font-semibold">
+                  {locale === "zh" ? "自定义" : "Custom"}
+                </div>
                 <p className="text-kumo-subtle mt-1 text-xs">
-                  {locale === 'zh' ? '手动填写 URL（见下方字段）。' : 'Enter URLs manually below.'}
+                  {locale === "zh"
+                    ? "手动填写 URL（见下方字段）。"
+                    : "Enter URLs manually below."}
                 </p>
               </div>
             </div>
-            <Button className="mt-6" variant="secondary" onClick={() => setOverlay(false)}>
-              {locale === 'zh' ? '关闭' : 'Close'}
+            <Button
+              className="mt-6"
+              variant="secondary"
+              onClick={() => setOverlay(false)}
+            >
+              {locale === "zh" ? "关闭" : "Close"}
             </Button>
           </div>
         </div>
       ) : null}
     </div>
-  )
+  );
 }
