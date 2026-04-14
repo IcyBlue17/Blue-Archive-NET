@@ -71,67 +71,11 @@ const LABELS: Record<string, { zh: { name: string; desc: string }; en: { name: s
       desc: 'Set penguin statues for character level prompting to 999.',
     },
   },
-  chusanLoginRewardPenguinStatue: {
-    zh: { name: '登录奖励 企鹅像', desc: '每次 GameLogin 发放 1 个 ペンギンスタチュウ（8000）。' },
-    en: {
-      name: 'Penguin Statue',
-      desc: 'Grant 1 Penguin Statue (8000) on every GameLogin.',
-    },
-  },
-  chusanLoginRewardShowNistatue: {
-    zh: { name: '登录奖励 小企鹅像', desc: '每次 GameLogin 发放 1 个 ショウニスタチュウ（8010）。' },
-    en: {
-      name: 'Show-Ni Statue',
-      desc: 'Grant 1 Show-Ni Statue (8010) on every GameLogin.',
-    },
-  },
-  chusanLoginRewardSoulOfStatue: {
-    zh: { name: '登录奖励 灵魂像', desc: '每次 GameLogin 发放 1 个 ソウルオブスタチュウ（8020）。' },
-    en: {
-      name: 'Soul of Statue',
-      desc: 'Grant 1 Soul of Statue (8020) on every GameLogin.',
-    },
-  },
-  chusanLoginRewardRainbowStatue: {
-    zh: { name: '登录奖励 虹限像', desc: '每次 GameLogin 发放 1 个 虹限スタチュウ（8030）。' },
-    en: {
-      name: 'Rainbow Statue',
-      desc: 'Grant 1 Rainbow Statue (8030) on every GameLogin.',
-    },
-  },
-  chusanLoginRewardExpTicket: {
-    zh: { name: '登录奖励 EXP×6 票', desc: '每次 GameLogin 发放 1 张 キャラクターEXPブースト×6.0倍チケット（312）。' },
-    en: {
-      name: 'EXP x6 Ticket',
-      desc: 'Grant 1 Character EXP x6.0 Ticket (312) on every GameLogin.',
-    },
-  },
-  chusanLoginRewardMasterTicket: {
-    zh: { name: '登录奖励 MASTER 票', desc: '每次 GameLogin 发放 1 张 MASTERプレイチケット（402）。' },
-    en: {
-      name: 'MASTER Ticket',
-      desc: 'Grant 1 MASTER Play Ticket (402) on every GameLogin.',
-    },
-  },
-  chusanLoginRewardUltimaTicket: {
-    zh: { name: '登录奖励 ULTIMA 票', desc: '每次 GameLogin 发放 1 张 ULTIMAプレイチケット（601）。' },
-    en: {
-      name: 'ULTIMA Ticket',
-      desc: 'Grant 1 ULTIMA Play Ticket (601) on every GameLogin.',
-    },
-  },
-  chusanLoginRewardWorldsEndTicket: {
-    zh: { name: '登录奖励 WORLD\'S END 票', desc: '每次 GameLogin 发放 1 张 WORLD\'S ENDプレイチケット（701）。' },
-    en: {
-      name: 'WORLD\'S END Ticket',
-      desc: 'Grant 1 WORLD\'S END Play Ticket (701) on every GameLogin.',
-    },
-  },
   chusanLoginRewardItems: {
-    zh: { name: '登录奖励自定义票券', desc: '按 kind:id[x数量] 存储的高级配置；建议使用下方下拉选择器维护。' },
+    zh: { name: '登录奖励', desc: '每次 GameLogin 发放 1 张票和 1 个企鹅像。' },
     en: {
-      name: 'Custom Login Reward Tickets',
-      desc: 'Advanced kind:id[xcount] storage; use the selector below instead of editing by hand.',
+      name: 'Login Rewards',
+      desc: 'Grant 1 ticket and 1 penguin statue on every GameLogin.',
     },
   },
   chusanLvUnlockAll: {

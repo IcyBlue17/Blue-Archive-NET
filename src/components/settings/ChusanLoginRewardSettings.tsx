@@ -43,39 +43,6 @@ const PENGUIN_OPTIONS: RewardOption[] = [
 
 const NONE_VALUE = '__none__'
 const PENGUIN_ITEM_IDS = new Set(PENGUIN_OPTIONS.map((one) => one.itemId))
-const LEGACY_KIND_BY_ID = new Map<number, number>([
-  [110, 4],
-  [302, 0],
-  [312, 0],
-  [313, 0],
-  [314, 0],
-  [320, 7],
-  [321, 7],
-  [402, 1],
-  [601, 2],
-  [701, 3],
-  [2020, 4],
-  [2040, 4],
-  [2060, 4],
-  [3060, 0],
-  [3090, 0],
-  [3120, 0],
-  [5020, 4],
-  [5040, 4],
-  [5060, 4],
-  [5510, 4],
-])
-
-const LEGACY_BOOL_KEYS = [
-  'chusanLoginRewardPenguinStatue',
-  'chusanLoginRewardShowNistatue',
-  'chusanLoginRewardSoulOfStatue',
-  'chusanLoginRewardRainbowStatue',
-  'chusanLoginRewardExpTicket',
-  'chusanLoginRewardMasterTicket',
-  'chusanLoginRewardUltimaTicket',
-  'chusanLoginRewardWorldsEndTicket',
-]
 
 function parseTokens(raw: string): Array<{ itemKind: number; itemId: number }> {
   return raw
@@ -90,9 +57,7 @@ function parseTokens(raw: string): Array<{ itemKind: number; itemId: number }> {
       const itemKind =
         TICKET_OPTIONS.find((one) => one.itemId === itemId)?.itemKind ??
         PENGUIN_OPTIONS.find((one) => one.itemId === itemId)?.itemKind
-      if (explicitKind != null && explicitKind !== itemKind && explicitKind !== LEGACY_KIND_BY_ID.get(itemId)) {
-        return null
-      }
+      if (explicitKind != null && explicitKind !== itemKind) return null
       if (itemKind == null) return null
       return { itemKind, itemId }
     })
@@ -142,9 +107,6 @@ export function ChusanLoginRewardSettings({
   async function saveRewards() {
     setSaving(true)
     try {
-      for (const key of LEGACY_BOOL_KEYS) {
-        await onSet(key, 'false')
-      }
       const parts = [ticketValue, penguinValue].filter((value) => value !== NONE_VALUE)
       await onSet('chusanLoginRewardItems', parts.join(','))
       await onReload()
