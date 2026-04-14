@@ -87,11 +87,11 @@ export async function createIni(body: Partial<DownloadIniWrite>) {
 }
 
 export async function updateIni(id: number, body: Partial<DownloadIniWrite>) {
-  return adminJson('PUT', `${base}/ini/${id}`, body) as Promise<DownloadIni>
+  return adminJson('POST', `${base}/ini/${id}/update`, body) as Promise<DownloadIni>
 }
 
 export async function deleteIni(id: number) {
-  return adminJson('DELETE', `${base}/ini/${id}`) as Promise<{ status: string; id: number }>
+  return adminJson('POST', `${base}/ini/${id}/delete`) as Promise<{ status: string; id: number }>
 }
 
 export async function listAssignments(serial?: string) {
@@ -104,11 +104,11 @@ export async function createAssignment(body: DownloadAssignmentWrite) {
 }
 
 export async function updateAssignment(id: number, body: Partial<DownloadAssignmentWrite>) {
-  return adminJson('PUT', `${base}/assignment/${id}`, body) as Promise<DownloadAssignment>
+  return adminJson('POST', `${base}/assignment/${id}/update`, body) as Promise<DownloadAssignment>
 }
 
 export async function deleteAssignment(id: number) {
-  return adminJson('DELETE', `${base}/assignment/${id}`) as Promise<{ status: string; id: number }>
+  return adminJson('POST', `${base}/assignment/${id}/delete`) as Promise<{ status: string; id: number }>
 }
 
 export async function listReports() {
