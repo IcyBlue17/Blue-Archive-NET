@@ -12,26 +12,26 @@ type RewardOption = {
 }
 
 const TICKET_OPTIONS: RewardOption[] = [
-  { itemKind: 4, itemId: 110, zh: 'CHUNITHM-NET 标准票', en: 'CHUNITHM-NET Standard Ticket' },
-  { itemKind: 0, itemId: 302, zh: '角色 EXP x3.0 票', en: 'Character EXP x3.0 Ticket' },
-  { itemKind: 0, itemId: 312, zh: '角色 EXP x6.0 票', en: 'Character EXP x6.0 Ticket' },
-  { itemKind: 0, itemId: 313, zh: '角色 EXP x9.0 票', en: 'Character EXP x9.0 Ticket' },
-  { itemKind: 0, itemId: 314, zh: '角色 EXP x12.0 票', en: 'Character EXP x12.0 Ticket' },
-  { itemKind: 7, itemId: 320, zh: '角色 EXP 储存票', en: 'Character EXP Stock Ticket' },
-  { itemKind: 7, itemId: 321, zh: '角色 EXP 储存票（赠送）', en: 'Character EXP Stock Ticket (Gift)' },
-  { itemKind: 1, itemId: 402, zh: 'MASTER 游玩票', en: 'MASTER Play Ticket' },
-  { itemKind: 2, itemId: 601, zh: 'ULTIMA 游玩票', en: 'ULTIMA Play Ticket' },
-  { itemKind: 3, itemId: 701, zh: "WORLD'S END 游玩票", en: "WORLD'S END Play Ticket" },
-  { itemKind: 4, itemId: 2020, zh: '地图进度 x2（高级）', en: 'Map Progress x2 (Premium)' },
-  { itemKind: 4, itemId: 2040, zh: '地图进度 x3（高级）', en: 'Map Progress x3 (Premium)' },
-  { itemKind: 4, itemId: 2060, zh: '地图进度 x4（高级）', en: 'Map Progress x4 (Premium)' },
-  { itemKind: 0, itemId: 3060, zh: '角色 EXP x6.0 票（高级）', en: 'Character EXP x6.0 Ticket (Premium)' },
-  { itemKind: 0, itemId: 3090, zh: '角色 EXP x9.0 票（高级）', en: 'Character EXP x9.0 Ticket (Premium)' },
-  { itemKind: 0, itemId: 3120, zh: '角色 EXP x12.0 票（高级）', en: 'Character EXP x12.0 Ticket (Premium)' },
-  { itemKind: 4, itemId: 5020, zh: '地图进度 x2（礼物）', en: 'Map Progress x2 (Gift)' },
-  { itemKind: 4, itemId: 5040, zh: '地图进度 x3（礼物）', en: 'Map Progress x3 (Gift)' },
-  { itemKind: 4, itemId: 5060, zh: '地图进度 x4（礼物）', en: 'Map Progress x4 (Gift)' },
-  { itemKind: 4, itemId: 5510, zh: 'SPECIAL 票（当日限定）', en: 'SPECIAL Ticket (Day Only)' },
+  { itemKind: 5, itemId: 110, zh: 'CHUNITHM-NET 标准票', en: 'CHUNITHM-NET Standard Ticket' },
+  { itemKind: 5, itemId: 302, zh: '角色 EXP x3.0 票', en: 'Character EXP x3.0 Ticket' },
+  { itemKind: 5, itemId: 312, zh: '角色 EXP x6.0 票', en: 'Character EXP x6.0 Ticket' },
+  { itemKind: 5, itemId: 313, zh: '角色 EXP x9.0 票', en: 'Character EXP x9.0 Ticket' },
+  { itemKind: 5, itemId: 314, zh: '角色 EXP x12.0 票', en: 'Character EXP x12.0 Ticket' },
+  { itemKind: 5, itemId: 320, zh: '角色 EXP 储存票', en: 'Character EXP Stock Ticket' },
+  { itemKind: 5, itemId: 321, zh: '角色 EXP 储存票（赠送）', en: 'Character EXP Stock Ticket (Gift)' },
+  { itemKind: 5, itemId: 402, zh: 'MASTER 游玩票', en: 'MASTER Play Ticket' },
+  { itemKind: 5, itemId: 601, zh: 'ULTIMA 游玩票', en: 'ULTIMA Play Ticket' },
+  { itemKind: 5, itemId: 701, zh: "WORLD'S END 游玩票", en: "WORLD'S END Play Ticket" },
+  { itemKind: 5, itemId: 2020, zh: '地图进度 x2（高级）', en: 'Map Progress x2 (Premium)' },
+  { itemKind: 5, itemId: 2040, zh: '地图进度 x3（高级）', en: 'Map Progress x3 (Premium)' },
+  { itemKind: 5, itemId: 2060, zh: '地图进度 x4（高级）', en: 'Map Progress x4 (Premium)' },
+  { itemKind: 5, itemId: 3060, zh: '角色 EXP x6.0 票（高级）', en: 'Character EXP x6.0 Ticket (Premium)' },
+  { itemKind: 5, itemId: 3090, zh: '角色 EXP x9.0 票（高级）', en: 'Character EXP x9.0 Ticket (Premium)' },
+  { itemKind: 5, itemId: 3120, zh: '角色 EXP x12.0 票（高级）', en: 'Character EXP x12.0 Ticket (Premium)' },
+  { itemKind: 5, itemId: 5020, zh: '地图进度 x2（礼物）', en: 'Map Progress x2 (Gift)' },
+  { itemKind: 5, itemId: 5040, zh: '地图进度 x3（礼物）', en: 'Map Progress x3 (Gift)' },
+  { itemKind: 5, itemId: 5060, zh: '地图进度 x4（礼物）', en: 'Map Progress x4 (Gift)' },
+  { itemKind: 5, itemId: 5510, zh: 'SPECIAL 票（当日限定）', en: 'SPECIAL Ticket (Day Only)' },
 ]
 
 const PENGUIN_OPTIONS: RewardOption[] = [
@@ -42,6 +42,29 @@ const PENGUIN_OPTIONS: RewardOption[] = [
 ]
 
 const NONE_VALUE = '__none__'
+const PENGUIN_ITEM_IDS = new Set(PENGUIN_OPTIONS.map((one) => one.itemId))
+const LEGACY_KIND_BY_ID = new Map<number, number>([
+  [110, 4],
+  [302, 0],
+  [312, 0],
+  [313, 0],
+  [314, 0],
+  [320, 7],
+  [321, 7],
+  [402, 1],
+  [601, 2],
+  [701, 3],
+  [2020, 4],
+  [2040, 4],
+  [2060, 4],
+  [3060, 0],
+  [3090, 0],
+  [3120, 0],
+  [5020, 4],
+  [5040, 4],
+  [5060, 4],
+  [5510, 4],
+])
 
 const LEGACY_BOOL_KEYS = [
   'chusanLoginRewardPenguinStatue',
@@ -65,9 +88,11 @@ function parseTokens(raw: string): Array<{ itemKind: number; itemId: number }> {
       const itemId = Number(m[2])
       const explicitKind = m[1] ? Number(m[1]) : null
       const itemKind =
-        explicitKind ??
         TICKET_OPTIONS.find((one) => one.itemId === itemId)?.itemKind ??
         PENGUIN_OPTIONS.find((one) => one.itemId === itemId)?.itemKind
+      if (explicitKind != null && explicitKind !== itemKind && explicitKind !== LEGACY_KIND_BY_ID.get(itemId)) {
+        return null
+      }
       if (itemKind == null) return null
       return { itemKind, itemId }
     })
@@ -108,8 +133,8 @@ export function ChusanLoginRewardSettings({
 
   useEffect(() => {
     const parsed = parseTokens(rawValue)
-    const ticket = parsed.find((one) => one.itemKind !== 5)
-    const penguin = parsed.find((one) => one.itemKind === 5)
+    const ticket = parsed.find((one) => !PENGUIN_ITEM_IDS.has(one.itemId))
+    const penguin = parsed.find((one) => PENGUIN_ITEM_IDS.has(one.itemId))
     setTicketValue(ticket ? `${ticket.itemKind}:${ticket.itemId}` : NONE_VALUE)
     setPenguinValue(penguin ? `${penguin.itemKind}:${penguin.itemId}` : NONE_VALUE)
   }, [rawValue])
