@@ -1,0 +1,481 @@
+import { useEffect, useState } from 'react'
+import { Button } from '@cloudflare/kumo/components/button'
+import { Checkbox } from '@cloudflare/kumo/components/checkbox'
+import { Input } from '@cloudflare/kumo/components/input'
+import { Text } from '@cloudflare/kumo/components/text'
+import { Table } from '@cloudflare/kumo/components/table'
+import { LayerCard } from '@cloudflare/kumo/components/layer-card'
+import * as api from '../../api/admin/downloadOrder'
+import type { DownloadAssignment, DownloadIni } from '../../api/admin/downloadOrder'
+
+const nowLocal = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 19)
+
+const emptyIni: api.DownloadIniWrite = {
+  fileName: '',
+  title: '',
+  gameId: 'SDGB',
+  optVersion: '',
+  orderTime: nowLocal(),
+  gameDesc: '',
+  partSize: '2048,8192,8192',
+  imageUrl: '',
+  optionalInstallUrls: '',
+  imageSize: undefined,
+  imageHash: '',
+  releaseTime: nowLocal(),
+  reportUrl: '',
+  reportInterval: 3600,
+  releaseType: 1,
+  immediatelyRelease: 0,
+  note: '',
+}
+
+const emptyAssignment: api.DownloadAssignmentWrite = {
+  serial: '',
+  gameId: 'SDGB',
+  version: '',
+  iniId: 0,
+  enabled: true,
+}
+
+function asIniWrite(row: DownloadIni): api.DownloadIniWrite {
+  return {
+    fileName: row.fileName,
+    title: row.title,
+    gameId: row.gameId,
+    optVersion: row.optVersion,
+    orderTime: row.orderTime ?? '',
+    gameDesc: row.gameDesc,
+    partSize: row.partSize,
+    imageUrl: row.imageUrl,
+    optionalInstallUrls: row.optionalInstallUrls ?? '',
+    imageSize: row.imageSize,
+    imageHash: row.imageHash ?? '',
+    releaseTime: row.releaseTime ?? '',
+    reportUrl: row.reportUrl,
+    reportInterval: row.reportInterval,
+    releaseType: row.releaseType,
+    immediatelyRelease: row.immediatelyRelease,
+    note: row.note ?? '',
+  }
+}
+
+export function AdminDownloadOrderPage() {
+  const [inis, setInis] = useState<DownloadIni[]>([])
+  const [assignments, setAssignments] = useState<DownloadAssignment[]>([])
+  const [reports, setReports] = useState<api.DownloadReport[]>([])
+  const [loaderStates, setLoaderStates] = useState<api.LoaderState[]>([])
+  const [form, setForm] = useState<api.DownloadIniWrite>(emptyIni)
+  const [assignmentForm, setAssignmentForm] = useState<api.DownloadAssignmentWrite>(emptyAssignment)
+  const [editingIni, setEditingIni] = useState<DownloadIni | null>(null)
+  const [editingAssignment, setEditingAssignment] = useState<DownloadAssignment | null>(null)
+  const [preview, setPreview] = useState('')
+  const [err, setErr] = useState<string | null>(null)
+
+  async function loadAll() {
+    setErr(null)
+    try {
+      const [iniRows, assignmentRows, reportRows, loaderRows] = await Promise.all([
+        api.listIni(),
+        api.listAssignments(),
+        api.listReports(),
+        api.listLoaderStates(),
+      ])
+      setInis(iniRows)
+      setAssignments(assignmentRows)
+      setReports(reportRows)
+      setLoaderStates(loaderRows)
+      if (assignmentForm.iniId === 0 && iniRows[0]) {
+        setAssignmentForm((old) => ({ ...old, iniId: iniRows[0].id }))
+      }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
+  useEffect(() => {
+    void loadAll()
+  }, [])
+
+  async function refreshPreview(next = form) {
+    setErr(null)
+    try {
+      setPreview((await api.previewIni(next)).content)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
+  async function createIni() {
+    setErr(null)
+    try {
+      await api.createIni(form)
+      setForm(emptyIni)
+      setPreview('')
+      await loadAll()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
+  async function saveIni() {
+    if (!editingIni) return
+    setErr(null)
+    try {
+      await api.updateIni(editingIni.id, asIniWrite(editingIni))
+      setEditingIni(null)
+      await loadAll()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
+  async function removeIni(id: number) {
+    if (!confirm('删除这个 INI 和所有分配？')) return
+    try {
+      await api.deleteIni(id)
+      await loadAll()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
+  async function createAssignment() {
+    setErr(null)
+    try {
+      await api.createAssignment(assignmentForm)
+      setAssignmentForm({ ...emptyAssignment, iniId: assignmentForm.iniId })
+      await loadAll()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
+  async function saveAssignment() {
+    if (!editingAssignment) return
+    setErr(null)
+    try {
+      await api.updateAssignment(editingAssignment.id, {
+        serial: editingAssignment.serial,
+        gameId: editingAssignment.gameId,
+        version: editingAssignment.version,
+        iniId: editingAssignment.iniId,
+        enabled: editingAssignment.enabled,
+      })
+      setEditingAssignment(null)
+      await loadAll()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
+  async function removeAssignment(id: number) {
+    if (!confirm('删除这个序列号分配？')) return
+    try {
+      await api.deleteAssignment(id)
+      await loadAll()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
+  function setIniField<K extends keyof api.DownloadIniWrite>(key: K, value: api.DownloadIniWrite[K]) {
+    setForm((old) => ({ ...old, [key]: value }))
+  }
+
+  function input(
+    label: string,
+    value: string | number | undefined,
+    onChange: (value: string) => void,
+    type = 'text',
+  ) {
+    return (
+      <label className="flex flex-col gap-1 text-sm">
+        {label}
+        <Input type={type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} />
+      </label>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
+
+      <LayerCard className="p-4">
+        <LayerCard.Secondary>新建 opt INI</LayerCard.Secondary>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {input('文件名', form.fileName, (v) => setIniField('fileName', v))}
+          {input('标题', form.title, (v) => setIniField('title', v))}
+          {input('GAME_ID', form.gameId, (v) => setIniField('gameId', v.toUpperCase()))}
+          {input('optVersion', form.optVersion, (v) => setIniField('optVersion', v))}
+          {input('GAME_DESC', form.gameDesc, (v) => setIniField('gameDesc', v))}
+          {input('PART_SIZE', form.partSize, (v) => setIniField('partSize', v))}
+          {input('ORDER_TIME', form.orderTime, (v) => setIniField('orderTime', v))}
+          {input('RELEASE_TIME', form.releaseTime, (v) => setIniField('releaseTime', v))}
+          {input('REPORT', form.reportUrl, (v) => setIniField('reportUrl', v))}
+          {input('REPORT_INTERVAL', form.reportInterval, (v) => setIniField('reportInterval', Number(v) || 3600), 'number')}
+          {input('RELEASE_TYPE', form.releaseType, (v) => setIniField('releaseType', Number(v) || 1), 'number')}
+          {input(
+            'IMMEDIATELY_RELEASE',
+            form.immediatelyRelease,
+            (v) => setIniField('immediatelyRelease', Number(v) || 0),
+            'number',
+          )}
+        </div>
+        <label className="mt-3 flex flex-col gap-1 text-sm">
+          INSTALL1
+          <Input value={form.imageUrl} onChange={(e) => setIniField('imageUrl', e.target.value)} />
+        </label>
+        <label className="mt-3 flex flex-col gap-1 text-sm">
+          OPTIONAL INSTALL URL，每行一个
+          <textarea
+            className="min-h-24 rounded-md border border-kumo-line bg-kumo-bg p-2 font-mono text-sm"
+            value={form.optionalInstallUrls ?? ''}
+            onChange={(e) => setIniField('optionalInstallUrls', e.target.value)}
+          />
+        </label>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => void refreshPreview()}>
+            预览
+          </Button>
+          <Button onClick={() => void createIni()}>创建</Button>
+        </div>
+        {preview ? (
+          <pre className="mt-4 max-h-96 overflow-auto rounded-md border border-kumo-line p-3 text-xs">
+            {preview}
+          </pre>
+        ) : null}
+      </LayerCard>
+
+      {editingIni ? (
+        <LayerCard className="p-4">
+          <LayerCard.Secondary>编辑 INI #{editingIni.id}</LayerCard.Secondary>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {input('文件名', editingIni.fileName, (v) => setEditingIni({ ...editingIni, fileName: v }))}
+            {input('标题', editingIni.title, (v) => setEditingIni({ ...editingIni, title: v }))}
+            {input('GAME_ID', editingIni.gameId, (v) => setEditingIni({ ...editingIni, gameId: v.toUpperCase() }))}
+            {input('optVersion', editingIni.optVersion, (v) => setEditingIni({ ...editingIni, optVersion: v }))}
+            {input('GAME_DESC', editingIni.gameDesc, (v) => setEditingIni({ ...editingIni, gameDesc: v }))}
+            {input('ORDER_TIME', editingIni.orderTime, (v) => setEditingIni({ ...editingIni, orderTime: v }))}
+            {input('RELEASE_TIME', editingIni.releaseTime, (v) => setEditingIni({ ...editingIni, releaseTime: v }))}
+            {input('REPORT', editingIni.reportUrl, (v) => setEditingIni({ ...editingIni, reportUrl: v }))}
+          </div>
+          <label className="mt-3 flex flex-col gap-1 text-sm">
+            INSTALL1
+            <Input value={editingIni.imageUrl} onChange={(e) => setEditingIni({ ...editingIni, imageUrl: e.target.value })} />
+          </label>
+          <label className="mt-3 flex flex-col gap-1 text-sm">
+            OPTIONAL INSTALL URL，每行一个
+            <textarea
+              className="min-h-24 rounded-md border border-kumo-line bg-kumo-bg p-2 font-mono text-sm"
+              value={editingIni.optionalInstallUrls ?? ''}
+              onChange={(e) => setEditingIni({ ...editingIni, optionalInstallUrls: e.target.value })}
+            />
+          </label>
+          <div className="mt-4 flex gap-2">
+            <Button variant="secondary" onClick={() => setEditingIni(null)}>
+              取消
+            </Button>
+            <Button onClick={() => void saveIni()}>保存</Button>
+          </div>
+        </LayerCard>
+      ) : null}
+
+      <LayerCard className="p-4">
+        <LayerCard.Secondary>INI 列表</LayerCard.Secondary>
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.Head>ID</Table.Head>
+              <Table.Head>文件</Table.Head>
+              <Table.Head>游戏</Table.Head>
+              <Table.Head>描述</Table.Head>
+              <Table.Head />
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {inis.map((row) => (
+              <Table.Row key={row.id}>
+                <Table.Cell>{row.id}</Table.Cell>
+                <Table.Cell>{row.fileName}</Table.Cell>
+                <Table.Cell>{row.gameId}</Table.Cell>
+                <Table.Cell>{row.gameDesc}</Table.Cell>
+                <Table.Cell className="flex flex-wrap gap-1">
+                  <Button size="sm" variant="secondary" onClick={() => setEditingIni({ ...row })}>
+                    编辑
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => void removeIni(row.id)}>
+                    删除
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </LayerCard>
+
+      <LayerCard className="p-4">
+        <LayerCard.Secondary>序列号下发</LayerCard.Secondary>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+          {input('serial', assignmentForm.serial, (v) => setAssignmentForm({ ...assignmentForm, serial: v.toUpperCase() }))}
+          {input('GAME_ID', assignmentForm.gameId, (v) => setAssignmentForm({ ...assignmentForm, gameId: v.toUpperCase() }))}
+          {input('客户端版本 ver', assignmentForm.version, (v) => setAssignmentForm({ ...assignmentForm, version: v }))}
+          <label className="flex flex-col gap-1 text-sm">
+            INI
+            <select
+              className="rounded-md border border-kumo-line bg-kumo-bg p-2"
+              value={assignmentForm.iniId}
+              onChange={(e) => setAssignmentForm({ ...assignmentForm, iniId: Number(e.target.value) })}
+            >
+              <option value={0}>请选择</option>
+              {inis.map((row) => (
+                <option key={row.id} value={row.id}>
+                  {row.fileName}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Checkbox
+            controlFirst
+            label="启用"
+            className="self-end text-sm"
+            checked={assignmentForm.enabled}
+            onCheckedChange={(v) => setAssignmentForm({ ...assignmentForm, enabled: v })}
+          />
+        </div>
+        <Button className="mt-4" onClick={() => void createAssignment()}>
+          创建分配
+        </Button>
+      </LayerCard>
+
+      {editingAssignment ? (
+        <LayerCard className="p-4">
+          <LayerCard.Secondary>编辑分配 #{editingAssignment.id}</LayerCard.Secondary>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+            {input('serial', editingAssignment.serial, (v) => setEditingAssignment({ ...editingAssignment, serial: v.toUpperCase() }))}
+            {input('GAME_ID', editingAssignment.gameId, (v) => setEditingAssignment({ ...editingAssignment, gameId: v.toUpperCase() }))}
+            {input('客户端版本 ver', editingAssignment.version, (v) => setEditingAssignment({ ...editingAssignment, version: v }))}
+            <label className="flex flex-col gap-1 text-sm">
+              INI
+              <select
+                className="rounded-md border border-kumo-line bg-kumo-bg p-2"
+                value={editingAssignment.iniId}
+                onChange={(e) => setEditingAssignment({ ...editingAssignment, iniId: Number(e.target.value) })}
+              >
+                {inis.map((row) => (
+                  <option key={row.id} value={row.id}>
+                    {row.fileName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Checkbox
+              controlFirst
+              label="启用"
+              className="self-end text-sm"
+              checked={editingAssignment.enabled}
+              onCheckedChange={(v) => setEditingAssignment({ ...editingAssignment, enabled: v })}
+            />
+          </div>
+          <div className="mt-4 flex gap-2">
+            <Button variant="secondary" onClick={() => setEditingAssignment(null)}>
+              取消
+            </Button>
+            <Button onClick={() => void saveAssignment()}>保存</Button>
+          </div>
+        </LayerCard>
+      ) : null}
+
+      <LayerCard className="p-4">
+        <LayerCard.Secondary>分配列表</LayerCard.Secondary>
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.Head>serial</Table.Head>
+              <Table.Head>游戏</Table.Head>
+              <Table.Head>ver</Table.Head>
+              <Table.Head>INI</Table.Head>
+              <Table.Head>启用</Table.Head>
+              <Table.Head />
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {assignments.map((row) => (
+              <Table.Row key={row.id}>
+                <Table.Cell>{row.serial}</Table.Cell>
+                <Table.Cell>{row.gameId}</Table.Cell>
+                <Table.Cell>{row.version}</Table.Cell>
+                <Table.Cell>{row.iniFileName}</Table.Cell>
+                <Table.Cell>{row.enabled ? '是' : '否'}</Table.Cell>
+                <Table.Cell className="flex flex-wrap gap-1">
+                  <Button size="sm" variant="secondary" onClick={() => setEditingAssignment({ ...row })}>
+                    编辑
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => void removeAssignment(row.id)}>
+                    删除
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </LayerCard>
+
+      <LayerCard className="p-4">
+        <LayerCard.Secondary>下载报告</LayerCard.Secondary>
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.Head>时间</Table.Head>
+              <Table.Head>serial</Table.Head>
+              <Table.Head>游戏</Table.Head>
+              <Table.Head>类型</Table.Head>
+              <Table.Head>状态</Table.Head>
+              <Table.Head>进度</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {reports.map((row) => (
+              <Table.Row key={row.id}>
+                <Table.Cell>{new Date(row.createdAt).toLocaleString()}</Table.Cell>
+                <Table.Cell>{row.serial}</Table.Cell>
+                <Table.Cell>{row.gameId}</Table.Cell>
+                <Table.Cell>{row.imageType}</Table.Cell>
+                <Table.Cell>{row.state}</Table.Cell>
+                <Table.Cell>
+                  {row.downloadedSegmentCount}/{row.totalSegmentCount}
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </LayerCard>
+
+      <LayerCard className="p-4">
+        <LayerCard.Secondary>LoaderStateRecorder</LayerCard.Secondary>
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.Head>时间</Table.Head>
+              <Table.Head>serial</Table.Head>
+              <Table.Head>状态</Table.Head>
+              <Table.Head>文件</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {loaderStates.map((row) => (
+              <Table.Row key={row.id}>
+                <Table.Cell>{new Date(row.createdAt).toLocaleString()}</Table.Cell>
+                <Table.Cell>{row.serial}</Table.Cell>
+                <Table.Cell>{row.downloadState}</Table.Cell>
+                <Table.Cell>
+                  {row.numFilesDownloaded}/{row.numFilesToDownload}
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </LayerCard>
+    </div>
+  )
+}

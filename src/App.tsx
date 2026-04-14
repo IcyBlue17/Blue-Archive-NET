@@ -35,6 +35,7 @@ import { AdminUserListPage } from './pages/admin/UserList'
 import { AdminUserDetailPage } from './pages/admin/UserDetail'
 import { AdminLoginBonusPage } from './pages/admin/LoginBonus'
 import { AdminUnlockChallengePage } from './pages/admin/UnlockChallenge'
+import { AdminDownloadOrderPage } from './pages/admin/DownloadOrder'
 import { PageNotFound } from './pages/PageNotFound'
 
 function RootRedirect() {
@@ -87,6 +88,7 @@ export default function App() {
                           <Route path="users/:id" element={<AdminUserDetailPage />} />
                           <Route path="login-bonus" element={<AdminLoginBonusPage />} />
                           <Route path="unlock-challenge" element={<AdminUnlockChallengePage />} />
+                          <Route path="download-order" element={<AdminDownloadOrderPage />} />
                         </Route>
                       </Route>
                     </Route>

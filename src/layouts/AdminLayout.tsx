@@ -9,6 +9,7 @@ const ADMIN_TABS = [
   { path: '/admin/users', value: 'users', label: '用户' },
   { path: '/admin/login-bonus', value: 'login-bonus', label: '登录奖励' },
   { path: '/admin/unlock-challenge', value: 'unlock', label: '解锁挑战' },
+  { path: '/admin/download-order', value: 'download-order', label: 'DownloadOrder' },
 ] as const
 
 export function AdminLayout() {
@@ -20,6 +21,7 @@ export function AdminLayout() {
     if (loc.pathname.startsWith('/admin/users')) return 'users'
     if (loc.pathname.startsWith('/admin/login-bonus')) return 'login-bonus'
     if (loc.pathname.startsWith('/admin/unlock-challenge')) return 'unlock'
+    if (loc.pathname.startsWith('/admin/download-order')) return 'download-order'
     return 'overview'
   }, [loc.pathname])
 
