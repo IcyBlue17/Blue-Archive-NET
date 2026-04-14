@@ -34,15 +34,7 @@ const TICKET_OPTIONS: RewardOption[] = [
   { itemKind: 5, itemId: 5510, zh: 'SPECIAL 票（当日限定）', en: 'SPECIAL Ticket (Day Only)' },
 ]
 
-const PENGUIN_OPTIONS: RewardOption[] = [
-  { itemKind: 5, itemId: 8000, zh: '企鹅像', en: 'Penguin Statue' },
-  { itemKind: 5, itemId: 8010, zh: '小企鹅像', en: 'Show-Ni Statue' },
-  { itemKind: 5, itemId: 8020, zh: '灵魂像', en: 'Soul of Statue' },
-  { itemKind: 5, itemId: 8030, zh: '虹限像', en: 'Rainbow Statue' },
-]
-
 const NONE_VALUE = '__none__'
-const PENGUIN_ITEM_IDS = new Set(PENGUIN_OPTIONS.map((one) => one.itemId))
 
 function parseTokens(raw: string): Array<{ itemKind: number; itemId: number }> {
   return raw
@@ -54,9 +46,7 @@ function parseTokens(raw: string): Array<{ itemKind: number; itemId: number }> {
       if (!m) return null
       const itemId = Number(m[2])
       const explicitKind = Number(m[1])
-      const itemKind =
-        TICKET_OPTIONS.find((one) => one.itemId === itemId)?.itemKind ??
-        PENGUIN_OPTIONS.find((one) => one.itemId === itemId)?.itemKind
+      const itemKind = TICKET_OPTIONS.find((one) => one.itemId === itemId)?.itemKind
       if (explicitKind !== itemKind) return null
       if (itemKind == null) return null
       return { itemKind, itemId }
@@ -81,7 +71,6 @@ export function ChusanLoginRewardSettings({
 }) {
   const rawValue = String(options.find((o) => o.key === 'chusanLoginRewardItems')?.value ?? '')
   const [ticketValue, setTicketValue] = useState(NONE_VALUE)
-  const [penguinValue, setPenguinValue] = useState(NONE_VALUE)
   const [saving, setSaving] = useState(false)
 
   const ticketItems = useMemo(() => {
@@ -90,25 +79,16 @@ export function ChusanLoginRewardSettings({
     return items
   }, [locale])
 
-  const penguinItems = useMemo(() => {
-    const items: Record<string, string> = { [NONE_VALUE]: locale === 'zh' ? '无' : 'None' }
-    for (const one of PENGUIN_OPTIONS) items[`${one.itemKind}:${one.itemId}`] = displayName(one, locale)
-    return items
-  }, [locale])
-
   useEffect(() => {
     const parsed = parseTokens(rawValue)
-    const ticket = parsed.find((one) => !PENGUIN_ITEM_IDS.has(one.itemId))
-    const penguin = parsed.find((one) => PENGUIN_ITEM_IDS.has(one.itemId))
+    const ticket = parsed[0]
     setTicketValue(ticket ? `${ticket.itemKind}:${ticket.itemId}` : NONE_VALUE)
-    setPenguinValue(penguin ? `${penguin.itemKind}:${penguin.itemId}` : NONE_VALUE)
   }, [rawValue])
 
   async function saveRewards() {
     setSaving(true)
     try {
-      const parts = [ticketValue, penguinValue].filter((value) => value !== NONE_VALUE)
-      await onSet('chusanLoginRewardItems', parts.join(','))
+      await onSet('chusanLoginRewardItems', ticketValue === NONE_VALUE ? '' : ticketValue)
       await onReload()
     } finally {
       setSaving(false)
@@ -116,26 +96,15 @@ export function ChusanLoginRewardSettings({
   }
 
   return (
-    <div className="mt-4 flex max-w-2xl flex-col gap-4">
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{locale === 'zh' ? '票券' : 'Ticket'}</span>
-          <Select
-            value={ticketValue}
-            items={ticketItems}
-            onValueChange={(value) => setTicketValue(String(value ?? NONE_VALUE))}
-          />
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{locale === 'zh' ? '企鹅' : 'Penguin'}</span>
-          <Select
-            value={penguinValue}
-            items={penguinItems}
-            onValueChange={(value) => setPenguinValue(String(value ?? NONE_VALUE))}
-          />
-        </label>
-      </div>
+    <div className="mt-4 flex max-w-md flex-col gap-4">
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium">{locale === 'zh' ? '票券' : 'Ticket'}</span>
+        <Select
+          value={ticketValue}
+          items={ticketItems}
+          onValueChange={(value) => setTicketValue(String(value ?? NONE_VALUE))}
+        />
+      </label>
 
       <div>
         <Button size="sm" variant="secondary" disabled={saving} onClick={() => void saveRewards()}>

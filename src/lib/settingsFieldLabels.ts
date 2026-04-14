@@ -72,10 +72,10 @@ const LABELS: Record<string, { zh: { name: string; desc: string }; en: { name: s
     },
   },
   chusanLoginRewardItems: {
-    zh: { name: '登录奖励', desc: '每次 GameLogin 发放 1 张票和 1 个企鹅像。' },
+    zh: { name: '登录奖励', desc: '每次 GameLogin 发放 1 张票。' },
     en: {
       name: 'Login Rewards',
-      desc: 'Grant 1 ticket and 1 penguin statue on every GameLogin.',
+      desc: 'Grant 1 ticket on every GameLogin.',
     },
   },
   chusanLvUnlockAll: {
