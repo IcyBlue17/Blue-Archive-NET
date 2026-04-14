@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Select } from '@cloudflare/kumo/components/select'
-import { Text } from '@cloudflare/kumo/components/text'
 import type { GameOption } from '../../lib/types'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 
@@ -41,6 +40,8 @@ const PENGUIN_OPTIONS: RewardOption[] = [
   { itemKind: 5, itemId: 8020, zh: '灵魂像', en: 'Soul of Statue' },
   { itemKind: 5, itemId: 8030, zh: '虹限像', en: 'Rainbow Statue' },
 ]
+
+const NONE_VALUE = '__none__'
 
 const LEGACY_BOOL_KEYS = [
   'chusanLoginRewardPenguinStatue',
@@ -89,34 +90,28 @@ export function ChusanLoginRewardSettings({
   onReload: () => Promise<void>
 }) {
   const rawValue = String(options.find((o) => o.key === 'chusanLoginRewardItems')?.value ?? '')
-  const [ticketValue, setTicketValue] = useState('')
-  const [penguinValue, setPenguinValue] = useState('')
+  const [ticketValue, setTicketValue] = useState(NONE_VALUE)
+  const [penguinValue, setPenguinValue] = useState(NONE_VALUE)
   const [saving, setSaving] = useState(false)
 
-  const ticketSelectOptions = useMemo(
-    () =>
-      TICKET_OPTIONS.map((one) => ({
-        value: `${one.itemKind}:${one.itemId}`,
-        label: displayName(one, locale),
-      })),
-    [locale],
-  )
+  const ticketItems = useMemo(() => {
+    const items: Record<string, string> = { [NONE_VALUE]: locale === 'zh' ? '无' : 'None' }
+    for (const one of TICKET_OPTIONS) items[`${one.itemKind}:${one.itemId}`] = displayName(one, locale)
+    return items
+  }, [locale])
 
-  const penguinSelectOptions = useMemo(
-    () =>
-      PENGUIN_OPTIONS.map((one) => ({
-        value: `${one.itemKind}:${one.itemId}`,
-        label: displayName(one, locale),
-      })),
-    [locale],
-  )
+  const penguinItems = useMemo(() => {
+    const items: Record<string, string> = { [NONE_VALUE]: locale === 'zh' ? '无' : 'None' }
+    for (const one of PENGUIN_OPTIONS) items[`${one.itemKind}:${one.itemId}`] = displayName(one, locale)
+    return items
+  }, [locale])
 
   useEffect(() => {
     const parsed = parseTokens(rawValue)
     const ticket = parsed.find((one) => one.itemKind !== 5)
     const penguin = parsed.find((one) => one.itemKind === 5)
-    setTicketValue(ticket ? `${ticket.itemKind}:${ticket.itemId}` : '')
-    setPenguinValue(penguin ? `${penguin.itemKind}:${penguin.itemId}` : '')
+    setTicketValue(ticket ? `${ticket.itemKind}:${ticket.itemId}` : NONE_VALUE)
+    setPenguinValue(penguin ? `${penguin.itemKind}:${penguin.itemId}` : NONE_VALUE)
   }, [rawValue])
 
   async function saveRewards() {
@@ -125,7 +120,7 @@ export function ChusanLoginRewardSettings({
       for (const key of LEGACY_BOOL_KEYS) {
         await onSet(key, 'false')
       }
-      const parts = [ticketValue, penguinValue].filter(Boolean)
+      const parts = [ticketValue, penguinValue].filter((value) => value !== NONE_VALUE)
       await onSet('chusanLoginRewardItems', parts.join(','))
       await onReload()
     } finally {
@@ -135,35 +130,23 @@ export function ChusanLoginRewardSettings({
 
   return (
     <div className="mt-4 flex max-w-2xl flex-col gap-4">
-      <Text DANGEROUS_className="text-kumo-subtle text-sm">
-        {locale === 'zh'
-          ? '每次 GameLogin 固定发放 1 个票和 1 个企鹅像；都可以设为无。'
-          : 'Each GameLogin grants exactly one ticket and one penguin statue; both can be set to none.'}
-      </Text>
-
       <div className="grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">{locale === 'zh' ? '票券' : 'Ticket'}</span>
-          <Select value={ticketValue} onValueChange={(value) => setTicketValue(String(value ?? ''))}>
-            <Select.Option value="">{locale === 'zh' ? '无' : 'None'}</Select.Option>
-            {ticketSelectOptions.map((one) => (
-              <Select.Option key={one.value} value={one.value}>
-                {one.label}
-              </Select.Option>
-            ))}
-          </Select>
+          <Select
+            value={ticketValue}
+            items={ticketItems}
+            onValueChange={(value) => setTicketValue(String(value ?? NONE_VALUE))}
+          />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">{locale === 'zh' ? '企鹅' : 'Penguin'}</span>
-          <Select value={penguinValue} onValueChange={(value) => setPenguinValue(String(value ?? ''))}>
-            <Select.Option value="">{locale === 'zh' ? '无' : 'None'}</Select.Option>
-            {penguinSelectOptions.map((one) => (
-              <Select.Option key={one.value} value={one.value}>
-                {one.label}
-              </Select.Option>
-            ))}
-          </Select>
+          <Select
+            value={penguinValue}
+            items={penguinItems}
+            onValueChange={(value) => setPenguinValue(String(value ?? NONE_VALUE))}
+          />
         </label>
       </div>
 
