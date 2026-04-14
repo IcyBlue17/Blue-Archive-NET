@@ -50,14 +50,14 @@ function parseTokens(raw: string): Array<{ itemKind: number; itemId: number }> {
     .map((one) => one.trim())
     .filter(Boolean)
     .map((token) => {
-      const m = /^(?:(\d+)\s*:\s*)?(\d+)/.exec(token)
+      const m = /^(\d+)\s*:\s*(\d+)/.exec(token)
       if (!m) return null
       const itemId = Number(m[2])
-      const explicitKind = m[1] ? Number(m[1]) : null
+      const explicitKind = Number(m[1])
       const itemKind =
         TICKET_OPTIONS.find((one) => one.itemId === itemId)?.itemKind ??
         PENGUIN_OPTIONS.find((one) => one.itemId === itemId)?.itemKind
-      if (explicitKind != null && explicitKind !== itemKind) return null
+      if (explicitKind !== itemKind) return null
       if (itemKind == null) return null
       return { itemKind, itemId }
     })
