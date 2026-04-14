@@ -12,6 +12,7 @@ import { CHU3_MATCHINGS } from '../../lib/config'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import type { ChusanMatchingOption, GameOption } from '../../lib/types'
 import { Chu3AppearanceSettings } from './Chu3AppearanceSettings'
+import { ChusanLoginRewardSettings } from './ChusanLoginRewardSettings'
 import { GameOptionFields } from './GameOptionFields'
 
 export function ChusanExtraSettings({
@@ -42,6 +43,10 @@ export function ChusanExtraSettings({
   const [lastFile1, setLastFile1] = useState('')
   const inputRef1 = useRef<HTMLInputElement | null>(null)
   const basicOptions = useMemo(() => options.filter((o) => o.key !== 'chusanTeamName'), [options])
+  const loginRewardOptions = useMemo(
+    () => options.filter((o) => o.key !== 'chusanLoginRewardItems'),
+    [options],
+  )
 
   const matchingUrl = String(options.find((o) => o.key === 'chusanMatchingServer')?.value ?? '')
 
@@ -176,11 +181,12 @@ export function ChusanExtraSettings({
             : 'These are granted directly to inventory on every GameLogin, not once per day.'}
         </blockquote>
         <GameOptionFields
-          options={options}
+          options={loginRewardOptions}
           gameFilter={(g) => g === 'chu3-login-reward'}
           locale={locale}
           onSet={onSet}
         />
+        <ChusanLoginRewardSettings options={options} locale={locale} onSet={onSet} />
       </section>
 
       <section>

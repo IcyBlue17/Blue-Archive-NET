@@ -127,6 +127,13 @@ const LABELS: Record<string, { zh: { name: string; desc: string }; en: { name: s
       desc: 'Grant 1 WORLD\'S END Play Ticket (701) on every GameLogin.',
     },
   },
+  chusanLoginRewardItems: {
+    zh: { name: '登录奖励自定义票券', desc: '按 kind:id[x数量] 存储的高级配置；建议使用下方下拉选择器维护。' },
+    en: {
+      name: 'Custom Login Reward Tickets',
+      desc: 'Advanced kind:id[xcount] storage; use the selector below instead of editing by hand.',
+    },
+  },
   chusanLvUnlockAll: {
     zh: { name: '解锁 Linked Gates', desc: '会有较长演出且无法撤销。' },
     en: { name: 'Unlock Linked Gates', desc: 'Incurs a long animated sequence, cannot be undone' },
