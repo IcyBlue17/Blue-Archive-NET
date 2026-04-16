@@ -29,8 +29,8 @@ export function SetupPage() {
 
   useEffect(() => {
     void userApi
-      .keychip()
-      .then(setKeychip)
+      .listKeychips()
+      .then((keychips) => setKeychip(keychips[0] ?? null))
       .catch(() => setKeychip(null))
   }, [])
 
@@ -42,7 +42,7 @@ export function SetupPage() {
   async function allocate() {
     setErr(null)
     try {
-      const k = await userApi.keychip()
+      const k = await userApi.allocateKeychip()
       setKeychip(k)
       toast.add({
         title: 'Keychip 已就绪',

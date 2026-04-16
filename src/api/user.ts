@@ -55,9 +55,14 @@ export async function setting(key: string, value: string) {
   return userPost('/api/v2/user/setting', { key: k, value })
 }
 
-export async function keychip(): Promise<string> {
-  const r = (await userPost('/api/v2/user/keychip', {})) as { keychip: string }
-  return r.keychip
+export async function listKeychips(): Promise<string[]> {
+  const r = (await userPost('/api/v2/user/keychip', {})) as { keychips?: string[] }
+  return r.keychips ?? []
+}
+
+export async function allocateKeychip(): Promise<string> {
+  const r = (await userPost('/api/v2/user/keychip/allocate', {})) as { keychipId: string }
+  return r.keychipId
 }
 
 export async function uploadPfp(file: File) {
