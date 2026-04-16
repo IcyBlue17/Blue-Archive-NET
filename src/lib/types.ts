@@ -63,13 +63,7 @@ export interface MusicMetaNote {
   lv_id?: number | null
   notes?: number | null
   typeId?: number | null
-  version?: string | number | null
-  releaseTag?: string | null
-  releaseTagId?: number | null
-  resourceVersion?: string | null
-  resourceVersionId?: number | null
-  netOpenName?: string | null
-  netOpenId?: number | null
+  versionKey?: string | null
 }
 
 export interface MusicMeta {
@@ -79,6 +73,8 @@ export interface MusicMeta {
   bpm?: number | string | null
   genre?: string | null
   ver?: string | number | null
+  versionKey?: string | null
+  netOpenVersionKey?: string | null
   notes?: MusicMetaNote[]
   worldsEndTag?: string
   worldsEndStars?: number

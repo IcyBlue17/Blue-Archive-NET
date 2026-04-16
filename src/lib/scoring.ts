@@ -102,19 +102,15 @@ export interface MusicMetaLite {
   name?: string | null
   composer?: string | null
   ver?: string | number | null
+  versionKey?: string | null
+  netOpenVersionKey?: string | null
   genre?: string | null
   worldsEndTag?: string | null
   worldsEndStars?: number | null
   notes?: {
     lv?: number | null
     typeId?: number | null
-    version?: string | number | null
-    releaseTag?: string | null
-    releaseTagId?: number | null
-    resourceVersion?: string | null
-    resourceVersionId?: number | null
-    netOpenName?: string | null
-    netOpenId?: number | null
+    versionKey?: string | null
   }[]
 }
 
