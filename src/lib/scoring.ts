@@ -105,7 +105,17 @@ export interface MusicMetaLite {
   genre?: string | null
   worldsEndTag?: string | null
   worldsEndStars?: number | null
-  notes?: { lv?: number | null }[]
+  notes?: {
+    lv?: number | null
+    typeId?: number | null
+    version?: string | number | null
+    releaseTag?: string | null
+    releaseTagId?: number | null
+    resourceVersion?: string | null
+    resourceVersionId?: number | null
+    netOpenName?: string | null
+    netOpenId?: number | null
+  }[]
 }
 
 export interface ParsedComposition {

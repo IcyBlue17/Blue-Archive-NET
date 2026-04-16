@@ -62,6 +62,14 @@ export interface MusicMetaNote {
   designer?: string | null
   lv_id?: number | null
   notes?: number | null
+  typeId?: number | null
+  version?: string | number | null
+  releaseTag?: string | null
+  releaseTagId?: number | null
+  resourceVersion?: string | null
+  resourceVersionId?: number | null
+  netOpenName?: string | null
+  netOpenId?: number | null
 }
 
 export interface MusicMeta {
