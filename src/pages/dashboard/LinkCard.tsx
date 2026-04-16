@@ -5,19 +5,15 @@ import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { Table } from '@cloudflare/kumo/components/table'
+import { CardSummaryGrid } from '../../components/common/CardSummaryGrid'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
 import { useAppTexts } from '../../content/texts'
 import { useAuth } from '../../hooks/useAuth'
-import { formatDateTimeMaybe } from '../../lib/format'
 import { qk } from '../../lib/query'
 import * as cardApi from '../../api/card'
-import type { Card, CardSummary, CardSummaryGame } from '../../lib/types'
-import { cardSummaryKeyToGame, formatDisplayRating } from '../../lib/gameRatingDisplay'
-import { gameTitle } from '../../lib/gameTitles'
+import type { Card, CardSummary } from '../../lib/types'
 import { useI18n } from '../../lib/i18n'
-
-const SUMMARY_KEYS: (keyof CardSummary)[] = ['chu3', 'mai2', 'ongeki', 'wacca', 'diva']
 
 /** 与后端 `CardController` 默认迁移列表一致；不在 UI 暴露以免误填。 */
 const DEFAULT_MIGRATE = 'mai2,chu3'
@@ -98,27 +94,16 @@ export function LinkCardPage() {
           <Text DANGEROUS_className="text-kumo-subtle mt-2">{copy.common.empty}</Text>
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {SUMMARY_KEYS.map((key) => {
-              const row = ghostSummary[key] as CardSummaryGame | null | undefined
-              if (!row) return null
-              const title = gameTitle(String(key), locale === 'en' ? 'en' : 'zh')
-              const g = cardSummaryKeyToGame(key)
-              const ratingStr =
-                g != null
-                  ? formatDisplayRating(row.rating, g)
-                  : Number.isFinite(row.rating)
-                    ? String(Math.round(row.rating))
-                    : '—'
-              return (
-                <div key={String(key)} className="border-kumo-border rounded-md border px-3 py-2">
-                  <div className="font-medium">{title}</div>
-                  <div className="text-kumo-subtle text-sm">{row.name}</div>
-                  <div className="text-kumo-subtle text-xs">
-                    {copy.linkCard.rating} {ratingStr} · {formatDateTimeMaybe(row.lastLogin, locale)}
-                  </div>
-                </div>
-              )
-            })}
+            <CardSummaryGrid
+              summary={ghostSummary}
+              locale={locale === 'en' ? 'en' : 'zh'}
+              texts={copy}
+              itemClassName="border-kumo-border rounded-md border px-3 py-2"
+              nameClassName="text-kumo-subtle text-sm"
+              detailClassName="text-kumo-subtle text-xs"
+              ratingLabel={copy.linkCard.rating}
+              lastLoginLabel={copy.homePage.lastLogin}
+            />
           </div>
         )}
       </LayerCard>

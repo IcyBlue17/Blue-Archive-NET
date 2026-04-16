@@ -6,19 +6,12 @@ import { Text } from '@cloudflare/kumo/components/text'
 import { chartRating1, diffLabel1, fmtRate1, fmtScore1, fmtTime1, formatLv1, playTime1, rank1, recordKey1, score1 } from '../../lib/chu3PlaylogView'
 import { imgCross1 } from '../../lib/imgSign'
 import { musicJacketUrl } from '../../lib/musicCover'
+import { buildPageNumbers } from '../../lib/pagination'
 import { getAppTexts } from '../../content/texts'
 import type { MusicMetaLite } from '../../lib/scoring'
 import type { GamePlayRecord } from '../../lib/types'
 
 const PAGE_SIZE = 12
-
-function pageNums1(page: number, total: number): number[] {
-  const start1 = Math.max(1, page - 2)
-  const end1 = Math.min(total, start1 + 4)
-  const out1: number[] = []
-  for (let i1 = start1; i1 <= end1; i1++) out1.push(i1)
-  return out1
-}
 
 export function Chu3PlaylogExplorer({
   musicById,
@@ -141,7 +134,7 @@ export function Chu3PlaylogExplorer({
             <Button size="sm" variant="secondary" disabled={page1 <= 1} onClick={() => setPage1((x1) => Math.max(1, x1 - 1))}>
               {texts.common.previousPage}
             </Button>
-            {pageNums1(page1, totalPage1).map((n1) => (
+            {buildPageNumbers(page1, totalPage1).map((n1) => (
               <Button key={n1} size="sm" variant={n1 === page1 ? 'primary' : 'secondary'} onClick={() => setPage1(n1)}>
                 {n1}
               </Button>

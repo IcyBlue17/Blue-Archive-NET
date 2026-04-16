@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Text } from '@cloudflare/kumo/components/text'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
+import { CardSummaryGrid } from '../../components/common/CardSummaryGrid'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
 import * as gameApi from '../../api/game'
@@ -11,10 +12,9 @@ import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
 import { imgCross1 } from '../../lib/imgSign'
 import { qk } from '../../lib/query'
 import * as cardApi from '../../api/card'
-import type { CardSummary, CardSummaryGame, GameName } from '../../lib/types'
-import { cardSummaryKeyToGame, formatDisplayRating } from '../../lib/gameRatingDisplay'
-import { coerceInt, formatDateMaybe, formatDateTimeMaybe, formatRatioPercent } from '../../lib/format'
-import { gameTitle } from '../../lib/gameTitles'
+import type { CardSummary } from '../../lib/types'
+import { formatDisplayRating } from '../../lib/gameRatingDisplay'
+import { coerceInt, formatDateMaybe, formatRatioPercent } from '../../lib/format'
 import { useI18n } from '../../lib/i18n'
 import { useAppTexts } from '../../content/texts'
 
@@ -159,35 +159,13 @@ export function HomePage() {
           </Text>
         ) : summary && hasSummary ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {SUMMARY_KEYS.map((key) => {
-              const row = summary[key] as CardSummaryGame | null | undefined
-              if (!row) return null
-              const title = gameTitle(key as GameName, locale === 'en' ? 'en' : 'zh')
-              const g = cardSummaryKeyToGame(key)
-              const ratingStr =
-                g != null
-                  ? formatDisplayRating(row.rating, g)
-                  : Number.isFinite(row.rating)
-                    ? String(Math.round(row.rating))
-                    : '—'
-              return (
-                <div
-                  key={String(key)}
-                  className="border-kumo-border rounded-lg border px-4 py-3"
-                >
-                  <div className="text-kumo-text font-semibold">{title}</div>
-                  <div className="text-kumo-subtle mt-2 text-sm">
-                    {texts.homePage.inGameName}: {row.name || '—'}
-                  </div>
-                  <div className="text-kumo-subtle mt-1 text-sm">
-                    {texts.common.rating}: {ratingStr}
-                  </div>
-                  <div className="text-kumo-subtle mt-1 text-xs">
-                    {texts.homePage.lastLogin}: {formatDateTimeMaybe(row.lastLogin, locale)}
-                  </div>
-                </div>
-              )
-            })}
+            <CardSummaryGrid
+              summary={summary}
+              locale={locale === 'en' ? 'en' : 'zh'}
+              texts={texts}
+              ratingLabel={texts.common.rating}
+              lastLoginLabel={texts.homePage.lastLogin}
+            />
           </div>
         ) : (
           <Text DANGEROUS_className="text-kumo-subtle mt-2">

@@ -1,5 +1,4 @@
 import type { ChusanMatchingOption } from './types'
-import { imgUrl1 } from './imgSign'
 
 /** 站点显示名（侧栏、登录、`document.title`）；`.env` 里设 `VITE_APP_NAME` 可覆盖 */
 export const APP_NAME = (import.meta.env.VITE_APP_NAME as string)?.trim() || 'Blue Archive'
@@ -46,8 +45,6 @@ export const DISCORD_INVITE = (import.meta.env.VITE_DISCORD_INVITE as string) ||
 export const TELEGRAM_INVITE = (import.meta.env.VITE_TELEGRAM_INVITE as string) || ''
 export const QQ_INVITE = (import.meta.env.VITE_QQ_INVITE as string) || ''
 export const GITHUB_REPOSITORY = (import.meta.env.VITE_GITHUB_REPOSITORY as string) || ''
-
-export const DEFAULT_PFP = imgUrl1('/assets/imgs/no_profile.png')
 
 /** National matching presets — same as aquaNet `config.ts`. */
 export const CHU3_MATCHINGS: ChusanMatchingOption[] = [

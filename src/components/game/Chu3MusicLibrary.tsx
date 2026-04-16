@@ -16,6 +16,7 @@ import {
 } from "../../lib/chu3PlaylogView";
 import { imgCross1 } from "../../lib/imgSign";
 import { musicJacketUrl } from "../../lib/musicCover";
+import { buildPageNumbers } from "../../lib/pagination";
 import { getAppTexts } from "../../content/texts";
 import type { MusicMetaLite } from "../../lib/scoring";
 import type { Chu3UserMusicDetail, GamePlayRecord } from "../../lib/types";
@@ -40,14 +41,6 @@ type SongRow1 = {
   playCount1: number;
   search1: string;
 };
-
-function pageNums1(page: number, total: number): number[] {
-  const start1 = Math.max(1, page - 2);
-  const end1 = Math.min(total, start1 + 4);
-  const out1: number[] = [];
-  for (let i1 = start1; i1 <= end1; i1++) out1.push(i1);
-  return out1;
-}
 
 function showDiff1(
   meta: MusicMetaLite,
@@ -278,7 +271,7 @@ export function Chu3MusicLibrary({
             >
               {texts.common.previousPage}
             </Button>
-            {pageNums1(page1, totalPage1).map((n1) => (
+            {buildPageNumbers(page1, totalPage1).map((n1) => (
               <Button
                 key={n1}
                 size="sm"

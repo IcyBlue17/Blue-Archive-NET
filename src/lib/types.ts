@@ -327,14 +327,6 @@ export interface TrStreamMessage {
   [key: string]: unknown
 }
 
-export interface UserBox {
-  [key: string]: unknown
-}
-
-export interface UserItem {
-  [key: string]: unknown
-}
-
 export interface ChusanMatchingOption {
   name: string
   ui: string

@@ -1,38 +1,36 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getAdminStatus } from '../api/admin/status'
 import { isLoggedIn } from '../api/client'
+import { qk } from '../lib/query'
 
 export function useAdmin() {
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [username, setUsername] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const qc = useQueryClient()
+  const loggedIn = isLoggedIn()
+
+  const statusQuery = useQuery({
+    queryKey: qk.adminStatus,
+    enabled: loggedIn,
+    queryFn: () => getAdminStatus(),
+  })
 
   const check = useCallback(async () => {
-    if (!isLoggedIn()) {
-      setIsAdmin(false)
-      setUsername(null)
-      setLoading(false)
-      return
+    if (!loggedIn) {
+      await qc.cancelQueries({ queryKey: qk.adminStatus })
+      qc.removeQueries({ queryKey: qk.adminStatus })
+      return { isAdmin: false, username: null }
     }
-    setLoading(true)
-    setError(null)
-    try {
-      const s = await getAdminStatus()
-      setIsAdmin(!!s.isAdmin)
-      setUsername(s.username)
-    } catch (e) {
-      setIsAdmin(false)
-      setUsername(null)
-      setError(e instanceof Error ? e.message : 'Forbidden')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    return qc.fetchQuery({
+      queryKey: qk.adminStatus,
+      queryFn: () => getAdminStatus(),
+    })
+  }, [loggedIn, qc])
 
-  useEffect(() => {
-    void check()
-  }, [check])
-
-  return { isAdmin, username, loading, error, recheck: check }
+  return {
+    isAdmin: loggedIn ? !!statusQuery.data?.isAdmin : false,
+    username: loggedIn ? statusQuery.data?.username ?? null : null,
+    loading: loggedIn ? statusQuery.isPending : false,
+    error: statusQuery.error instanceof Error ? statusQuery.error.message : statusQuery.error ? 'Forbidden' : null,
+    recheck: check,
+  }
 }
