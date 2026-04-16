@@ -90,7 +90,7 @@ export function ChusanTeamSettings({ username }: { username: string; locale: Set
           <div>
             <div className="text-kumo-subtle text-xs">{texts.chusanTeamSettings.currentTeam}</div>
             <div className="text-kumo-text mt-1 text-lg font-semibold">{summary?.teamName || '—'}</div>
-            <div className="text-kumo-subtle mt-1 text-sm">ID {summary?.teamId || 0}</div>
+            <div className="text-kumo-subtle mt-1 text-sm">{texts.common.id} {summary?.teamId || 0}</div>
           </div>
           <div>
             <div className="text-kumo-subtle text-xs">{texts.chusanTeamSettings.teamExpRank}</div>
@@ -112,7 +112,7 @@ export function ChusanTeamSettings({ username }: { username: string; locale: Set
 
       <div className="mb-4 grid max-w-3xl gap-4 md:grid-cols-3">
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">teamId</span>
+          <span className="text-sm font-medium">{texts.chusanTeamSettings.teamId}</span>
           <Input type="number" value={teamId} onChange={(e) => setTeamId(e.target.value)} />
         </label>
         <label className="flex flex-col gap-1 md:col-span-2">
@@ -146,10 +146,10 @@ export function ChusanTeamSettings({ username }: { username: string; locale: Set
                 <div className="min-w-0">
                   <div className="text-kumo-text flex items-center gap-2 font-medium">
                     <span>#{row.rank}</span>
-                    <span className="truncate">{row.teamName || `Team ${row.teamId}`}</span>
+                    <span className="truncate">{row.teamName || texts.common.teamWithId(row.teamId)}</span>
                   </div>
                   <div className="text-kumo-subtle text-xs">
-                    ID {row.teamId} · {texts.chusanTeamSettings.emblem(row.emblemId)}
+                    {texts.common.id} {row.teamId} · {texts.chusanTeamSettings.emblem(row.emblemId)}
                   </div>
                 </div>
                 <div className="text-right">

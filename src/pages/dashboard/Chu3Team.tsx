@@ -97,7 +97,7 @@ function MemberRow({
           </div>
           <div className="text-kumo-subtle mt-2 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
             <div>{texts.teamPage.level(row.level)}</div>
-            <div>Rating {formatDisplayRating(row.playerRating, 'chu3')}</div>
+            <div>{texts.common.rating} {formatDisplayRating(row.playerRating, 'chu3')}</div>
             <div>{texts.teamPage.exp(row.teamPoint)}</div>
             <div>{texts.teamPage.last(time1(row.lastPlayDate, locale))}</div>
           </div>
@@ -141,7 +141,7 @@ function JoinReqRow({
         <div className="min-w-0 flex-1">
           <div className="font-semibold text-kumo-text">{row.applicantName}</div>
           <div className="text-kumo-subtle mt-1 text-sm">
-            {texts.teamPage.level(row.applicantLevel)} · Rating {formatDisplayRating(row.applicantRating, 'chu3')}
+            {texts.teamPage.level(row.applicantLevel)} · {texts.common.rating} {formatDisplayRating(row.applicantRating, 'chu3')}
           </div>
           <div className="text-kumo-subtle mt-1 text-xs">
             {texts.teamPage.requested(time1(row.createdAt, locale))}
@@ -394,9 +394,9 @@ export function Chu3TeamPage() {
           <LayerCard className="p-4">
             <LayerCard.Secondary>{texts.teamPage.currentTeam}</LayerCard.Secondary>
             <div className="mt-3">
-              <div className="text-kumo-text text-2xl font-bold">{myTeam.teamName || `Team ${myTeam.teamId}`}</div>
+              <div className="text-kumo-text text-2xl font-bold">{myTeam.teamName || texts.common.teamWithId(myTeam.teamId)}</div>
               <div className="text-kumo-subtle mt-1 text-sm">
-                ID {myTeam.teamId} · {texts.teamPage.leaderValue(myTeam.leaderName || '—')}
+                {texts.common.id} {myTeam.teamId} · {texts.teamPage.leaderValue(myTeam.leaderName || '—')}
               </div>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-4">
@@ -541,7 +541,7 @@ export function Chu3TeamPage() {
                   {texts.teamPage.pendingRequest}
                 </div>
                 <div className="text-kumo-subtle mt-2 text-sm">
-                  {outgoing.teamName} · ID {outgoing.teamId}
+                  {outgoing.teamName} · {texts.common.id} {outgoing.teamId}
                 </div>
                 <div className="text-kumo-subtle mt-1 text-sm">
                   {texts.teamPage.leaderValue(outgoing.leaderName || '—')}
@@ -561,9 +561,9 @@ export function Chu3TeamPage() {
               </div>
             ) : previewTeam ? (
               <div className="border-kumo-border bg-kumo-background-alt mt-4 rounded-xl border p-3">
-                <div className="font-semibold text-kumo-text">{previewTeam.teamName || `Team ${previewTeam.teamId}`}</div>
+                <div className="font-semibold text-kumo-text">{previewTeam.teamName || texts.common.teamWithId(previewTeam.teamId)}</div>
                 <div className="text-kumo-subtle mt-2 text-sm">
-                  ID {previewTeam.teamId} · {texts.teamPage.leaderValue(previewTeam.leaderName || '—')}
+                  {texts.common.id} {previewTeam.teamId} · {texts.teamPage.leaderValue(previewTeam.leaderName || '—')}
                 </div>
                 <div className="text-kumo-subtle mt-1 text-sm">
                   {texts.teamPage.previewMeta(previewTeam.memberCount ?? 0, previewTeam.teamRank ? `#${previewTeam.teamRank}` : '—')}
@@ -571,7 +571,7 @@ export function Chu3TeamPage() {
               </div>
             ) : previewQuery.error ? (
               <Text DANGEROUS_className="text-kumo-danger mt-4 block text-sm">
-                {previewQuery.error instanceof Error ? previewQuery.error.message : 'Error'}
+                {previewQuery.error instanceof Error ? previewQuery.error.message : texts.common.error}
               </Text>
             ) : (
               <Text DANGEROUS_className="text-kumo-subtle mt-4 block text-sm">

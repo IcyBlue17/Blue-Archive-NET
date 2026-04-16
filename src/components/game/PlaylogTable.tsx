@@ -31,8 +31,8 @@ export function PlaylogTable({
             <Table.Head>{texts.common.music}</Table.Head>
             <Table.Head>{texts.common.difficulty}</Table.Head>
             <Table.Head>{texts.common.achievement}</Table.Head>
-            <Table.Head>Max combo</Table.Head>
-            <Table.Head>Rating ±</Table.Head>
+            <Table.Head>{texts.common.maxCombo}</Table.Head>
+            <Table.Head>{texts.common.ratingChange}</Table.Head>
           </Table.Row>
         </Table.Header>
         <Table.Body>

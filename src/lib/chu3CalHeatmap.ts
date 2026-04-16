@@ -2,11 +2,18 @@ import moment from 'moment'
 import CalHeatmap from 'cal-heatmap'
 import CalTooltip from 'cal-heatmap/plugins/Tooltip'
 import 'cal-heatmap/cal-heatmap.css'
+import type { Moment } from 'moment'
 
 type TrendPoint = { date: string; value: number }
+type DateHelperLike = {
+  getWeeksCountInMonth: (ts: unknown) => number
+  getFirstWeekOfMonth: (ts: unknown) => Moment
+  date: (ts?: unknown) => Moment
+  intervals: (unit: string, start: Moment, end: Moment) => unknown[]
+}
 
 /** 与 aquaNet `ui.ts` `dayTemplate` / `renderCal` 一致 */
-function dayTemplate(DateHelper: any, _options?: unknown) {
+function dayTemplate(DateHelper: DateHelperLike) {
   const ROWS_COUNT = 7
   const ALLOWED_DOMAIN_TYPE = ['month']
 

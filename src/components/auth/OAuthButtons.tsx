@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- shared provider metadata lives with the buttons */
 import type { ComponentType, SVGProps } from 'react'
 import { Text } from '@cloudflare/kumo/components/text'
 import { OAUTH_API_ORIGIN } from '../../lib/config'
@@ -10,7 +11,6 @@ import GithubLogo from '~icons/simple-icons/github'
 import GoogleLogo from '~icons/logos/google-icon'
 // @ts-expect-error virtual icon from local unplugin-icons
 import MicrosoftLogo from '~icons/logos/microsoft-icon'
-
 
 /** Fixed order to match Spring registration ids + product expectation (like reference UI). */
 export const OAUTH_PROVIDER_ORDER = ['google', 'microsoft', 'github', 'apple'] as const

@@ -25,9 +25,9 @@ export function AdminUserListPage() {
       const r = await adminUsers.listUsers(page, size, 'auId,desc')
       setData(r)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
-  }, [page, size])
+  }, [page, size, texts.common.error])
 
   useEffect(() => {
     void load()
@@ -41,7 +41,7 @@ export function AdminUserListPage() {
       setSearchHits(r)
       setData(null)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 

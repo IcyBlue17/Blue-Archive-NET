@@ -196,7 +196,7 @@ export function Chu3FriendsPage() {
           </div>
         ) : rivalQuery.error ? (
           <Text DANGEROUS_className="text-kumo-danger mt-3">
-            {rivalQuery.error instanceof Error ? rivalQuery.error.message : 'Error'}
+            {rivalQuery.error instanceof Error ? rivalQuery.error.message : texts.common.error}
           </Text>
         ) : rows.length ? (
           <div className="mt-4 grid gap-3 lg:grid-cols-2">

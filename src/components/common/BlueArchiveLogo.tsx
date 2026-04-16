@@ -1,3 +1,4 @@
+import { APP_NAME } from '../../lib/config'
 import { imgCross1, imgUrl1 } from '../../lib/imgSign'
 
 export function BlueArchiveLogo({ className = 'h-16 w-auto' }: { className?: string }) {
@@ -6,7 +7,7 @@ export function BlueArchiveLogo({ className = 'h-16 w-auto' }: { className?: str
     <img
       src={src1}
       crossOrigin={imgCross1(src1)}
-      alt="Blue Archive"
+      alt={APP_NAME}
       width={1804}
       height={500}
       decoding="async"

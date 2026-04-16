@@ -80,7 +80,7 @@ export function RankingPage() {
                 <Table.Row>
                   <Table.Head>#</Table.Head>
                   <Table.Head>{texts.gamesPage.team}</Table.Head>
-                  <Table.Head>ID</Table.Head>
+                  <Table.Head>{texts.common.id}</Table.Head>
                   <Table.Head>{texts.gamesPage.leader}</Table.Head>
                   <Table.Head>{texts.gamesPage.members}</Table.Head>
                   <Table.Head>EXP</Table.Head>
@@ -90,7 +90,7 @@ export function RankingPage() {
                 {teamRows.map((row) => (
                   <Table.Row key={row.teamId}>
                     <Table.Cell>{row.rank}</Table.Cell>
-                    <Table.Cell>{row.teamName || `Team ${row.teamId}`}</Table.Cell>
+                    <Table.Cell>{row.teamName || texts.common.teamWithId(row.teamId)}</Table.Cell>
                     <Table.Cell>{row.teamId}</Table.Cell>
                     <Table.Cell>{row.leaderName || '—'}</Table.Cell>
                     <Table.Cell>{row.memberCount}</Table.Cell>
@@ -105,7 +105,7 @@ export function RankingPage() {
                 <Table.Row>
                   <Table.Head>#</Table.Head>
                   <Table.Head>{texts.gamesPage.player}</Table.Head>
-                  <Table.Head>Rating</Table.Head>
+                  <Table.Head>{texts.common.rating}</Table.Head>
                   <Table.Head>ACC</Table.Head>
                   <Table.Head>FC</Table.Head>
                   <Table.Head>AP</Table.Head>

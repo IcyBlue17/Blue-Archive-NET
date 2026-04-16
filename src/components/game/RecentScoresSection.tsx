@@ -30,6 +30,7 @@ const RecentScoreRow = memo(function RecentScoreRow({
   index: number
   rounding: boolean
 }) {
+  const texts = useAppTexts()
   const lvLabel = formatPlaylogLevelLabel(game, row.level, row.notes, row.worldsEndTag)
   const mult = getMult(row.achievement, game)
   const rankStr = String(mult[2] ?? '').replace('p', '+')
@@ -60,7 +61,7 @@ const RecentScoreRow = memo(function RecentScoreRow({
         }}
       />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium">{row.name ?? `ID ${row.musicId}`}</div>
+        <div className="truncate text-sm font-medium">{row.name ?? `${texts.common.id} ${row.musicId}`}</div>
         <div className="text-kumo-subtle mt-0.5 flex flex-wrap items-center gap-2 text-xs">
           {row.isAllPerfect || row.isAllJustice ? (
             <span className="text-kumo-success font-medium">AP/AJ</span>
@@ -70,7 +71,7 @@ const RecentScoreRow = memo(function RecentScoreRow({
           <span className="text-kumo-text">{rankStr}</span>
           <span title={(row.achievement / 10000).toFixed(4)}>{pct}%</span>
           {showEndRating && typeof row.afterRating === 'number' ? (
-            <span>Rating {toDisplayRating(row.afterRating, game).toFixed(2)}</span>
+            <span>{texts.common.rating} {toDisplayRating(row.afterRating, game).toFixed(2)}</span>
           ) : null}
         </div>
       </div>

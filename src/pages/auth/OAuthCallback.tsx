@@ -17,8 +17,8 @@ function isValidJwtFormat(token: string): boolean {
 }
 
 // Sanitize error message to prevent XSS
-function sanitizeError(err: unknown): string {
-  if (!err) return 'Unknown error'
+function sanitizeError(err: unknown, fallback: string): string {
+  if (!err) return fallback
   const msg = err instanceof Error ? err.message : String(err)
   // Remove any HTML tags and limit length
   return msg.replace(/<[^>]*>/g, '').slice(0, 200)
@@ -44,7 +44,7 @@ export function OAuthCallbackPage() {
     }
 
     if (err) {
-      setNote(sanitizeError(err))
+      setNote(sanitizeError(err, texts.authPages.unknownError))
       const tId = window.setTimeout(() => nav('/login', { replace: true }), 2000)
       return () => window.clearTimeout(tId)
     }
@@ -52,7 +52,7 @@ export function OAuthCallbackPage() {
     if (token) {
       // Validate token format before storing
       if (!isValidJwtFormat(token)) {
-        setNote('Invalid token format')
+        setNote(texts.authPages.invalidTokenFormat)
         const tId = window.setTimeout(() => nav('/login', { replace: true }), 2000)
         return () => window.clearTimeout(tId)
       }
@@ -61,7 +61,7 @@ export function OAuthCallbackPage() {
       void refresh()
         .then(() => nav('/home', { replace: true }))
         .catch((e) => {
-          setNote(sanitizeError(e))
+          setNote(sanitizeError(e, texts.authPages.unknownError))
           window.setTimeout(() => nav('/login', { replace: true }), 2000)
         })
       return

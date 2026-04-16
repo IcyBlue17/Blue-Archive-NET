@@ -99,21 +99,21 @@ export function Chu3PlaylogExplorer({
 
   const judgeRows1 = row1
     ? [
-        { label: 'Justice Heaven', value: row1.judgeHeaven },
-        { label: 'Justice Critical', value: row1.judgeCritical },
-        { label: 'Justice', value: row1.judgeJustice },
-        { label: 'Attack', value: row1.judgeAttack },
-        { label: 'Miss / Guilty', value: row1.judgeGuilty },
+        { label: texts.playlogExplorer.judgeHeaven, value: row1.judgeHeaven },
+        { label: texts.playlogExplorer.judgeCritical, value: row1.judgeCritical },
+        { label: texts.playlogExplorer.justice, value: row1.judgeJustice },
+        { label: texts.playlogExplorer.attack, value: row1.judgeAttack },
+        { label: texts.playlogExplorer.missGuilty, value: row1.judgeGuilty },
       ]
     : []
 
   const rateRows1 = row1
     ? [
-        { label: 'Tap', value: row1.rateTap },
-        { label: 'Hold', value: row1.rateHold },
-        { label: 'Slide', value: row1.rateSlide },
-        { label: 'Air', value: row1.rateAir },
-        { label: 'Flick', value: row1.rateFlick },
+        { label: texts.playlogExplorer.tap, value: row1.rateTap },
+        { label: texts.playlogExplorer.hold, value: row1.rateHold },
+        { label: texts.playlogExplorer.slide, value: row1.rateSlide },
+        { label: texts.playlogExplorer.air, value: row1.rateAir },
+        { label: texts.playlogExplorer.flick, value: row1.rateFlick },
       ]
     : []
 
@@ -173,7 +173,7 @@ export function Chu3PlaylogExplorer({
                   <div className="flex gap-3">
                     <img src={cover2} crossOrigin={imgCross1(cover2)} alt="" width={56} height={56} loading="lazy" decoding="async" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-semibold">{meta1.name ?? `Music ${row1.musicId}`}</div>
+                      <div className="truncate font-semibold">{meta1.name ?? texts.common.musicWithId(row1.musicId)}</div>
                       <div className="text-kumo-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                         <span>{diffLabel1(row1.level, meta1)}</span>
                         <span>Lv {formatLv1(meta1, row1.level)}</span>
@@ -200,7 +200,7 @@ export function Chu3PlaylogExplorer({
               <div className="min-w-0 flex-1">
                 <div className="text-kumo-subtle text-xs">#{row1.musicId}</div>
                 <Text variant="heading3" DANGEROUS_className="mt-1 break-words text-[1.35rem]">
-                  {meta1?.name ?? `Music ${row1.musicId}`}
+                  {meta1?.name ?? texts.common.musicWithId(row1.musicId)}
                 </Text>
                 <Text DANGEROUS_className="text-kumo-subtle mt-1 text-sm">{meta1?.composer || texts.playlogExplorer.unknownComposer}</Text>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -221,12 +221,12 @@ export function Chu3PlaylogExplorer({
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
-              {row1.isNewRecord ? <span className="rounded-full bg-pink-500/15 px-2 py-1 text-pink-700 dark:text-pink-300">New Record</span> : null}
+              {row1.isNewRecord ? <span className="rounded-full bg-pink-500/15 px-2 py-1 text-pink-700 dark:text-pink-300">{texts.playlogExplorer.newRecord}</span> : null}
               {row1.isAllJustice ? <span className="rounded-full bg-sky-500/15 px-2 py-1 text-sky-700 dark:text-sky-300">AJ</span> : null}
               {row1.isFullCombo ? <span className="rounded-full bg-kumo-accent/15 px-2 py-1 text-kumo-accent">FC</span> : null}
               {row1.isClear ? <span className="rounded-full bg-kumo-fill px-2 py-1">{texts.playlogExplorer.clear}</span> : null}
               {row1.isFreeToPlay ? <span className="rounded-full bg-kumo-fill px-2 py-1">{texts.playlogExplorer.freePlay}</span> : null}
-              {row1.track != null ? <span className="rounded-full bg-kumo-fill px-2 py-1">{`Track ${row1.track}`}</span> : null}
+              {row1.track != null ? <span className="rounded-full bg-kumo-fill px-2 py-1">{texts.playlogExplorer.trackBadge(row1.track)}</span> : null}
             </div>
 
             <div className="mt-5">

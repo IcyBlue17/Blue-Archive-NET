@@ -78,19 +78,19 @@ export function RatingCompositionSection({
     const c = ratingComposition ?? {}
     const out: { title: string; key: string; raw: string }[] = []
     if (game === 'chu3') {
-      if (c.best30) out.push({ title: 'Best 30', key: 'b30', raw: String(c.best30) })
-      if (c.new) out.push({ title: 'New 20', key: 'n20', raw: String(c.new) })
-      else if (c.recent10) out.push({ title: 'Recent 10', key: 'r10', raw: String(c.recent10) })
+      if (c.best30) out.push({ title: texts.gamesPage.best30, key: 'b30', raw: String(c.best30) })
+      if (c.new) out.push({ title: texts.gamesPage.new20, key: 'n20', raw: String(c.new) })
+      else if (c.recent10) out.push({ title: texts.gamesPage.recent10, key: 'r10', raw: String(c.recent10) })
     } else if (game === 'mai2') {
-      if (c.best35) out.push({ title: 'B35', key: 'b35', raw: String(c.best35) })
-      if (c.best15) out.push({ title: 'B15', key: 'b15', raw: String(c.best15) })
+      if (c.best35) out.push({ title: texts.gamesPage.best35, key: 'b35', raw: String(c.best35) })
+      if (c.best15) out.push({ title: texts.gamesPage.best15, key: 'b15', raw: String(c.best15) })
     } else if (game === 'ongeki') {
-      if (c.best30) out.push({ title: 'Best 30', key: 'b30', raw: String(c.best30) })
-      if (c.best15) out.push({ title: 'Best 15', key: 'b15', raw: String(c.best15) })
-      if (c.recent10) out.push({ title: 'Recent 10', key: 'r10', raw: String(c.recent10) })
+      if (c.best30) out.push({ title: texts.gamesPage.best30, key: 'b30', raw: String(c.best30) })
+      if (c.best15) out.push({ title: texts.gamesPage.best15, key: 'b15', raw: String(c.best15) })
+      if (c.recent10) out.push({ title: texts.gamesPage.recent10, key: 'r10', raw: String(c.recent10) })
     }
     return out
-  }, [game, ratingComposition])
+  }, [game, ratingComposition, texts])
 
   if (!blocks.length) return null
 

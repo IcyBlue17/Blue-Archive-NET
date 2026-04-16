@@ -35,7 +35,7 @@ export function AdminUserDetailPage() {
         setBio(u.profileBio || '')
         setLocation(u.profileLocation || '')
       })
-      .catch((e) => setErr(e instanceof Error ? e.message : 'Error'))
+      .catch((e) => setErr(e instanceof Error ? e.message : texts.common.error))
     void adminUsers
       .listUserCards(auId)
       .then(setCards)
@@ -55,7 +55,7 @@ export function AdminUserDetailPage() {
       })
       setUser(u)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -65,7 +65,7 @@ export function AdminUserDetailPage() {
       const u = await adminUsers.updateUser(auId, { emailConfirmed: checked })
       setUser(u)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -75,7 +75,7 @@ export function AdminUserDetailPage() {
       const u = await adminUsers.updateUser(auId, { optOutOfLeaderboard: checked })
       setUser(u)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -84,7 +84,7 @@ export function AdminUserDetailPage() {
       await adminUsers.updateCardBan(cardId, banned)
       setCards(await adminUsers.listUserCards(auId))
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 

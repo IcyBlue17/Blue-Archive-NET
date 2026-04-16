@@ -347,7 +347,7 @@ export function Chu3MusicLibrary({
                         ) : null}
                       </div>
                       <div className="mt-1 truncate text-base font-semibold">
-                        {row1.meta.name ?? `Music ${row1.musicId}`}
+                        {row1.meta.name ?? texts.common.musicWithId(row1.musicId)}
                       </div>
                       <div className="text-kumo-subtle mt-1 truncate text-sm">
                         {row1.meta.composer || texts.musicLibrary.unknownComposer}
@@ -401,7 +401,7 @@ export function Chu3MusicLibrary({
                   #{picked1.musicId}
                 </div>
                 <Text variant="heading3" DANGEROUS_className="mt-1 break-words">
-                  {picked1.meta.name ?? `Music ${picked1.musicId}`}
+                  {picked1.meta.name ?? texts.common.musicWithId(picked1.musicId)}
                 </Text>
                 <Text DANGEROUS_className="text-kumo-subtle mt-2 text-sm">
                   {picked1.meta.composer || texts.musicLibrary.unknownComposer}
@@ -474,16 +474,16 @@ export function Chu3MusicLibrary({
                               {texts.musicLibrary.plays}
                             </div>
                             <div>{best1.playCount ?? 0}</div>
-                            <div className="text-kumo-subtle">Miss</div>
+                            <div className="text-kumo-subtle">{texts.musicLibrary.miss}</div>
                             <div>{best1.missCount ?? 0}</div>
-                            <div className="text-kumo-subtle">Justice C.</div>
+                            <div className="text-kumo-subtle">{texts.musicLibrary.justiceCritical}</div>
                             <div>
                               {(bestPlay1?.judgeHeaven ?? 0) +
                                 (bestPlay1?.judgeCritical ?? 0)}
                             </div>
-                            <div className="text-kumo-subtle">Justice</div>
+                            <div className="text-kumo-subtle">{texts.musicLibrary.justice}</div>
                             <div>{bestPlay1?.judgeJustice ?? "—"}</div>
-                            <div className="text-kumo-subtle">Attack</div>
+                            <div className="text-kumo-subtle">{texts.musicLibrary.attack}</div>
                             <div>{bestPlay1?.judgeAttack ?? "—"}</div>
                           </div>
                         </div>

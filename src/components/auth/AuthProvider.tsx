@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- provider + hook in one module */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AquaNetUser } from '../../lib/types'
@@ -59,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       isLoggedIn: loggedIn,
     }),
-    [authVer, meQuery.data, meQuery.isPending, refresh, logout, loggedIn],
+    [meQuery.data, meQuery.isPending, refresh, logout, loggedIn],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

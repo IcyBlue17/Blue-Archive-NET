@@ -31,27 +31,6 @@ const IKINDS: Record<string, number> = {
 
 const AVATAR_KINDS = ['Wear', 'Head', 'Face', 'Skin', 'Item', 'Front', 'Back'] as const
 
-/** 与 `aquaNet` zh / en_ref `userbox.${field}` 对齐 */
-export const CHU3_USERBOX_LABELS: Record<string, string> = {
-  nameplateId: '名牌',
-  frameId: '边框',
-  trophyId: '称号',
-  trophyIdSub1: '称号2',
-  trophyIdSub2: '称号3',
-  mapIconId: '地图图标',
-  voiceId: '系统语音',
-  avatarWear: '企鹅服饰',
-  avatarHead: '企鹅头饰',
-  avatarFace: '企鹅面部',
-  avatarSkin: '企鹅皮肤',
-  avatarItem: '企鹅物品',
-  avatarFront: '企鹅前景',
-  avatarBack: '企鹅背景',
-  stageId: '舞台',
-  characterId: '角色',
-  userName: '游戏内名称',
-}
-
 /** 与 `Chu3UserData` / 名牌预览字段顺序一致（角色紧挨边框）。 */
 export const CHU3_APPEARANCE_FIELD_ORDER = [
   'nameplateId',

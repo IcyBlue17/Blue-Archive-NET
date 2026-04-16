@@ -28,12 +28,10 @@ import {
   buildChu3AppearanceSelectRows,
   CHU3_APPEARANCE_FIELD_ORDER,
   CHU3_FIELD_ALL_ITEMS_KEY,
-  CHU3_USERBOX_LABELS,
   withEquippedIfMissing,
   type Chu3UserItem,
   type Chu3UserboxSelectRow,
 } from '../../lib/chu3Userbox'
-import { useI18n } from '../../lib/i18n'
 import { useAppTexts } from '../../content/texts'
 
 const UNLOCK_ALL_STORAGE_KEY = 'chu3-collectibles-unlock-all'
@@ -47,25 +45,6 @@ const TEXT_ONLY_PREVIEW_FIELDS = new Set([
   'trophyIdSub1',
   'trophyIdSub2',
 ])
-
-const CHU3_LABELS_EN: Record<string, string> = {
-  nameplateId: 'Name plate',
-  frameId: 'Frame',
-  characterId: 'Character',
-  trophyId: 'Title',
-  trophyIdSub1: 'Title 2',
-  trophyIdSub2: 'Title 3',
-  mapIconId: 'Map icon',
-  voiceId: 'System voice',
-  stageId: 'Stage',
-  avatarWear: 'Avatar outfit',
-  avatarHead: 'Avatar head',
-  avatarFace: 'Avatar face',
-  avatarSkin: 'Avatar skin',
-  avatarItem: 'Avatar item',
-  avatarFront: 'Avatar front',
-  avatarBack: 'Avatar back',
-}
 
 function numFromUser(u: Record<string, unknown>, field: string): number {
   const v = u[field]
@@ -276,7 +255,6 @@ function charaMetaMap1(allItems: Chu3AllItems): Record<number, Chu3CharacterMeta
 }
 
 export function CollectiblesPage() {
-  const { locale } = useI18n()
   const texts = useAppTexts()
   const toast = useKumoToastManager()
   const [unlockAll, setUnlockAll] = useState(() => localStorage.getItem(UNLOCK_ALL_STORAGE_KEY) === '1')
@@ -303,9 +281,8 @@ export function CollectiblesPage() {
   const deferredSearch = useDeferredValue(modalSearch.trim().toLowerCase())
 
   const label = useCallback(
-    (field: string) =>
-      locale === 'zh' ? (CHU3_USERBOX_LABELS[field] ?? field) : (CHU3_LABELS_EN[field] ?? field),
-    [locale],
+    (field: string) => texts.collectibles.fieldLabels[field as keyof typeof texts.collectibles.fieldLabels] ?? field,
+    [texts],
   )
 
   const effectiveUser = useMemo(() => {
@@ -915,7 +892,7 @@ export function CollectiblesPage() {
                               <div className="space-y-1 text-sm text-kumo-subtle">
                                 {validRankRewards1.slice(0, 8).map((one1, idx1) => (
                                   <div key={idx1}>
-                                    Lv.{one1.lv || '?'} · {one1.reward}
+                                    {texts.common.level} {one1.lv || '?'} · {one1.reward}
                                   </div>
                                 ))}
                               </div>

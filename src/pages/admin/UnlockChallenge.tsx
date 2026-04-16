@@ -34,7 +34,7 @@ export function AdminUnlockChallengePage() {
     try {
       setRows(await api.listUnlockChallenges())
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -49,7 +49,7 @@ export function AdminUnlockChallengePage() {
       setForm(emptyRow)
       await load()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -73,7 +73,7 @@ export function AdminUnlockChallengePage() {
       setEditing(null)
       await load()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -83,7 +83,7 @@ export function AdminUnlockChallengePage() {
       await api.deleteUnlockChallenge(id)
       await load()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 

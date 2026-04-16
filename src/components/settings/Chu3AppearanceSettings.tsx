@@ -4,7 +4,6 @@ import * as gameApi from "../../api/game";
 import { detailSet } from "../../api/settings";
 import { getAppTexts } from "../../content/texts";
 import { fmtNameErr1 } from "../../lib/censor";
-import { CHU3_USERBOX_LABELS } from "../../lib/chu3Userbox";
 import type { SettingFieldLocale } from "../../lib/settingsFieldLabels";
 import { SegaUsernameEditor, normalizeSegaUsername } from "./SegaUsernameEditor";
 
@@ -69,7 +68,7 @@ export function Chu3AppearanceSettings({ locale }: { locale: SettingFieldLocale 
 
       <div className="mb-6 grid max-w-2xl gap-3">
         <SegaUsernameEditor
-          label={CHU3_USERBOX_LABELS.userName}
+          label={copy.collectibles.fieldLabels.userName}
           locale={locale}
           value={userNameDraft}
           onChange={setUserNameDraft}

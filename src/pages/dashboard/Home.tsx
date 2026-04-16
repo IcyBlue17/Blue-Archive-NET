@@ -203,7 +203,7 @@ export function HomePage() {
                     {texts.homePage.inGameName}: {row.name || '—'}
                   </div>
                   <div className="text-kumo-subtle mt-1 text-sm">
-                    Rating: {ratingStr}
+                    {texts.common.rating}: {ratingStr}
                   </div>
                   <div className="text-kumo-subtle mt-1 text-xs">
                     {texts.homePage.lastLogin}: {formatLogin(row.lastLogin)}

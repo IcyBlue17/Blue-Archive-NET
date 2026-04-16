@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- text normalizer is intentionally shared with settings forms */
 import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'

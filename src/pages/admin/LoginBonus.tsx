@@ -34,7 +34,7 @@ export function AdminLoginBonusPage() {
     try {
       setPresets(await api.listPresets())
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -63,7 +63,7 @@ export function AdminLoginBonusPage() {
       setNewPresetId('')
       await refreshPresets()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -74,7 +74,7 @@ export function AdminLoginBonusPage() {
       if (selected === id) setSelected(null)
       await refreshPresets()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -93,7 +93,7 @@ export function AdminLoginBonusPage() {
       })
       setEntries(await api.listEntries(selected))
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -103,7 +103,7 @@ export function AdminLoginBonusPage() {
       await api.deleteEntry(id)
       if (selected != null) setEntries(await api.listEntries(selected))
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 

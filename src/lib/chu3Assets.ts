@@ -77,7 +77,6 @@ export function chu3CharacterImageUrl(itemId: number, variant: '00' | '02' = '00
 export type Chu3CollectibleCategoryMeta = {
   key: string
   field: string
-  labelZh: string
   jsonFile: string | null
   hasImage: boolean
   imagePrefix: string | null
@@ -275,7 +274,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'nameplate',
     field: 'nameplateId',
-    labelZh: '名牌',
     jsonFile: 'nameplate.json',
     hasImage: true,
     imageDir: 'namePlate',
@@ -284,7 +282,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'character',
     field: 'characterId',
-    labelZh: '角色',
     jsonFile: 'character.json',
     hasImage: true,
     imageDir: 'chara',
@@ -293,7 +290,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'trophy',
     field: 'trophyId',
-    labelZh: '称号',
     jsonFile: 'trophy.json',
     hasImage: false,
     imageDir: null,
@@ -302,7 +298,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'trophySub1',
     field: 'trophyIdSub1',
-    labelZh: '称号2',
     jsonFile: 'trophy.json',
     hasImage: false,
     imageDir: null,
@@ -311,7 +306,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'trophySub2',
     field: 'trophyIdSub2',
-    labelZh: '称号3',
     jsonFile: 'trophy.json',
     hasImage: false,
     imageDir: null,
@@ -320,7 +314,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'mapIcon',
     field: 'mapIconId',
-    labelZh: '地图图标',
     jsonFile: 'mapicon.json',
     hasImage: true,
     imageDir: 'mapIcon',
@@ -329,7 +322,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'sysvoice',
     field: 'voiceId',
-    labelZh: '系统语音',
     jsonFile: 'sysvoice.json',
     hasImage: true,
     imageDir: 'systemVoice',
@@ -338,7 +330,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'stage',
     field: 'stageId',
-    labelZh: '舞台',
     jsonFile: 'stage.json',
     hasImage: true,
     imageDir: 'stage',
@@ -347,7 +338,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'avatarWear',
     field: 'avatarWear',
-    labelZh: '企鹅服饰',
     jsonFile: 'avatar_icon.json',
     hasImage: true,
     imageDir: 'avatar',
@@ -357,7 +347,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'avatarHead',
     field: 'avatarHead',
-    labelZh: '企鹅头饰',
     jsonFile: 'avatar_icon.json',
     hasImage: true,
     imageDir: 'avatar',
@@ -367,7 +356,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'avatarFace',
     field: 'avatarFace',
-    labelZh: '企鹅面部',
     jsonFile: 'avatar_icon.json',
     hasImage: true,
     imageDir: 'avatar',
@@ -377,7 +365,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'avatarSkin',
     field: 'avatarSkin',
-    labelZh: '企鹅皮肤',
     jsonFile: 'avatar_icon.json',
     hasImage: true,
     imageDir: 'avatar',
@@ -387,7 +374,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'avatarItem',
     field: 'avatarItem',
-    labelZh: '企鹅物品',
     jsonFile: 'avatar_icon.json',
     hasImage: true,
     imageDir: 'avatar',
@@ -397,7 +383,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'avatarFront',
     field: 'avatarFront',
-    labelZh: '企鹅前景',
     jsonFile: 'avatar_icon.json',
     hasImage: true,
     imageDir: 'avatar',
@@ -407,7 +392,6 @@ export const CHU3_COLLECTIBLE_CATEGORIES: Chu3CollectibleCategoryMeta[] = [
   {
     key: 'avatarBack',
     field: 'avatarBack',
-    labelZh: '企鹅背景',
     jsonFile: 'avatar_icon.json',
     hasImage: true,
     imageDir: 'avatar',

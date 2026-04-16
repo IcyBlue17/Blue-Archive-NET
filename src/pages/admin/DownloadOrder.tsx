@@ -91,7 +91,7 @@ export function AdminDownloadOrderPage() {
         setAssignmentForm((old) => ({ ...old, iniId: iniRows[0].id }))
       }
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -104,7 +104,7 @@ export function AdminDownloadOrderPage() {
     try {
       setPreview((await api.previewIni(next)).content)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -116,7 +116,7 @@ export function AdminDownloadOrderPage() {
       setPreview('')
       await loadAll()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -128,7 +128,7 @@ export function AdminDownloadOrderPage() {
       setEditingIni(null)
       await loadAll()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -138,7 +138,7 @@ export function AdminDownloadOrderPage() {
       await api.deleteIni(id)
       await loadAll()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -149,7 +149,7 @@ export function AdminDownloadOrderPage() {
       setAssignmentForm({ ...emptyAssignment, iniId: assignmentForm.iniId })
       await loadAll()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -167,7 +167,7 @@ export function AdminDownloadOrderPage() {
       setEditingAssignment(null)
       await loadAll()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
@@ -177,7 +177,7 @@ export function AdminDownloadOrderPage() {
       await api.deleteAssignment(id)
       await loadAll()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error')
+      setErr(e instanceof Error ? e.message : texts.common.error)
     }
   }
 
