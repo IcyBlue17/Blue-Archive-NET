@@ -27,7 +27,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@iconify-json/logos": "^1.2.11",
-    "@iconify-json/simple-icons": "^1.2.76",
+    "@iconify-json/simple-icons": "^1.2.78",
     "@svgr/core": "^8.1.0",
     "@svgr/plugin-jsx": "^8.1.0",
     "@tailwindcss/vite": "^4.2.2",
