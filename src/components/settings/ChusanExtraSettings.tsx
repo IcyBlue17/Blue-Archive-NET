@@ -10,6 +10,7 @@ import * as dataApi from "../../api/data";
 import * as gameApi from "../../api/game";
 import { getAppTexts } from "../../content/texts";
 import { CHU3_MATCHINGS } from "../../lib/config";
+import { downloadJsonFile } from "../../lib/download";
 import type { SettingFieldLocale } from "../../lib/settingsFieldLabels";
 import type { ChusanMatchingOption, GameOption } from "../../lib/types";
 import { Chu3AppearanceSettings } from "./Chu3AppearanceSettings";
@@ -113,14 +114,7 @@ export function ChusanExtraSettings({
     setExporting(true);
     try {
       const data = await gameApi.exportGame("chu3");
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `export-chu3-${username}.json`;
-      a.click();
-      URL.revokeObjectURL(a.href);
+      downloadJsonFile(`export-chu3-${username}.json`, data);
     } finally {
       setExporting(false);
     }
@@ -364,7 +358,9 @@ export function ChusanExtraSettings({
               {copy.chusanExtra.matchingDialogTitle}
             </h4>
             <div className="flex flex-wrap gap-3">
-              {CHU3_MATCHINGS.map((opt) => (
+              {CHU3_MATCHINGS.map((opt) => {
+                const preset = copy.chusanExtra.matchingPresets[opt.id as keyof typeof copy.chusanExtra.matchingPresets]
+                return (
                 <div
                   key={opt.matching}
                   role="button"
@@ -384,7 +380,7 @@ export function ChusanExtraSettings({
                     }
                   }}
                 >
-                  <div className="font-semibold">{opt.name}</div>
+                  <div className="font-semibold">{preset?.name ?? opt.id}</div>
                   <div className="text-kumo-accent mt-2 text-xs">
                     <Link
                       href={opt.ui}
@@ -392,7 +388,7 @@ export function ChusanExtraSettings({
                       rel="noreferrer"
                       variant="inline"
                     >
-                      UI
+                      {copy.chusanExtra.ui}
                     </Link>
                     {" · "}
                     <Link
@@ -405,10 +401,11 @@ export function ChusanExtraSettings({
                     </Link>
                   </div>
                   <div className="text-kumo-subtle mt-2 text-xs">
-                    {opt.coop.join(" / ")}
+                    {(preset?.coop ?? []).join(" / ")}
                   </div>
                 </div>
-              ))}
+                )
+              })}
               <div
                 role="button"
                 tabIndex={0}

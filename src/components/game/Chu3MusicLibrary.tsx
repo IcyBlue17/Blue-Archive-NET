@@ -23,15 +23,6 @@ import type { Chu3UserMusicDetail, GamePlayRecord } from "../../lib/types";
 
 const PAGE_SIZE = 12;
 const DIFF_IDS1 = [0, 1, 2, 3, 4, 10] as const;
-const CHU3_GENRES1 = [
-  "POPS & ANIME",
-  "niconico",
-  "東方Project",
-  "VARIETY",
-  "イロドリミドリ",
-  "ゲキマイ",
-  "ORIGINAL",
-] as const;
 
 type SongRow1 = {
   musicId: number;
@@ -79,7 +70,7 @@ function firstGenre1(meta: MusicMetaLite): string {
   return "";
 }
 
-function orderedGenres1(rows: SongRow1[]): string[] {
+function orderedGenres1(rows: SongRow1[], ordered: string[]): string[] {
   const set1 = new Set<string>();
   rows.forEach((row1) => {
     const g1 = firstGenre1(row1.meta);
@@ -87,10 +78,10 @@ function orderedGenres1(rows: SongRow1[]): string[] {
   });
   const extra1 = [...set1]
     .filter(
-      (one1) => !CHU3_GENRES1.includes(one1 as (typeof CHU3_GENRES1)[number]),
+      (one1) => !ordered.includes(one1),
     )
     .sort();
-  return [...CHU3_GENRES1.filter((one1) => set1.has(one1)), ...extra1];
+  return [...ordered.filter((one1) => set1.has(one1)), ...extra1];
 }
 
 export function Chu3MusicLibrary({
@@ -187,7 +178,7 @@ export function Chu3MusicLibrary({
     });
   }, [genre1, keySlow1, onlyPlayed1, rows1]);
 
-  const genreList1 = useMemo(() => orderedGenres1(rows1), [rows1]);
+  const genreList1 = useMemo(() => orderedGenres1(rows1, texts.musicLibrary.genreOrder), [rows1, texts.musicLibrary.genreOrder]);
 
   const totalPage1 = Math.max(1, Math.ceil(filtered1.length / PAGE_SIZE));
   const list1 = filtered1.slice((page1 - 1) * PAGE_SIZE, page1 * PAGE_SIZE);

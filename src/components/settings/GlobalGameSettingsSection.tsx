@@ -10,57 +10,6 @@ import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import { GameOptionFields } from './GameOptionFields'
 import type { GameOption } from '../../lib/types'
 
-const PREFECTURES = [
-  'None',
-  'Aichi',
-  'Aomori',
-  'Akita',
-  'Ishikawa',
-  'Ibaraki',
-  'Iwate',
-  'Ehime',
-  'Oita',
-  'Osaka',
-  'Okayama',
-  'Okinawa',
-  'Kagawa',
-  'Kagoshima',
-  'Kanagawa',
-  'Gifu',
-  'Kyoto',
-  'Kumamoto',
-  'Gunma',
-  'Kochi',
-  'Saitama',
-  'Saga',
-  'Shiga',
-  'Shizuoka',
-  'Shimane',
-  'Chiba',
-  'Tokyo',
-  'Tokushima',
-  'Tochigi',
-  'Tottori',
-  'Toyama',
-  'Nagasaki',
-  'Nagano',
-  'Nara',
-  'Niigata',
-  'Hyogo',
-  'Hiroshima',
-  'Fukui',
-  'Fukuoka',
-  'Fukushima',
-  'Hokkaido',
-  'Mie',
-  'Miyagi',
-  'Miyazaki',
-  'Yamagata',
-  'Yamaguchi',
-  'Yamanashi',
-  'Wakayama',
-]
-
 const ROUNDING_KEY = 'rounding'
 
 export function GlobalGameSettingsSection({
@@ -150,7 +99,7 @@ export function GlobalGameSettingsSection({
           onValueChange={(v) => void onRegionChange(Number(v))}
         >
           <Select.Option value={0}>{copy.globalSettings.select}</Select.Option>
-          {PREFECTURES.slice(1).map((name, i) => (
+          {copy.globalSettings.prefectures.slice(1).map((name, i) => (
             <Select.Option key={name} value={i + 1}>
               {name}
             </Select.Option>

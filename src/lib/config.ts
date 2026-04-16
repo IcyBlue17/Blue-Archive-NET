@@ -49,19 +49,17 @@ export const GITHUB_REPOSITORY = (import.meta.env.VITE_GITHUB_REPOSITORY as stri
 /** National matching presets — same as aquaNet `config.ts`. */
 export const CHU3_MATCHINGS: ChusanMatchingOption[] = [
   {
-    name: 'Yukiotoko',
+    id: 'yukiotoko',
     ui: 'https://yukiotoko.metatable.sh/',
     guide: 'https://github.com/MewoLab/AquaDX/blob/v1-dev/docs/chu3-national-matching.md',
     matching: 'http://yukiotoko.chara.lol:9004/',
     reflector: 'http://yukiotoko.chara.lol:50201/',
-    coop: ['Missless', 'CozyNet', 'GMG'],
   },
   {
-    name: '林国对战',
+    id: 'linguo',
     ui: 'https://chu3-match.sega.ink/rooms',
     guide: 'https://performai.evilleaker.com/manual/games/chunithm/national_battle/',
     matching: 'https://chu3-match.sega.ink/',
     reflector: 'http://reflector.naominet.live:18080/',
-    coop: ['RinNET', 'MysteriaNET'],
   },
 ]

@@ -3,6 +3,7 @@ import { Button } from '@cloudflare/kumo/components/button'
 import { Text } from '@cloudflare/kumo/components/text'
 import * as gameApi from '../../api/game'
 import { getAppTexts } from '../../content/texts'
+import { downloadJsonFile } from '../../lib/download'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import type { GameOption } from '../../lib/types'
 import { fmtNameErr1 } from '../../lib/censor'
@@ -59,12 +60,7 @@ export function Mai2ExtraSettings({
     setExporting(true)
     try {
       const data = await gameApi.exportGame('mai2')
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `export-mai2-${inGameName || username}.json`
-      a.click()
-      URL.revokeObjectURL(a.href)
+      downloadJsonFile(`export-mai2-${inGameName || username}.json`, data)
     } finally {
       setExporting(false)
     }

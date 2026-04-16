@@ -328,10 +328,9 @@ export interface TrStreamMessage {
 }
 
 export interface ChusanMatchingOption {
-  name: string
+  id: string
   ui: string
   guide: string
   matching: string
   reflector: string
-  coop: string[]
 }
