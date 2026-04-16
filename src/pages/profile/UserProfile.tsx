@@ -47,7 +47,7 @@ export function UserProfilePage() {
       .userInfo(username)
       .then((d) => setPublicInfo(pickPublicUser(d)))
       .catch((e) => setErr(e instanceof Error ? e.message : texts.userProfile.notFound))
-  }, [username])
+  }, [texts.userProfile.notFound, username])
 
   useEffect(() => {
     if (!username) return

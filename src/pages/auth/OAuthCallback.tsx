@@ -70,7 +70,14 @@ export function OAuthCallbackPage() {
     setNote(texts.authPages.oauthCallbackMissing)
     const tId = window.setTimeout(() => nav('/login', { replace: true }), 2000)
     return () => window.clearTimeout(tId)
-  }, [params, nav, refresh, texts.authPages.oauthCallbackMissing])
+  }, [
+    nav,
+    params,
+    refresh,
+    texts.authPages.invalidTokenFormat,
+    texts.authPages.oauthCallbackMissing,
+    texts.authPages.unknownError,
+  ])
 
   return (
     <LayerCard className="p-6">

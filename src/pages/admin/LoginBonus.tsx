@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Checkbox } from '@cloudflare/kumo/components/checkbox'
 import { Input } from '@cloudflare/kumo/components/input'
@@ -29,18 +29,18 @@ export function AdminLoginBonusPage() {
     loginBonusCategoryType: 0,
   })
 
-  async function refreshPresets() {
+  const refreshPresets = useCallback(async () => {
     setErr(null)
     try {
       setPresets(await api.listPresets())
     } catch (e) {
       setErr(e instanceof Error ? e.message : texts.common.error)
     }
-  }
+  }, [texts.common.error])
 
   useEffect(() => {
     void refreshPresets()
-  }, [])
+  }, [refreshPresets])
 
   useEffect(() => {
     if (selected == null) return

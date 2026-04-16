@@ -53,7 +53,7 @@ export function RankingPage() {
         setTeamRows([])
       })
       .catch((e) => setErr(e instanceof Error ? e.message : texts.common.error))
-  }, [tab, page])
+  }, [page, tab, texts.common.error])
 
   return (
     <div>

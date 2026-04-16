@@ -29,7 +29,12 @@ export function VerifyEmailPage() {
         setStatus('err')
         setMsg(e instanceof Error ? e.message : texts.authPages.verifyFailed)
       })
-  }, [token])
+  }, [
+    texts.authPages.emailVerified,
+    texts.authPages.missingVerifyParams,
+    texts.authPages.verifyFailed,
+    token,
+  ])
 
   return (
     <LayerCard className="p-6">

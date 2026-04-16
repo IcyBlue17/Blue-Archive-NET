@@ -209,7 +209,7 @@ export function Chu3TeamPage() {
     }
     setEditName(myTeam.teamName || '')
     setEditEmblem(String(myTeam.emblemId ?? 0))
-  }, [myTeam?.teamId, myTeam?.teamName, myTeam?.emblemId])
+  }, [myTeam])
 
   async function refetch1() {
     await Promise.all([

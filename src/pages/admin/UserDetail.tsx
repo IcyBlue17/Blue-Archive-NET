@@ -40,7 +40,7 @@ export function AdminUserDetailPage() {
       .listUserCards(auId)
       .then(setCards)
       .catch(() => setCards([]))
-  }, [auId])
+  }, [auId, texts.common.error])
 
   async function save() {
     if (!user) return

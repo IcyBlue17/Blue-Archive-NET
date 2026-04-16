@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Checkbox } from '@cloudflare/kumo/components/checkbox'
 import { Input } from '@cloudflare/kumo/components/input'
@@ -74,7 +74,7 @@ export function AdminDownloadOrderPage() {
   const [preview, setPreview] = useState('')
   const [err, setErr] = useState<string | null>(null)
 
-  async function loadAll() {
+  const loadAll = useCallback(async () => {
     setErr(null)
     try {
       const [iniRows, assignmentRows, reportRows, loaderRows] = await Promise.all([
@@ -93,11 +93,11 @@ export function AdminDownloadOrderPage() {
     } catch (e) {
       setErr(e instanceof Error ? e.message : texts.common.error)
     }
-  }
+  }, [assignmentForm.iniId, texts.common.error])
 
   useEffect(() => {
     void loadAll()
-  }, [])
+  }, [loadAll])
 
   async function refreshPreview(next = form) {
     setErr(null)

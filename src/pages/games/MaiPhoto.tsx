@@ -18,7 +18,7 @@ export function MaiPhotoPage() {
       .photos()
       .then(setPhotos)
       .catch((e) => setErr(e instanceof Error ? e.message : texts.maiPhoto.error))
-  }, [])
+  }, [texts.maiPhoto.error])
 
   const token = readToken()
 

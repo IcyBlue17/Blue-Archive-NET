@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Text } from "@cloudflare/kumo/components/text";
 import * as gameApi from "../../api/game";
 import { detailSet } from "../../api/settings";
@@ -16,7 +16,7 @@ export function Chu3AppearanceSettings({ locale }: { locale: SettingFieldLocale 
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
-  async function reload() {
+  const reload = useCallback(async () => {
     setErr(null);
     try {
       const box = await gameApi.userBox();
@@ -27,11 +27,11 @@ export function Chu3AppearanceSettings({ locale }: { locale: SettingFieldLocale 
     } catch (e) {
       setErr(e instanceof Error ? e.message : copy.common.loadingFailed);
     }
-  }
+  }, [copy.common.loadingFailed]);
 
   useEffect(() => {
     void reload();
-  }, []);
+  }, [reload]);
 
   async function saveField(field: string, value: string) {
     setSaving(field);

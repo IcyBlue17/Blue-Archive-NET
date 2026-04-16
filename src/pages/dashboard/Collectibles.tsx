@@ -393,7 +393,7 @@ export function CollectiblesPage() {
     [displayRows, modalField],
   )
 
-  const pickerOptionsFull = activeRow?.options ?? []
+  const pickerOptionsFull = useMemo(() => activeRow?.options ?? [], [activeRow])
   const charaMetaMap = useMemo(() => charaMetaMap1(allItems), [allItems])
   const selectedCharaMeta = pickedCharaId != null ? charaMetaMap[pickedCharaId] ?? null : null
   const validAddImages1 = useMemo(() => {
@@ -550,7 +550,7 @@ export function CollectiblesPage() {
     } finally {
       setUnlockingCharaId(null)
     }
-  }, [charaLv, loadQuery, ownedCharacterLvs, texts.collectibles, toast.add])
+  }, [charaLv, loadQuery, ownedCharacterLvs, texts.collectibles, toast])
 
   const pickCharacter = useCallback((characterId: number) => {
     if (characterId <= 0) {
@@ -606,7 +606,7 @@ export function CollectiblesPage() {
     } finally {
       setSaving(false)
     }
-  }, [hasDirty, draft, user, texts.collectibles, texts.common.saved, toast.add, loadQuery, ownedCharacterSet])
+  }, [hasDirty, draft, user, texts.collectibles, texts.common.saved, toast, loadQuery, ownedCharacterSet])
 
   const pageItems = useMemo(
     () => buildPaginationItems(safePage, totalPages),

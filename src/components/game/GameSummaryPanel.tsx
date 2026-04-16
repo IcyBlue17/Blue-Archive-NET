@@ -33,10 +33,10 @@ export function GameSummaryPanel({
     Number.isFinite(summary.serverRank) && summary.serverRank >= 0 ? `#${summary.serverRank + 1}` : '—'
 
   const stats: { label: string; value: string }[] = [
-    { label: 'Rating', value: formatDisplayRating(summary.rating, game) },
+    { label: texts.common.rating, value: formatDisplayRating(summary.rating, game) },
     { label: texts.gamesPage.highestRating, value: formatDisplayRating(summary.ratingHighest, game) },
     { label: texts.gamesPage.playCount, value: fmtInt(summary.plays) },
-    { label: 'FC / AP', value: `${summary.fullCombo} / ${summary.allPerfect}` },
+    { label: texts.gamesPage.fcAp, value: `${summary.fullCombo} / ${summary.allPerfect}` },
     { label: texts.gamesPage.serverRank, value: rankLabel },
     { label: texts.gamesPage.romVersion, value: summary.lastVersion || '—' },
     { label: texts.gamesPage.lastPlayed, value: summary.lastSeen || '—' },

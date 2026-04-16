@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'
@@ -29,18 +29,18 @@ export function AdminUnlockChallengePage() {
   const [form, setForm] = useState(emptyRow)
   const [editing, setEditing] = useState<UnlockChallengeRow | null>(null)
 
-  async function load() {
+  const load = useCallback(async () => {
     setErr(null)
     try {
       setRows(await api.listUnlockChallenges())
     } catch (e) {
       setErr(e instanceof Error ? e.message : texts.common.error)
     }
-  }
+  }, [texts.common.error])
 
   useEffect(() => {
     void load()
-  }, [])
+  }, [load])
 
   async function create() {
     setErr(null)
