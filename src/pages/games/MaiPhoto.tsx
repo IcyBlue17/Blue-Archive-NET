@@ -6,10 +6,10 @@ import * as gameApi from '../../api/game'
 import { apiUrl } from '../../lib/config'
 import { imgCross1, imgUrl1 } from '../../lib/imgSign'
 import { readToken } from '../../hooks/useAuth'
-import { useI18n } from '../../lib/i18n'
+import { useAppTexts } from '../../content/texts'
 
 export function MaiPhotoPage() {
-  const { t } = useI18n()
+  const texts = useAppTexts()
   const [photos, setPhotos] = useState<string[]>([])
   const [err, setErr] = useState<string | null>(null)
 
@@ -17,14 +17,14 @@ export function MaiPhotoPage() {
     void gameApi
       .photos()
       .then(setPhotos)
-      .catch((e) => setErr(e instanceof Error ? e.message : 'Error'))
+      .catch((e) => setErr(e instanceof Error ? e.message : texts.maiPhoto.error))
   }, [])
 
   const token = readToken()
 
   return (
     <div>
-      <PageHeader title={t('pictures')} crumbs={[{ label: t('home'), href: '/home' }]} />
+      <PageHeader title={texts.nav.pictures} crumbs={[{ label: texts.nav.home, href: '/home' }]} />
       {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {photos.map((p) => {

@@ -1,6 +1,7 @@
 import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'
+import { getAppTexts } from '../../content/texts'
 
 const MAX_SEGA_USERNAME_LENGTH = 8
 
@@ -39,6 +40,7 @@ export function SegaUsernameEditor({
   label: string
   locale: 'zh' | 'en'
 }) {
+  const copy = getAppTexts(locale)
   const length = Array.from(value).length
 
   function appendSymbol(symbol: string) {
@@ -54,18 +56,16 @@ export function SegaUsernameEditor({
             value={value}
             maxLength={MAX_SEGA_USERNAME_LENGTH}
             onChange={(e) => onChange(normalizeSegaUsername(e.target.value))}
-            placeholder={locale === 'zh' ? '输入 8 个以内全角字符' : 'Up to 8 full-width characters'}
+            placeholder={copy.segaUsernameEditor.placeholder}
           />
           <Button size="sm" variant="secondary" disabled={saving || saveDisabled} onClick={onSave}>
-            {locale === 'zh' ? '保存' : 'Save'}
+            {copy.segaUsernameEditor.save}
           </Button>
         </div>
       </label>
 
       <Text DANGEROUS_className="text-kumo-subtle text-sm">
-        {locale === 'zh'
-          ? `自动转为全角字符，可用特殊符号如下。${length}/${MAX_SEGA_USERNAME_LENGTH}`
-          : `Typed ASCII is converted to full-width automatically. Special symbols below. ${length}/${MAX_SEGA_USERNAME_LENGTH}`}
+        {copy.segaUsernameEditor.helper(length, MAX_SEGA_USERNAME_LENGTH)}
       </Text>
 
       <div className="grid max-w-3xl grid-cols-4 gap-2 sm:grid-cols-8">

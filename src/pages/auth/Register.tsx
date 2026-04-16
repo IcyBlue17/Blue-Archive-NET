@@ -11,12 +11,12 @@ import * as oauthApi from '../../api/oauth'
 import { OAuthButtons } from '../../components/auth/OAuthButtons'
 import { TURNSTILE_SITE_KEY } from '../../lib/config'
 import { fmtNameErr1 } from '../../lib/censor'
-import { useI18n } from '../../lib/i18n'
 import { qk } from '../../lib/query'
 import * as userApi from '../../api/user'
+import { useAppTexts } from '../../content/texts'
 
 export function RegisterPage() {
-  const { t } = useI18n()
+  const texts = useAppTexts()
   const nav = useNavigate()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -45,7 +45,7 @@ export function RegisterPage() {
       })
       nav('/login', { replace: true, state: { registered: true } })
     } catch (err) {
-      setError(fmtNameErr1(err, t('register')))
+      setError(fmtNameErr1(err, texts.authPages.register))
     } finally {
       setPending(false)
     }
@@ -53,26 +53,26 @@ export function RegisterPage() {
 
   return (
     <LayerCard className="p-6">
-      <LayerCard.Secondary>{t('register')}</LayerCard.Secondary>
+      <LayerCard.Secondary>{texts.authPages.register}</LayerCard.Secondary>
       <OAuthButtons mode="login" enabledProviderIds={oauthProviders} />
       <div className="my-5 flex items-center gap-3">
         <div className="border-kumo-border flex-1 border-t" />
         <Text size="sm" DANGEROUS_className="shrink-0 text-kumo-subtle">
-          {t('auth.dividerOr')}
+          {texts.authPages.dividerOr}
         </Text>
         <div className="border-kumo-border flex-1 border-t" />
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
-          <Text size="sm">{t('username')}</Text>
+          <Text size="sm">{texts.authPages.username}</Text>
           <Input value={username} onChange={(e) => setUsername(e.target.value)} required />
         </label>
         <label className="flex flex-col gap-1">
-          <Text size="sm">Email</Text>
+          <Text size="sm">{texts.authPages.email}</Text>
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </label>
         <label className="flex flex-col gap-1">
-          <Text size="sm">{t('password')}</Text>
+          <Text size="sm">{texts.authPages.password}</Text>
           <Input
             type="password"
             value={password}
@@ -85,7 +85,7 @@ export function RegisterPage() {
           <Turnstile siteKey={TURNSTILE_SITE_KEY} onSuccess={setTurnstile} />
         ) : (
           <Text size="sm" DANGEROUS_className="text-kumo-warning">
-            VITE_TURNSTILE_SITE_KEY 未配置。
+            {texts.authPages.turnstileMissing}
           </Text>
         )}
         {error ? (
@@ -94,12 +94,12 @@ export function RegisterPage() {
           </Text>
         ) : null}
         <Button type="submit" disabled={pending || (!!TURNSTILE_SITE_KEY && !turnstile)}>
-          {t('register')}
+          {texts.authPages.register}
         </Button>
       </form>
       <div className="mt-4">
         <Link render={<RouterLink to="/login" />} variant="inline" className="text-sm">
-          {t('login')}
+          {texts.authPages.login}
         </Link>
       </div>
     </LayerCard>

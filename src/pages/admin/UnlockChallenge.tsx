@@ -6,6 +6,7 @@ import { Table } from '@cloudflare/kumo/components/table'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import * as api from '../../api/admin/unlockChallenge'
 import type { UnlockChallengeRow } from '../../api/admin/unlockChallenge'
+import { useAppTexts } from '../../content/texts'
 
 const emptyRow: Omit<UnlockChallengeRow, 'id'> = {
   unlockChallengeId: 0,
@@ -22,6 +23,7 @@ const emptyRow: Omit<UnlockChallengeRow, 'id'> = {
 }
 
 export function AdminUnlockChallengePage() {
+  const texts = useAppTexts()
   const [rows, setRows] = useState<UnlockChallengeRow[]>([])
   const [err, setErr] = useState<string | null>(null)
   const [form, setForm] = useState(emptyRow)
@@ -76,7 +78,7 @@ export function AdminUnlockChallengePage() {
   }
 
   async function remove(id: number) {
-    if (!confirm('删除该解锁挑战？')) return
+    if (!confirm(texts.admin.deleteUnlockConfirm)) return
     try {
       await api.deleteUnlockChallenge(id)
       await load()
@@ -107,7 +109,7 @@ export function AdminUnlockChallengePage() {
     <div className="flex flex-col gap-6">
       {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
       <LayerCard className="p-4">
-        <LayerCard.Secondary>新建</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.admin.newItem}</LayerCard.Secondary>
         <div className="mt-4 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           <label className="flex flex-col gap-1 text-sm">
             challengeName
@@ -128,12 +130,12 @@ export function AdminUnlockChallengePage() {
           {numField('version', 'version', form, setForm)}
         </div>
         <Button className="mt-4" onClick={create}>
-          创建
+          {texts.common.create}
         </Button>
       </LayerCard>
       {editing ? (
         <LayerCard className="p-4">
-          <LayerCard.Secondary>编辑 #{editing.id}</LayerCard.Secondary>
+          <LayerCard.Secondary>{texts.admin.editItem(editing.id)}</LayerCard.Secondary>
           <div className="mt-4 grid gap-2 md:grid-cols-2">
             <label className="flex flex-col gap-1 text-sm">
               challengeName
@@ -161,21 +163,21 @@ export function AdminUnlockChallengePage() {
           </div>
           <div className="mt-4 flex gap-2">
             <Button variant="secondary" onClick={() => setEditing(null)}>
-              取消
+              {texts.common.cancel}
             </Button>
-            <Button onClick={saveEdit}>保存</Button>
+            <Button onClick={saveEdit}>{texts.common.save}</Button>
           </div>
         </LayerCard>
       ) : null}
       <LayerCard className="p-4">
-        <LayerCard.Secondary>列表</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.admin.list}</LayerCard.Secondary>
         <div className="overflow-x-auto">
           <Table>
             <Table.Header>
               <Table.Row>
                 <Table.Head>id</Table.Head>
                 <Table.Head>ucId</Table.Head>
-                <Table.Head>名称</Table.Head>
+                <Table.Head>{texts.common.name}</Table.Head>
                 <Table.Head>border</Table.Head>
                 <Table.Head />
               </Table.Row>
@@ -189,10 +191,10 @@ export function AdminUnlockChallengePage() {
                   <Table.Cell>{r.borderScore}</Table.Cell>
                   <Table.Cell className="flex flex-wrap gap-1">
                     <Button size="sm" variant="secondary" onClick={() => setEditing({ ...r })}>
-                      编辑
+                      {texts.common.edit}
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => remove(r.id)}>
-                      删除
+                      {texts.common.delete}
                     </Button>
                   </Table.Cell>
                 </Table.Row>

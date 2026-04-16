@@ -1,6 +1,7 @@
 import { Table } from '@cloudflare/kumo/components/table'
 import { Text } from '@cloudflare/kumo/components/text'
 import type { GameName, GenericGamePlaylog } from '../../lib/types'
+import { useAppTexts } from '../../content/texts'
 
 function asPlaylog(r: unknown): Partial<GenericGamePlaylog> {
   return typeof r === 'object' && r !== null ? (r as Partial<GenericGamePlaylog>) : {}
@@ -15,7 +16,8 @@ export function PlaylogTable({
   musicById?: Record<number, { name?: string | null }>
   game?: GameName
 }) {
-  if (!rows?.length) return <Text DANGEROUS_className="text-kumo-subtle">无游玩记录</Text>
+  const texts = useAppTexts()
+  if (!rows?.length) return <Text DANGEROUS_className="text-kumo-subtle">{texts.gamesPage.noPlaylog}</Text>
 
   const wacca = game === 'wacca'
   const chuOgk = game === 'chu3' || game === 'ongeki'
@@ -25,10 +27,10 @@ export function PlaylogTable({
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.Head>时间</Table.Head>
-            <Table.Head>乐曲</Table.Head>
-            <Table.Head>难度</Table.Head>
-            <Table.Head>达成率</Table.Head>
+            <Table.Head>{texts.common.time}</Table.Head>
+            <Table.Head>{texts.common.music}</Table.Head>
+            <Table.Head>{texts.common.difficulty}</Table.Head>
+            <Table.Head>{texts.common.achievement}</Table.Head>
             <Table.Head>Max combo</Table.Head>
             <Table.Head>Rating ±</Table.Head>
           </Table.Row>

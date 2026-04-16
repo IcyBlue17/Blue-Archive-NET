@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Text } from '@cloudflare/kumo/components/text'
 import * as gameApi from '../../api/game'
+import { getAppTexts } from '../../content/texts'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import type { GameOption } from '../../lib/types'
 import { fmtNameErr1 } from '../../lib/censor'
@@ -21,6 +22,7 @@ export function Mai2ExtraSettings({
   onSet: (key: string, value: string) => Promise<void>
   err: string | null
 }) {
+  const copy = getAppTexts(locale)
   const [inGameName, setInGameName] = useState('')
   const [nameDirty, setNameDirty] = useState(false)
   const [nameSaving, setNameSaving] = useState(false)
@@ -47,7 +49,7 @@ export function Mai2ExtraSettings({
       setInGameName(r.newName)
       setNameDirty(false)
     } catch (e) {
-      setNameErr1(fmtNameErr1(e, locale === 'zh' ? '改名' : 'Rename'))
+      setNameErr1(fmtNameErr1(e, copy.mai2Extra.renameAction))
     } finally {
       setNameSaving(false)
     }
@@ -75,7 +77,7 @@ export function Mai2ExtraSettings({
 
       <div className="flex max-w-xl flex-col gap-2">
         <SegaUsernameEditor
-          label={locale === 'zh' ? '游戏内名称' : 'In-game name'}
+          label={copy.mai2Extra.inGameName}
           locale={locale}
           value={inGameName}
           onChange={(value) => {
@@ -96,7 +98,7 @@ export function Mai2ExtraSettings({
       />
 
       <Button variant="secondary" disabled={exporting} onClick={() => void doExport()}>
-        {locale === 'zh' ? '导出 maimai 存档 (JSON)' : 'Export maimai save (JSON)'}
+        {copy.mai2Extra.exportSave}
       </Button>
     </div>
   )

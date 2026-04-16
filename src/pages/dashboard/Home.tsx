@@ -15,6 +15,7 @@ import type { CardSummary, CardSummaryGame, GameName } from '../../lib/types'
 import { cardSummaryKeyToGame, formatDisplayRating } from '../../lib/gameRatingDisplay'
 import { gameTitle } from '../../lib/gameTitles'
 import { useI18n } from '../../lib/i18n'
+import { useAppTexts } from '../../content/texts'
 
 const SUMMARY_KEYS: (keyof CardSummary)[] = ['chu3', 'mai2', 'ongeki', 'wacca', 'diva']
 const CHU3_COMPLETE_MAX = 50000
@@ -90,7 +91,8 @@ function Chu3ProfileCardSkeleton() {
 }
 
 export function HomePage() {
-  const { t, locale } = useI18n()
+  const { locale } = useI18n()
+  const texts = useAppTexts()
   const { user } = useAuth()
   const username = user?.username ?? ''
   const summaryQuery = useQuery<CardSummary>({
@@ -124,7 +126,7 @@ export function HomePage() {
 
   return (
     <div>
-      <PageHeader title={t('home')} crumbs={[{ label: t('dashboard'), href: '/home' }]} />
+      <PageHeader title={texts.nav.home} crumbs={[{ label: texts.nav.dashboard, href: '/home' }]} />
       {showChu3CardSkeleton ? (
         <Chu3ProfileCardSkeleton />
       ) : showChu3Card ? (
@@ -145,29 +147,29 @@ export function HomePage() {
                   loading="lazy"
                 />
               ) : (
-                <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '无头像' : 'No avatar'}</div>
+                <div className="text-kumo-subtle text-xs">{texts.homePage.noAvatar}</div>
               )}
             </div>
             <dl className="grid min-w-0 grid-cols-[max-content_1fr] gap-x-5 gap-y-2 text-sm sm:text-base">
-              <dt className="font-semibold text-kumo-default">{locale === 'zh' ? 'ID' : 'ID'}</dt>
+              <dt className="font-semibold text-kumo-default">{texts.homePage.id}</dt>
               <dd className="truncate text-kumo-text">{chu3CardId}</dd>
-              <dt className="font-semibold text-kumo-default">{locale === 'zh' ? '等级' : 'Level'}</dt>
+              <dt className="font-semibold text-kumo-default">{texts.homePage.level}</dt>
               <dd className="text-kumo-text">{chu3Level || '—'}</dd>
-              <dt className="font-semibold text-kumo-default">{locale === 'zh' ? '评级' : 'Rating'}</dt>
+              <dt className="font-semibold text-kumo-default">{texts.homePage.rating}</dt>
               <dd className="text-kumo-text">{chu3Rating}</dd>
-              <dt className="font-semibold text-kumo-default">{locale === 'zh' ? '完成度' : 'Completion'}</dt>
+              <dt className="font-semibold text-kumo-default">{texts.homePage.completion}</dt>
               <dd className="text-kumo-text">{chu3Complete}</dd>
             </dl>
           </div>
           <div className="border-kumo-border bg-kumo-recessed/50 flex justify-end border-t px-4 py-3">
             <Text DANGEROUS_className="text-right text-sm font-medium">
-              {locale === 'zh' ? `上次游玩： ${chu3LastPlay}` : `Last played: ${chu3LastPlay}`}
+              {texts.homePage.lastPlayed(chu3LastPlay)}
             </Text>
           </div>
         </LayerCard>
       ) : null}
       <LayerCard className="mt-6 p-4">
-        <LayerCard.Secondary>{locale === 'zh' ? '游戏概要' : 'Games'}</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.homePage.games}</LayerCard.Secondary>
         {showSummarySkeleton ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -176,7 +178,7 @@ export function HomePage() {
           </div>
         ) : summaryQuery.error ? (
           <Text DANGEROUS_className="text-kumo-danger mt-2">
-            {summaryQuery.error instanceof Error ? summaryQuery.error.message : 'Error'}
+            {summaryQuery.error instanceof Error ? summaryQuery.error.message : texts.common.error}
           </Text>
         ) : summary && hasSummary ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -198,13 +200,13 @@ export function HomePage() {
                 >
                   <div className="text-kumo-text font-semibold">{title}</div>
                   <div className="text-kumo-subtle mt-2 text-sm">
-                    {locale === 'zh' ? '游戏内名称' : 'Name'}: {row.name || '—'}
+                    {texts.homePage.inGameName}: {row.name || '—'}
                   </div>
                   <div className="text-kumo-subtle mt-1 text-sm">
                     Rating: {ratingStr}
                   </div>
                   <div className="text-kumo-subtle mt-1 text-xs">
-                    {locale === 'zh' ? '最近登录' : 'Last login'}: {formatLogin(row.lastLogin)}
+                    {texts.homePage.lastLogin}: {formatLogin(row.lastLogin)}
                   </div>
                 </div>
               )
@@ -212,21 +214,21 @@ export function HomePage() {
           </div>
         ) : (
           <Text DANGEROUS_className="text-kumo-subtle mt-2">
-            {locale === 'zh' ? '暂无游戏数据' : 'No game data yet'}
+            {texts.homePage.noGameData}
           </Text>
         )}
         <div className="mt-4 flex flex-wrap gap-2">
           <Link to="/cards">
-            <Button variant="primary">{t('cards')}</Button>
+            <Button variant="primary">{texts.nav.cards}</Button>
           </Link>
           <Link to="/team">
-            <Button variant="secondary">{t('team')}</Button>
+            <Button variant="secondary">{texts.nav.team}</Button>
           </Link>
           <Link to="/friends">
-            <Button variant="secondary">{t('friends')}</Button>
+            <Button variant="secondary">{texts.nav.friends}</Button>
           </Link>
           <Link to="/settings/profile">
-            <Button variant="secondary">{t('settings')}</Button>
+            <Button variant="secondary">{texts.nav.settings}</Button>
           </Link>
         </div>
       </LayerCard>

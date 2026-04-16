@@ -3,6 +3,7 @@ import { Button } from '@cloudflare/kumo/components/button'
 import { Checkbox } from '@cloudflare/kumo/components/checkbox'
 import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'
+import { getAppTexts } from '../../content/texts'
 import type { GameOption } from '../../lib/types'
 import { settingFieldLabel, type SettingFieldLocale } from '../../lib/settingsFieldLabels'
 
@@ -28,6 +29,7 @@ export function GameOptionFields({
   onSet: (key: string, value: string) => Promise<void>
   error?: string | null
 }) {
+  const copy = getAppTexts(locale)
   const fields = useMemo(() => options.filter((o) => gameFilter(o.game)), [options, gameFilter])
   const [draft, setDraft] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState<string | null>(null)
@@ -56,7 +58,7 @@ export function GameOptionFields({
 
   if (!fields.length) {
     return (
-      <Text DANGEROUS_className="text-kumo-subtle text-sm">（无此项服务器配置）</Text>
+      <Text DANGEROUS_className="text-kumo-subtle text-sm">{copy.gameOptionFields.empty}</Text>
     )
   }
 
@@ -105,7 +107,7 @@ export function GameOptionFields({
                   disabled={saving === field.key}
                   onClick={() => void saveKey(field.key, val)}
                 >
-                  {locale === 'zh' ? '保存' : 'Save'}
+                  {copy.gameOptionFields.save}
                 </Button>
               </div>
             </div>
@@ -130,7 +132,7 @@ export function GameOptionFields({
                 disabled={saving === field.key}
                 onClick={() => void saveKey(field.key, val)}
               >
-                {locale === 'zh' ? '保存' : 'Save'}
+                {copy.gameOptionFields.save}
               </Button>
             </div>
           </div>

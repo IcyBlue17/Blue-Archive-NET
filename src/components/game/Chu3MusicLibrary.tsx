@@ -16,6 +16,7 @@ import {
 } from "../../lib/chu3PlaylogView";
 import { imgCross1 } from "../../lib/imgSign";
 import { musicJacketUrl } from "../../lib/musicCover";
+import { getAppTexts } from "../../content/texts";
 import type { MusicMetaLite } from "../../lib/scoring";
 import type { Chu3UserMusicDetail, GamePlayRecord } from "../../lib/types";
 
@@ -114,6 +115,7 @@ export function Chu3MusicLibrary({
   error?: string | null;
   locale?: "zh" | "en";
 }) {
+  const texts = getAppTexts(locale);
   const [key1, setKey1] = useState("");
   const [onlyPlayed1, setOnlyPlayed1] = useState(false);
   const [genre1, setGenre1] = useState("");
@@ -236,25 +238,21 @@ export function Chu3MusicLibrary({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <Text variant="heading3">
-              {locale === "zh" ? "乐曲列表" : "Song list"}
+              {texts.musicLibrary.title}
             </Text>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Input
                 value={key1}
                 onChange={(e) => setKey1(e.target.value)}
-                placeholder={
-                  locale === "zh"
-                    ? "搜索歌曲 / 作曲 / ID"
-                    : "Search song / composer / ID"
-                }
+                placeholder={texts.musicLibrary.searchPlaceholder}
               />
               <Select
                 value={genre1}
                 onValueChange={(value1) => setGenre1(String(value1 ?? ""))}
-                aria-label={locale === "zh" ? "分类筛选" : "Genre filter"}
+                aria-label={texts.musicLibrary.genreFilter}
               >
                 <Select.Option value="">
-                  {locale === "zh" ? "全部分类" : "All genres"}
+                  {texts.musicLibrary.allGenres}
                 </Select.Option>
                 {genreList1.map((one1) => (
                   <Select.Option key={one1} value={one1}>
@@ -266,7 +264,7 @@ export function Chu3MusicLibrary({
                 controlFirst
                 checked={onlyPlayed1}
                 onCheckedChange={setOnlyPlayed1}
-                label={locale === "zh" ? "只看有记录" : "Only played"}
+                label={texts.musicLibrary.onlyPlayed}
               />
             </div>
           </div>
@@ -278,7 +276,7 @@ export function Chu3MusicLibrary({
               disabled={page1 <= 1}
               onClick={() => setPage1((x1) => Math.max(1, x1 - 1))}
             >
-              {locale === "zh" ? "上一页" : "Prev"}
+              {texts.common.previousPage}
             </Button>
             {pageNums1(page1, totalPage1).map((n1) => (
               <Button
@@ -296,7 +294,7 @@ export function Chu3MusicLibrary({
               disabled={page1 >= totalPage1}
               onClick={() => setPage1((x1) => Math.min(totalPage1, x1 + 1))}
             >
-              {locale === "zh" ? "下一页" : "Next"}
+              {texts.common.nextPage}
             </Button>
           </div>
         </div>
@@ -344,9 +342,7 @@ export function Chu3MusicLibrary({
                         </span>
                         {row1.playCount1 > 0 ? (
                           <span className="rounded-full bg-kumo-accent/12 px-2 py-0.5 text-xs text-kumo-accent">
-                            {locale === "zh"
-                              ? `${row1.playCount1} 次游玩`
-                              : `${row1.playCount1} plays`}
+                            {texts.musicLibrary.playCount(row1.playCount1)}
                           </span>
                         ) : null}
                       </div>
@@ -354,8 +350,7 @@ export function Chu3MusicLibrary({
                         {row1.meta.name ?? `Music ${row1.musicId}`}
                       </div>
                       <div className="text-kumo-subtle mt-1 truncate text-sm">
-                        {row1.meta.composer ||
-                          (locale === "zh" ? "未知作曲" : "Unknown composer")}
+                        {row1.meta.composer || texts.musicLibrary.unknownComposer}
                       </div>
                       <div className="text-kumo-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                         {row1.meta.ver ? <span>{row1.meta.ver}</span> : null}
@@ -383,7 +378,7 @@ export function Chu3MusicLibrary({
             })
           ) : (
             <Text DANGEROUS_className="text-kumo-subtle py-6 text-center">
-              {locale === "zh" ? "没有匹配的乐曲。" : "No songs matched."}
+              {texts.musicLibrary.noMatches}
             </Text>
           )}
         </div>
@@ -409,8 +404,7 @@ export function Chu3MusicLibrary({
                   {picked1.meta.name ?? `Music ${picked1.musicId}`}
                 </Text>
                 <Text DANGEROUS_className="text-kumo-subtle mt-2 text-sm">
-                  {picked1.meta.composer ||
-                    (locale === "zh" ? "未知作曲" : "Unknown composer")}
+                  {picked1.meta.composer || texts.musicLibrary.unknownComposer}
                 </Text>
                 <div className="text-kumo-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
                   {firstGenre1(picked1.meta) ? (
@@ -419,9 +413,7 @@ export function Chu3MusicLibrary({
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-kumo-fill px-2 py-1">
-                    {locale === "zh"
-                      ? `总游玩 ${picked1.playCount1}`
-                      : `Plays ${picked1.playCount1}`}
+                    {texts.musicLibrary.totalPlays(picked1.playCount1)}
                   </span>
                 </div>
               </div>
@@ -469,17 +461,17 @@ export function Chu3MusicLibrary({
                         <div className="rounded-lg bg-kumo-surface-secondary/50 p-3">
                           <div className="grid grid-cols-[84px_1fr] gap-2 text-sm sm:grid-cols-[96px_1fr]">
                             <div className="text-kumo-subtle">
-                              {locale === "zh" ? "最好成绩" : "Best score"}
+                              {texts.musicLibrary.bestScore}
                             </div>
                             <div className="font-semibold">
                               {fmtScore1(scoreNow1)} · {rank1(scoreNow1)}
                             </div>
                             <div className="text-kumo-subtle">
-                              {locale === "zh" ? "单曲 Rating" : "Chart rating"}
+                              {texts.musicLibrary.chartRating}
                             </div>
                             <div className="font-semibold">{chartRt1}</div>
                             <div className="text-kumo-subtle">
-                              {locale === "zh" ? "游玩次数" : "Plays"}
+                              {texts.musicLibrary.plays}
                             </div>
                             <div>{best1.playCount ?? 0}</div>
                             <div className="text-kumo-subtle">Miss</div>
@@ -498,7 +490,7 @@ export function Chu3MusicLibrary({
                       </div>
                     ) : (
                       <Text DANGEROUS_className="text-kumo-subtle mt-3 text-sm">
-                        {locale === "zh" ? "暂无记录" : "No record"}
+                        {texts.musicLibrary.noRecord}
                       </Text>
                     )}
                   </div>
@@ -508,9 +500,7 @@ export function Chu3MusicLibrary({
           </>
         ) : (
           <Text DANGEROUS_className="text-kumo-subtle">
-            {locale === "zh"
-              ? "请选择左侧乐曲。"
-              : "Pick a song from the list."}
+            {texts.musicLibrary.pickSong}
           </Text>
         )}
       </LayerCard>

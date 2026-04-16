@@ -1,7 +1,7 @@
 import type { ComponentType, SVGProps } from 'react'
 import { Text } from '@cloudflare/kumo/components/text'
 import { OAUTH_API_ORIGIN } from '../../lib/config'
-import { useI18n } from '../../lib/i18n'
+import { useAppTexts } from '../../content/texts'
 // @ts-expect-error virtual icon from local unplugin-icons
 import AppleLogo from '~icons/logos/apple'
 // @ts-expect-error virtual icon from local unplugin-icons
@@ -56,7 +56,7 @@ export function OAuthButtons({
   getToken,
   disabled,
 }: OAuthButtonsProps) {
-  const { t } = useI18n()
+  const texts = useAppTexts()
   const enabled = new Set(enabledProviderIds.map((x) => x.toLowerCase()))
   const excluded = new Set(excludeProviderIds.map((x) => x.toLowerCase()))
 
@@ -81,9 +81,9 @@ export function OAuthButtons({
         if (excluded.has(id)) return null
         const isOn = enabled.has(id)
         const name = OAUTH_PROVIDER_DISPLAY_NAME[id]
-        const label = t('auth.oauthContinue').replace('{name}', name)
+        const label = texts.authPages.oauthContinue(name)
         const bindBlocked = mode === 'bind' && !getToken
-        const hint = !isOn ? t('auth.oauthNotConfiguredHint') : bindBlocked ? t('auth.oauthBindNeedToken') : undefined
+        const hint = !isOn ? texts.authPages.oauthNotConfiguredHint : bindBlocked ? texts.authPages.oauthBindNeedToken : undefined
         const ProviderIcon = OAUTH_PROVIDER_ICON[id]
         return (
           <button

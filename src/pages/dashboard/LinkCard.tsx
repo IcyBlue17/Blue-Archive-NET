@@ -7,6 +7,7 @@ import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { Table } from '@cloudflare/kumo/components/table'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
+import { useAppTexts } from '../../content/texts'
 import { useAuth } from '../../hooks/useAuth'
 import { qk } from '../../lib/query'
 import * as cardApi from '../../api/card'
@@ -36,7 +37,8 @@ function formatLogin(iso: string | undefined) {
 }
 
 export function LinkCardPage() {
-  const { t, locale } = useI18n()
+  const { locale } = useI18n()
+  const copy = useAppTexts()
   const { user: me, refresh, loading } = useAuth()
   const qc = useQueryClient()
   const [cardId, setCardId] = useState('')
@@ -60,11 +62,11 @@ export function LinkCardPage() {
     setMsg(null)
     try {
       await cardApi.link({ cardId: aimeCardFmt1(cardId), migrate: DEFAULT_MIGRATE })
-      setMsg('绑卡成功')
+      setMsg(copy.linkCard.bindSuccess)
       await refresh()
       setCardId('')
     } catch (e) {
-      setErr(e instanceof Error ? e.message : '失败')
+      setErr(e instanceof Error ? e.message : copy.common.failed)
     }
   }
 
@@ -74,19 +76,19 @@ export function LinkCardPage() {
     setMsg(null)
     try {
       await cardApi.unlink(card.luid)
-      setMsg('已解绑')
+      setMsg(copy.linkCard.unlinkSuccess)
       await refresh()
       qc.removeQueries({ queryKey: qk.cardSummary(card.luid) })
     } catch (e) {
-      setErr(e instanceof Error ? e.message : '失败')
+      setErr(e instanceof Error ? e.message : copy.common.failed)
     }
   }
 
   return (
     <div>
-      <PageHeader title={t('cards')} crumbs={[{ label: t('home'), href: '/home' }]} />
+      <PageHeader title={copy.nav.cards} crumbs={[{ label: copy.nav.home, href: '/home' }]} />
       <LayerCard className="mb-6 p-4">
-        <LayerCard.Secondary>概要</LayerCard.Secondary>
+        <LayerCard.Secondary>{copy.linkCard.summary}</LayerCard.Secondary>
         {loadingSummary && !ghostSummary ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 2 }).map((_, i) => (
@@ -98,7 +100,7 @@ export function LinkCardPage() {
             ))}
           </div>
         ) : !ghostSummary ? (
-          <Text DANGEROUS_className="text-kumo-subtle mt-2">—</Text>
+          <Text DANGEROUS_className="text-kumo-subtle mt-2">{copy.common.empty}</Text>
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {SUMMARY_KEYS.map((key) => {
@@ -117,7 +119,7 @@ export function LinkCardPage() {
                   <div className="font-medium">{title}</div>
                   <div className="text-kumo-subtle text-sm">{row.name}</div>
                   <div className="text-kumo-subtle text-xs">
-                    Rating {ratingStr} · {formatLogin(row.lastLogin)}
+                    {copy.linkCard.rating} {ratingStr} · {formatLogin(row.lastLogin)}
                   </div>
                 </div>
               )
@@ -126,29 +128,29 @@ export function LinkCardPage() {
         )}
       </LayerCard>
       <LayerCard className="mb-6 p-4">
-        <LayerCard.Secondary>绑定新的Aime卡</LayerCard.Secondary>
+        <LayerCard.Secondary>{copy.linkCard.bindCard}</LayerCard.Secondary>
         <div className="mt-4 flex max-w-md flex-col gap-3">
           <label className="flex flex-col gap-1">
-            <Text size="sm">Access Code</Text>
+            <Text size="sm">{copy.linkCard.accessCode}</Text>
             <Input
               value={cardId}
               inputMode="numeric"
               maxLength={24}
               onChange={(e) => setCardId(aimeCardFmt1(e.target.value))}
-              placeholder="1234 5678 9012 3456 7890"
+              placeholder={copy.linkCard.accessCodePlaceholder}
             />
           </label>
           {msg ? <Text DANGEROUS_className="text-kumo-success">{msg}</Text> : null}
           {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
           <Button type="button" onClick={link}>
-            绑定
+            {copy.linkCard.bind}
           </Button>
         </div>
       </LayerCard>
       <LayerCard className="p-0 overflow-hidden">
         <div className="border-kumo-border bg-kumo-surface-secondary border-b px-4 py-3">
           <Text size="sm" DANGEROUS_className="font-medium">
-            已绑定卡片
+            {copy.linkCard.linkedCards}
           </Text>
         </div>
         <div className="p-2">
@@ -158,14 +160,14 @@ export function LinkCardPage() {
               <SkeletonBox className="h-10 w-full rounded-lg" />
             </div>
           ) : (me?.cards ?? []).length === 0 ? (
-            <Text DANGEROUS_className="text-kumo-subtle px-2 py-6 text-center text-sm">暂无卡片</Text>
+            <Text DANGEROUS_className="text-kumo-subtle px-2 py-6 text-center text-sm">{copy.linkCard.noCards}</Text>
           ) : (
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.Head>卡号</Table.Head>
-                  <Table.Head>状态</Table.Head>
-                  <Table.Head className="text-end">操作</Table.Head>
+                  <Table.Head>{copy.linkCard.cardNumber}</Table.Head>
+                  <Table.Head>{copy.linkCard.status}</Table.Head>
+                  <Table.Head className="text-end">{copy.linkCard.action}</Table.Head>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -181,16 +183,16 @@ export function LinkCardPage() {
                       <div className="flex flex-wrap gap-1">
                         {c.isGhost ? (
                           <span className="bg-kumo-fill text-kumo-subtle rounded-md px-2 py-0.5 text-xs">
-                            Ghost
+                            {copy.linkCard.ghost}
                           </span>
                         ) : (
                           <span className="bg-kumo-success/15 text-kumo-success rounded-md px-2 py-0.5 text-xs">
-                            已关联
+                            {copy.linkCard.linked}
                           </span>
                         )}
                         {c.rankingBanned ? (
                           <span className="bg-kumo-danger/15 text-kumo-danger rounded-md px-2 py-0.5 text-xs">
-                            排行封禁
+                            {copy.linkCard.rankingBanned}
                           </span>
                         ) : null}
                       </div>
@@ -203,10 +205,10 @@ export function LinkCardPage() {
                           size="sm"
                           onClick={() => unlink(c)}
                         >
-                          解绑
+                          {copy.linkCard.unlink}
                         </Button>
                       ) : (
-                        <span className="text-kumo-subtle text-xs">—</span>
+                        <span className="text-kumo-subtle text-xs">{copy.common.empty}</span>
                       )}
                     </Table.Cell>
                   </Table.Row>

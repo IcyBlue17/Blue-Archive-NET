@@ -7,8 +7,10 @@ import { Table } from '@cloudflare/kumo/components/table'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { Checkbox } from '@cloudflare/kumo/components/checkbox'
 import * as adminUsers from '../../api/admin/users'
+import { useAppTexts } from '../../content/texts'
 
 export function AdminUserDetailPage() {
+  const texts = useAppTexts()
   const { id } = useParams<{ id: string }>()
   const nav = useNavigate()
   const auId = Number(id)
@@ -86,35 +88,35 @@ export function AdminUserDetailPage() {
     }
   }
 
-  if (!Number.isFinite(auId)) return <Text>无效用户</Text>
+  if (!Number.isFinite(auId)) return <Text>{texts.admin.invalidUser}</Text>
 
   return (
     <div className="flex flex-col gap-4">
       <Button variant="secondary" onClick={() => nav('/admin/users')}>
-        返回列表
+        {texts.admin.backToList}
       </Button>
       {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
       <LayerCard className="p-4">
-        <LayerCard.Secondary>编辑用户 #{auId}</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.admin.editUser(auId)}</LayerCard.Secondary>
         <div className="mt-4 grid max-w-xl gap-3">
           <label className="flex flex-col gap-1">
-            <Text size="sm">显示名</Text>
+            <Text size="sm">{texts.admin.displayName}</Text>
             <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1">
-            <Text size="sm">国家 (≤3)</Text>
+            <Text size="sm">{texts.admin.country}</Text>
             <Input value={country} onChange={(e) => setCountry(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1">
-            <Text size="sm">地区 (≤2)</Text>
+            <Text size="sm">{texts.admin.region}</Text>
             <Input value={region} onChange={(e) => setRegion(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1">
-            <Text size="sm">位置</Text>
+            <Text size="sm">{texts.admin.place}</Text>
             <Input value={location} onChange={(e) => setLocation(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1">
-            <Text size="sm">简介</Text>
+            <Text size="sm">{texts.admin.bio}</Text>
             <Input value={bio} onChange={(e) => setBio(e.target.value)} />
           </label>
           <div className="flex items-center gap-2">
@@ -122,28 +124,28 @@ export function AdminUserDetailPage() {
               checked={!!user?.emailConfirmed}
               onCheckedChange={(c) => void toggleEmailConfirmed(c)}
             />
-            <Text size="sm">邮箱已验证</Text>
+            <Text size="sm">{texts.admin.emailVerified}</Text>
           </div>
           <div className="flex items-center gap-2">
             <Checkbox
               checked={!!user?.optOutOfLeaderboard}
               onCheckedChange={(c) => void toggleOptOut(c)}
             />
-            <Text size="sm">不参与排行榜</Text>
+            <Text size="sm">{texts.admin.rankingDisabled}</Text>
           </div>
-          <Button onClick={save}>保存</Button>
-          <Text DANGEROUS_className="text-kumo-subtle text-sm">邮箱（只读）: {user?.email}</Text>
+          <Button onClick={save}>{texts.common.save}</Button>
+          <Text DANGEROUS_className="text-kumo-subtle text-sm">{texts.admin.emailReadonly(user?.email)}</Text>
         </div>
       </LayerCard>
       <LayerCard className="p-4">
-        <LayerCard.Secondary>卡片</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.admin.cards}</LayerCard.Secondary>
         <Table>
           <Table.Header>
             <Table.Row>
               <Table.Head>ID</Table.Head>
               <Table.Head>LUID</Table.Head>
               <Table.Head>Ghost</Table.Head>
-              <Table.Head>排行封禁</Table.Head>
+              <Table.Head>{texts.admin.rankingBanned}</Table.Head>
               <Table.Head />
             </Table.Row>
           </Table.Header>
@@ -152,15 +154,15 @@ export function AdminUserDetailPage() {
               <Table.Row key={c.id}>
                 <Table.Cell>{c.id}</Table.Cell>
                 <Table.Cell>{c.luid}</Table.Cell>
-                <Table.Cell>{c.isGhost ? '是' : '否'}</Table.Cell>
-                <Table.Cell>{c.rankingBanned ? '是' : '否'}</Table.Cell>
+                <Table.Cell>{c.isGhost ? texts.common.yes : texts.common.no}</Table.Cell>
+                <Table.Cell>{c.rankingBanned ? texts.common.yes : texts.common.no}</Table.Cell>
                 <Table.Cell>
                   <Button
                     size="sm"
                     variant={c.rankingBanned ? 'secondary' : 'destructive'}
                     onClick={() => banCard(c.id, !c.rankingBanned)}
                   >
-                    {c.rankingBanned ? '解除封禁' : '封禁排行'}
+                    {c.rankingBanned ? texts.admin.unbanRanking : texts.admin.banRanking}
                   </Button>
                 </Table.Cell>
               </Table.Row>

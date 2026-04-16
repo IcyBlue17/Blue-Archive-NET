@@ -22,6 +22,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useAdmin } from '../hooks/useAdmin'
 import { useI18n } from '../lib/i18n'
 import { useTheme } from '../lib/theme'
+import { useAppTexts } from '../content/texts'
+import { APP_NAME } from '../lib/config'
 
 function NavBtn({
   path,
@@ -46,7 +48,8 @@ function NavBtn({
 }
 
 function DashboardShell() {
-  const { t, locale, setLocale } = useI18n()
+  const { locale, setLocale } = useI18n()
+  const texts = useAppTexts()
   const { theme, setTheme } = useTheme()
   const nav = useNavigate()
   const loc = useLocation()
@@ -66,22 +69,22 @@ function DashboardShell() {
           <div className="flex items-center gap-2">
             <AppMark />
             <Text variant="heading3" DANGEROUS_className="truncate">
-              {t('appName')}
+              {APP_NAME}
             </Text>
           </div>
         </Sidebar.Header>
         <Sidebar.Content>
           <Sidebar.Group>
-            <Sidebar.GroupLabel>{t('dashboard')}</Sidebar.GroupLabel>
+            <Sidebar.GroupLabel>{texts.nav.dashboard}</Sidebar.GroupLabel>
             <Sidebar.GroupContent>
               <NavBtn path="/home" icon={House} active={loc.pathname === '/home'} onNavigate={go}>
-                {t('home')}
+                {texts.nav.home}
               </NavBtn>
               <NavBtn path="/cards" icon={Cards} active={loc.pathname.startsWith('/cards')} onNavigate={go}>
-                {t('cards')}
+                {texts.nav.cards}
               </NavBtn>
               <NavBtn path="/setup" icon={BookOpen} active={loc.pathname === '/setup'} onNavigate={go}>
-                {t('setup')}
+                {texts.nav.setup}
               </NavBtn>
               <NavBtn
                 path="/ranking/chu3"
@@ -89,16 +92,16 @@ function DashboardShell() {
                 active={loc.pathname.startsWith('/ranking')}
                 onNavigate={go}
               >
-                {t('ranking')}
+                {texts.nav.ranking}
               </NavBtn>
               <NavBtn path="/games/chu3" icon={Trophy} active={loc.pathname.startsWith('/games')} onNavigate={go}>
-                Games
+                {texts.layout.games}
               </NavBtn>
               <NavBtn path="/team" icon={ShieldStar} active={loc.pathname.startsWith('/team')} onNavigate={go}>
-                {t('team')}
+                {texts.nav.team}
               </NavBtn>
               <NavBtn path="/friends" icon={UsersThree} active={loc.pathname.startsWith('/friends')} onNavigate={go}>
-                {t('friends')}
+                {texts.nav.friends}
               </NavBtn>
               <NavBtn
                 path="/collectibles"
@@ -106,10 +109,10 @@ function DashboardShell() {
                 active={loc.pathname === '/collectibles'}
                 onNavigate={go}
               >
-                {t('collectibles')}
+                {texts.nav.collectibles}
               </NavBtn>
               <NavBtn path="/pictures" icon={Images} active={loc.pathname === '/pictures'} onNavigate={go}>
-                {t('pictures')}
+                {texts.nav.pictures}
               </NavBtn>
               <NavBtn
                 path="/settings/profile"
@@ -117,11 +120,11 @@ function DashboardShell() {
                 active={loc.pathname.startsWith('/settings')}
                 onNavigate={go}
               >
-                {t('settings')}
+                {texts.nav.settings}
               </NavBtn>
               {isAdmin ? (
                 <NavBtn path="/admin" icon={ShieldStar} active={loc.pathname.startsWith('/admin')} onNavigate={go}>
-                  {t('admin')}
+                  {texts.nav.admin}
                 </NavBtn>
               ) : null}
             </Sidebar.GroupContent>
@@ -142,16 +145,16 @@ function DashboardShell() {
                 size="sm"
                 onClick={() => setLocale(locale === 'zh' ? 'en' : 'zh')}
               >
-                {t('language')}
+                {texts.nav.language}
               </Button>
               <Button variant="destructive" size="sm" onClick={logout}>
-                {t('logout')}
+                {texts.nav.logout}
               </Button>
             </div>
             <Switch
               controlFirst={false}
               size="sm"
-              label={locale === 'zh' ? '深色模式' : 'Dark mode'}
+              label={texts.layout.darkMode}
               checked={theme === 'dark'}
               onCheckedChange={(on) => setTheme(on ? 'dark' : 'light')}
             />
@@ -165,14 +168,14 @@ function DashboardShell() {
         <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
           <Sidebar.Trigger
             className="shrink-0"
-            aria-label={locale === 'zh' ? '打开菜单' : 'Open menu'}
+            aria-label={texts.layout.openMenu}
           >
             <List className="size-4" weight="bold" />
           </Sidebar.Trigger>
           <div className="flex min-w-0 items-center gap-2">
             <AppMark />
             <Text size="sm" DANGEROUS_className="truncate">
-              {t('appName')}
+              {APP_NAME}
             </Text>
           </div>
         </div>

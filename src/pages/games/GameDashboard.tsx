@@ -20,6 +20,7 @@ import type { AllMusicMap, Chu3UserMusicDetail, GameName, GamePlayRecord, Generi
 import type { MusicMetaLite } from '../../lib/scoring'
 import { gameTitle } from '../../lib/gameTitles'
 import { useI18n } from '../../lib/i18n'
+import { useAppTexts } from '../../content/texts'
 
 const GAMES: GameName[] = ['chu3', 'mai2', 'ongeki', 'wacca']
 const CHU3_SECTIONS = ['overview', 'songs', 'plays'] as const
@@ -100,7 +101,8 @@ function GameSectionSkeleton() {
 export function GameDashboardPage() {
   const { game: rawGame1, section: rawSection1 } = useParams<{ game: string; section?: string }>()
   const nav = useNavigate()
-  const { t, locale } = useI18n()
+  const { locale } = useI18n()
+  const texts = useAppTexts()
   const { user } = useAuth()
   const loc1 = locale === 'en' ? 'en' : 'zh'
   const game1 = (GAMES.includes(rawGame1 as GameName) ? rawGame1 : 'chu3') as GameName
@@ -156,16 +158,16 @@ export function GameDashboardPage() {
   const summary1 = dashQuery1.data?.summary ?? null
   const trend1 = dashQuery1.data?.trend ?? []
   const composition1 = summary1?.ratingComposition as Record<string, unknown> | undefined
-  const overviewErr1 = dashQuery1.error instanceof Error ? dashQuery1.error.message : dashQuery1.error ? '该游戏暂无绑定数据或无法加载摘要' : null
-  const songErr1 = songQuery1.error instanceof Error ? songQuery1.error.message : songQuery1.error ? '无法加载乐曲列表' : allMusicQuery1.error instanceof Error ? allMusicQuery1.error.message : allMusicQuery1.error ? '无法加载曲库' : null
-  const playErr1 = playQuery1.error instanceof Error ? playQuery1.error.message : playQuery1.error ? '无法加载游玩记录' : allMusicQuery1.error instanceof Error ? allMusicQuery1.error.message : allMusicQuery1.error ? '无法加载曲库' : null
+  const overviewErr1 = dashQuery1.error instanceof Error ? dashQuery1.error.message : dashQuery1.error ? texts.gamesPage.noSummary : null
+  const songErr1 = songQuery1.error instanceof Error ? songQuery1.error.message : songQuery1.error ? texts.gamesPage.loadSongsFailed : allMusicQuery1.error instanceof Error ? allMusicQuery1.error.message : allMusicQuery1.error ? texts.gamesPage.loadMusicFailed : null
+  const playErr1 = playQuery1.error instanceof Error ? playQuery1.error.message : playQuery1.error ? texts.gamesPage.loadPlaysFailed : allMusicQuery1.error instanceof Error ? allMusicQuery1.error.message : allMusicQuery1.error ? texts.gamesPage.loadMusicFailed : null
   const showOverviewLoading1 = section1 === 'overview' && ((dashQuery1.isPending && !dashQuery1.data) || (allMusicQuery1.isPending && !allMusic1))
   const showSongsLoading1 = section1 === 'songs' && ((allMusicQuery1.isPending && !allMusic1) || (songQuery1.isPending && !songQuery1.data))
   const showPlaysLoading1 = section1 === 'plays' && ((allMusicQuery1.isPending && !allMusic1) || (playQuery1.isPending && !playQuery1.data))
 
   return (
     <div>
-      <PageHeader title={`${gameTitle(game1, loc1)} · Games`} crumbs={[{ label: t('home'), href: '/home' }]} />
+      <PageHeader title={`${gameTitle(game1, loc1)} · ${texts.gamesPage.games}`} crumbs={[{ label: texts.nav.home, href: '/home' }]} />
       <Tabs
         className="mb-4"
         variant="underline"
@@ -179,9 +181,9 @@ export function GameDashboardPage() {
           className="mb-6"
           variant="segmented"
           tabs={[
-            { value: 'overview', label: locale === 'zh' ? '概览' : 'Overview' },
-            { value: 'songs', label: locale === 'zh' ? '乐曲列表' : 'Songs' },
-            { value: 'plays', label: locale === 'zh' ? '游玩记录' : 'Plays' },
+            { value: 'overview', label: texts.gamesPage.overview },
+            { value: 'songs', label: texts.gamesPage.songs },
+            { value: 'plays', label: texts.gamesPage.plays },
           ]}
           value={section1}
           onValueChange={(value1) => nav(sectionPath1(game1, value1 as GameSection))}
@@ -192,7 +194,7 @@ export function GameDashboardPage() {
         <>
           {overviewErr1 ? (
             <LayerCard className="mb-4 p-4">
-              <LayerCard.Secondary>提示</LayerCard.Secondary>
+              <LayerCard.Secondary>{texts.common.prompt}</LayerCard.Secondary>
               <p className="text-kumo-subtle mt-2 text-sm">{overviewErr1}</p>
             </LayerCard>
           ) : null}
@@ -203,13 +205,13 @@ export function GameDashboardPage() {
               <GameSummaryPanel game={game1} summary={summary1} />
               <RatingCompositionSection game={game1} ratingComposition={composition1} allMusics={musicById1 as Record<string, MusicMetaLite>} />
               <LayerCard className="mb-6 mt-6 p-4">
-                <LayerCard.Secondary>Rating 趋势</LayerCard.Secondary>
+                <LayerCard.Secondary>{texts.gamesPage.ratingTrend}</LayerCard.Secondary>
                 <div className="mt-4">
                   <TrendLineChart data={trend1} game={game1} />
                 </div>
               </LayerCard>
               <LayerCard className="mb-6 p-4">
-                <LayerCard.Secondary>游玩热力图</LayerCard.Secondary>
+                <LayerCard.Secondary>{texts.gamesPage.playsHeatmap}</LayerCard.Secondary>
                 <div className="mt-4">
                   <PlaysHeatmap trend={trend1} />
                 </div>
@@ -227,7 +229,7 @@ export function GameDashboardPage() {
           <>
             {songErr1 ? (
               <LayerCard className="mb-4 p-4">
-                <LayerCard.Secondary>提示</LayerCard.Secondary>
+                <LayerCard.Secondary>{texts.common.prompt}</LayerCard.Secondary>
                 <p className="text-kumo-subtle mt-2 text-sm">{songErr1}</p>
               </LayerCard>
             ) : (
@@ -251,7 +253,7 @@ export function GameDashboardPage() {
           <>
             {playErr1 ? (
               <LayerCard className="mb-4 p-4">
-                <LayerCard.Secondary>提示</LayerCard.Secondary>
+                <LayerCard.Secondary>{texts.common.prompt}</LayerCard.Secondary>
                 <p className="text-kumo-subtle mt-2 text-sm">{playErr1}</p>
               </LayerCard>
             ) : (

@@ -1,7 +1,9 @@
 import { Table } from '@cloudflare/kumo/components/table'
 import type { GenericGameSummary } from '../../lib/types'
+import { useAppTexts } from '../../content/texts'
 
 export function RankDetailsTable({ summary }: { summary: GenericGameSummary }) {
+  const texts = useAppTexts()
   const levels = Object.entries(summary.detailedRanks).sort((a, b) => +b[0] - +a[0])
   const rankCols = summary.ranks ?? []
 
@@ -10,7 +12,7 @@ export function RankDetailsTable({ summary }: { summary: GenericGameSummary }) {
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.Head>等级</Table.Head>
+            <Table.Head>{texts.gamesPage.level}</Table.Head>
             {rankCols.map((c) => (
               <Table.Head key={c.name}>{c.name}</Table.Head>
             ))}

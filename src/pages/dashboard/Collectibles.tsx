@@ -34,6 +34,7 @@ import {
   type Chu3UserboxSelectRow,
 } from '../../lib/chu3Userbox'
 import { useI18n } from '../../lib/i18n'
+import { useAppTexts } from '../../content/texts'
 
 const UNLOCK_ALL_STORAGE_KEY = 'chu3-collectibles-unlock-all'
 
@@ -275,7 +276,8 @@ function charaMetaMap1(allItems: Chu3AllItems): Record<number, Chu3CharacterMeta
 }
 
 export function CollectiblesPage() {
-  const { t, locale } = useI18n()
+  const { locale } = useI18n()
+  const texts = useAppTexts()
   const toast = useKumoToastManager()
   const [unlockAll, setUnlockAll] = useState(() => localStorage.getItem(UNLOCK_ALL_STORAGE_KEY) === '1')
   const [lockedRows, setLockedRows] = useState<Chu3UserboxSelectRow[]>([])
@@ -542,8 +544,8 @@ export function CollectiblesPage() {
         closeModal()
         await loadQuery.refetch()
         toast.add({
-          title: locale === 'zh' ? `已解锁角色 Lv.${level}` : `Character unlocked at Lv.${level}`,
-          description: locale === 'zh' ? '记得点击页面上的保存来应用角色。' : 'Click Save on the page to equip it.',
+          title: texts.collectibles.characterUnlocked(level),
+          description: texts.collectibles.saveToApply,
           variant: 'success',
         })
         return
@@ -559,23 +561,19 @@ export function CollectiblesPage() {
       toast.add({
         title:
           oldLv === level
-            ? locale === 'zh'
-              ? '已选择角色'
-              : 'Character selected'
-            : locale === 'zh'
-              ? `已更新到 Lv.${level}`
-              : `Character updated to Lv.${level}`,
-        description: locale === 'zh' ? '记得点击页面上的保存来应用角色。' : 'Click Save on the page to equip it.',
+            ? texts.collectibles.characterSelected
+            : texts.collectibles.characterUpdated(level),
+        description: texts.collectibles.saveToApply,
         variant: 'success',
       })
     } catch (e) {
       keepDraftRef.current = false
       pendingCharaIdRef.current = null
-      setErr(e instanceof Error ? e.message : locale === 'zh' ? '角色操作失败' : 'Character update failed')
+      setErr(e instanceof Error ? e.message : texts.collectibles.characterUpdateFailed)
     } finally {
       setUnlockingCharaId(null)
     }
-  }, [charaLv, loadQuery, locale, ownedCharacterLvs, toast.add])
+  }, [charaLv, loadQuery, ownedCharacterLvs, texts.collectibles, toast.add])
 
   const pickCharacter = useCallback((characterId: number) => {
     if (characterId <= 0) {
@@ -608,7 +606,7 @@ export function CollectiblesPage() {
     const nextChara = draft.characterId
     const prevChara = numFromUser(user, 'characterId')
     if (nextChara !== prevChara && nextChara > 0 && !ownedCharacterSet.has(nextChara)) {
-      setErr(locale === 'zh' ? '请先解锁该角色，再保存当前角色。' : 'Unlock this character before saving it.')
+      setErr(texts.collectibles.unlockCharacterBeforeSave)
       return
     }
     setSaving(true)
@@ -623,15 +621,15 @@ export function CollectiblesPage() {
       }
       await loadQuery.refetch()
       toast.add({
-        title: locale === 'zh' ? '已保存' : 'Saved',
+        title: texts.common.saved,
         variant: 'success',
       })
     } catch (e) {
-      setErr(e instanceof Error ? e.message : locale === 'zh' ? '保存失败' : 'Save failed')
+      setErr(e instanceof Error ? e.message : texts.collectibles.saveFailed)
     } finally {
       setSaving(false)
     }
-  }, [hasDirty, draft, user, locale, toast.add, loadQuery, ownedCharacterSet])
+  }, [hasDirty, draft, user, texts.collectibles, texts.common.saved, toast.add, loadQuery, ownedCharacterSet])
 
   const pageItems = useMemo(
     () => buildPaginationItems(safePage, totalPages),
@@ -642,15 +640,13 @@ export function CollectiblesPage() {
     loadQuery.error instanceof Error
       ? loadQuery.error.message
       : loadQuery.error
-        ? locale === 'zh'
-          ? '加载失败'
-          : 'Load failed'
+        ? texts.common.loadingFailed
         : null
 
   if (loadQuery.isPending && !loadQuery.data) {
     return (
       <div className="pb-10">
-        <PageHeader title={t('collectibles')} crumbs={[{ label: t('home'), href: '/home' }]} />
+        <PageHeader title={texts.nav.collectibles} crumbs={[{ label: texts.nav.home, href: '/home' }]} />
         <div className="mb-6 flex max-w-md flex-col gap-3">
           <SkeletonBox className="h-11 w-56 rounded-lg" />
           <SkeletonBox className="h-10 w-24 rounded-lg" />
@@ -678,18 +674,18 @@ export function CollectiblesPage() {
 
   return (
     <div className="pb-10">
-      <PageHeader title={t('collectibles')} crumbs={[{ label: t('home'), href: '/home' }]} />
+      <PageHeader title={texts.nav.collectibles} crumbs={[{ label: texts.nav.home, href: '/home' }]} />
 
       <div className="mb-6 flex max-w-md flex-col gap-3">
         <Switch
           controlFirst={false}
-          label={locale === 'zh' ? '可选择全部收藏品' : 'Unlock all collectibles'}
+          label={texts.collectibles.unlockAll}
           checked={unlockAll}
           onCheckedChange={onUnlockAllChange}
           size="base"
         />
         <Button disabled={!hasDirty || saving} onClick={() => void saveCollectibles()}>
-          {locale === 'zh' ? '保存' : 'Save'}
+          {texts.collectibles.save}
         </Button>
       </div>
 
@@ -699,7 +695,7 @@ export function CollectiblesPage() {
 
       <section>
         <h2 className="text-kumo-default mb-3 text-lg font-semibold">
-          {locale === 'zh' ? '当前选择' : 'Equipped'}
+          {texts.collectibles.equipped}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {displayRows.map((row) => {
@@ -725,7 +721,7 @@ export function CollectiblesPage() {
                     <div className="text-kumo-default line-clamp-3 min-h-[2.75rem] text-sm font-medium">{name}</div>
                     {!unlockAll && emptyUnlocks && cur === 0 ? (
                       <div className="text-kumo-subtle mt-1 text-xs">
-                        {locale === 'zh' ? '暂无已解锁收藏品' : 'Nothing unlocked'}
+                        {texts.collectibles.nothingUnlocked}
                       </div>
                     ) : null}
                   </div>
@@ -761,7 +757,7 @@ export function CollectiblesPage() {
                     </div>
                   )}
                   <Button size="sm" variant="primary" disabled={!canChange} onClick={() => openModal(row.field)}>
-                    {locale === 'zh' ? '更改' : 'Change'}
+                    {texts.collectibles.change}
                   </Button>
                 </div>
               </div>
@@ -791,7 +787,7 @@ export function CollectiblesPage() {
                   {label(activeRow.field)}
                 </h2>
               </div>
-              <Button type="button" variant="ghost" size="sm" onClick={closeModal} aria-label={locale === 'zh' ? '关闭' : 'Close'}>
+              <Button type="button" variant="ghost" size="sm" onClick={closeModal} aria-label={texts.collectibles.close}>
                 ✕
               </Button>
             </div>
@@ -800,26 +796,26 @@ export function CollectiblesPage() {
               <div className={`grid items-end gap-3 ${activeRow.field === 'characterId' ? 'md:grid-cols-[minmax(0,1fr)_220px]' : ''}`}>
                 <label className="flex flex-col gap-1">
                   <span className="text-kumo-subtle text-xs">
-                    {locale === 'zh' ? '搜索名称或 ID' : 'Search name or ID'}
+                    {texts.collectibles.searchLabel}
                   </span>
                   <Input
                     className="h-11"
                     value={modalSearch}
                     onChange={(e) => setModalSearch(e.target.value)}
-                    placeholder={locale === 'zh' ? '搜索…' : 'Search…'}
+                    placeholder={texts.collectibles.searchPlaceholder}
                     autoFocus
                   />
                 </label>
                 {activeRow.field === 'characterId' ? (
                   <label className="flex flex-col gap-1">
-                    <span className="text-kumo-subtle text-xs">{locale === 'zh' ? '所属作品' : 'Works'}</span>
+                    <span className="text-kumo-subtle text-xs">{texts.collectibles.works}</span>
                     <select
                       value={charaWorksFilter}
                       onChange={(e) => setCharaWorksFilter(e.target.value)}
                       className="border-kumo-border bg-kumo-base h-11 rounded-xl border px-3 text-sm text-kumo-default"
-                      aria-label={locale === 'zh' ? '所属作品筛选' : 'Works filter'}
+                      aria-label={texts.collectibles.worksFilter}
                     >
-                      <option value="">{locale === 'zh' ? '全部作品' : 'All works'}</option>
+                      <option value="">{texts.collectibles.allWorks}</option>
                       {charaWorksList.map((one1) => (
                         <option key={one1} value={one1}>
                           {one1}
@@ -852,11 +848,11 @@ export function CollectiblesPage() {
                       <div className="text-xl font-semibold text-kumo-default">{pickedCharaName}</div>
                       <div className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
                         <div>
-                          <span className="text-kumo-subtle">{locale === 'zh' ? '所属作品' : 'Works'}: </span>
+                          <span className="text-kumo-subtle">{texts.collectibles.works}: </span>
                           <span>{cleanText1(selectedCharaMeta?.worksName) || '—'}</span>
                         </div>
                         <div>
-                          <span className="text-kumo-subtle">{locale === 'zh' ? '画师' : 'Illustrator'}: </span>
+                          <span className="text-kumo-subtle">{texts.collectibles.illustrator}: </span>
                           <span>{cleanText1(selectedCharaMeta?.illustratorName) || '—'}</span>
                         </div>
                         <div>
@@ -867,7 +863,7 @@ export function CollectiblesPage() {
 
                       <div className="mt-4 grid gap-3 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-end">
                         <label className="flex flex-col gap-1">
-                          <Text size="sm">{locale === 'zh' ? '角色等级' : 'Character level'}</Text>
+                          <Text size="sm">{texts.collectibles.characterLevel}</Text>
                           <Input
                             type="number"
                             className="h-11"
@@ -885,21 +881,13 @@ export function CollectiblesPage() {
                             onClick={() => void applyCharacterChoice()}
                           >
                             {pickedCharaOwned
-                              ? locale === 'zh'
-                                ? '应用等级并选中'
-                                : 'Apply level and select'
-                              : locale === 'zh'
-                                ? '解锁并选中'
-                                : 'Unlock and select'}
+                              ? texts.collectibles.applyLevelAndSelect
+                              : texts.collectibles.unlockAndSelect}
                           </Button>
                           <Text size="sm" DANGEROUS_className="self-center text-kumo-subtle">
                             {pickedCharaOwned
-                              ? locale === 'zh'
-                                ? `已拥有 Lv.${pickedCharaLv}`
-                                : `Owned Lv.${pickedCharaLv}`
-                              : locale === 'zh'
-                                ? '未拥有'
-                                : 'Locked'}
+                              ? texts.collectibles.ownedLevel(pickedCharaLv)
+                              : texts.collectibles.locked}
                           </Text>
                         </div>
                       </div>
@@ -909,7 +897,7 @@ export function CollectiblesPage() {
                           {validAddImages1.length ? (
                             <div>
                               <Text size="sm" DANGEROUS_className="mb-2 font-medium">
-                                {locale === 'zh' ? '追加立绘' : 'Additional images'}
+                                {texts.collectibles.additionalImages}
                               </Text>
                               <div className="space-y-1 text-sm text-kumo-subtle">
                                 {validAddImages1.slice(0, 8).map((one1, idx1) => (
@@ -922,7 +910,7 @@ export function CollectiblesPage() {
                           {validRankRewards1.length ? (
                             <div>
                               <Text size="sm" DANGEROUS_className="mb-2 font-medium">
-                                {locale === 'zh' ? 'Rank 奖励' : 'Rank rewards'}
+                                {texts.collectibles.rankRewards}
                               </Text>
                               <div className="space-y-1 text-sm text-kumo-subtle">
                                 {validRankRewards1.slice(0, 8).map((one1, idx1) => (
@@ -942,7 +930,7 @@ export function CollectiblesPage() {
 
               {filteredOptions.length === 0 ? (
                 <Text DANGEROUS_className="text-kumo-subtle text-sm">
-                  {locale === 'zh' ? '没有匹配的收藏品。' : 'No matches.'}
+                  {texts.collectibles.noMatches}
                 </Text>
               ) : (
                 <div
@@ -989,16 +977,10 @@ export function CollectiblesPage() {
                               }`}
                             >
                               {isOwnedCharacter
-                                ? locale === 'zh'
-                                  ? `已拥有 Lv.${charaLvNow}`
-                                  : `Owned Lv.${charaLvNow}`
+                                ? texts.collectibles.ownedLevel(charaLvNow)
                                 : unlockingCharaId === o.itemId
-                                  ? locale === 'zh'
-                                    ? '解锁中…'
-                                    : 'Unlocking…'
-                                  : locale === 'zh'
-                                    ? '未拥有，点击先解锁'
-                                    : 'Locked, click to unlock'}
+                                  ? texts.collectibles.unlocking
+                                  : texts.collectibles.lockedClickToUnlock}
                             </span>
                           </div>
                         ) : null}
@@ -1054,7 +1036,7 @@ export function CollectiblesPage() {
                   disabled={safePage <= 0 || saving || unlockingCharaId != null}
                   onClick={() => setModalPage((p) => Math.max(0, p - 1))}
                 >
-                  {locale === 'zh' ? '上一页' : 'Prev'}
+                  {texts.common.previousPage}
                 </Button>
                 {pageItems.map((item, idx) =>
                   item === 'ellipsis' ? (
@@ -1079,7 +1061,7 @@ export function CollectiblesPage() {
                   disabled={safePage >= totalPages - 1 || saving || unlockingCharaId != null}
                   onClick={() => setModalPage((p) => Math.min(totalPages - 1, p + 1))}
                 >
-                  {locale === 'zh' ? '下一页' : 'Next'}
+                  {texts.common.nextPage}
                 </Button>
                 <Button
                   size="sm"

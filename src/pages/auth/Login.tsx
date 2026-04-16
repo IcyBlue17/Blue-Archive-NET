@@ -14,14 +14,14 @@ import * as passkeyApi from '../../api/passkey'
 import { setToken } from '../../api/client'
 import { OAuthButtons } from '../../components/auth/OAuthButtons'
 import { TURNSTILE_SITE_KEY } from '../../lib/config'
-import { useI18n } from '../../lib/i18n'
 import { qk } from '../../lib/query'
 import { useTheme } from '../../lib/theme'
 import { useAuth } from '../../hooks/useAuth'
 import * as userApi from '../../api/user'
+import { useAppTexts } from '../../content/texts'
 
 export function LoginPage() {
-  const { t, locale } = useI18n()
+  const texts = useAppTexts()
   const { theme, toggle } = useTheme()
   const { refresh } = useAuth()
   const nav = useNavigate()
@@ -54,7 +54,7 @@ export function LoginPage() {
       nav('/home', { replace: true })
     } catch (err) {
       // Sanitize error message for display
-      const msg = err instanceof Error ? err.message : 'Login failed'
+      const msg = err instanceof Error ? err.message : texts.authPages.loginFailed
       setError(msg.replace(/<[^>]*>/g, '').slice(0, 200))
     } finally {
       setPending(false)
@@ -68,13 +68,13 @@ export function LoginPage() {
       const optionsJSON = await passkeyApi.passkeyLoginOptions()
       const assertion = await startAuthentication({ optionsJSON })
       const { token } = await passkeyApi.passkeyLoginVerify(assertion)
-      if (!token) throw new Error(t('auth.passkeyNoToken'))
+      if (!token) throw new Error(texts.authPages.passkeyNoToken)
       setToken(token)
       await refresh()
       nav('/home', { replace: true })
     } catch (err) {
       // Sanitize error message for display
-      const msg = err instanceof Error ? err.message : t('auth.passkeyError')
+      const msg = err instanceof Error ? err.message : texts.authPages.passkeyError
       setPkErr(msg.replace(/<[^>]*>/g, '').slice(0, 200))
     } finally {
       setPkPending(false)
@@ -85,11 +85,11 @@ export function LoginPage() {
     <LayerCard className="p-6">
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
-          <Text size="sm">{t('email')}</Text>
+          <Text size="sm">{texts.authPages.email}</Text>
           <Input value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
         </label>
         <label className="flex flex-col gap-1">
-          <Text size="sm">{t('password')}</Text>
+          <Text size="sm">{texts.authPages.password}</Text>
           <Input
             type="password"
             value={password}
@@ -102,7 +102,7 @@ export function LoginPage() {
           <Turnstile siteKey={TURNSTILE_SITE_KEY} onSuccess={setTurnstile} />
         ) : (
           <Text size="sm" DANGEROUS_className="text-kumo-warning">
-            VITE_TURNSTILE_SITE_KEY 未配置；生产环境必须配置 Turnstile。
+            {texts.authPages.turnstileRequired}
           </Text>
         )}
         {error ? (
@@ -111,14 +111,14 @@ export function LoginPage() {
           </Text>
         ) : null}
         <Button type="submit" variant="primary" disabled={pending || (!!TURNSTILE_SITE_KEY && !turnstile)}>
-          {t('login')}
+          {texts.authPages.login}
         </Button>
       </form>
 
       <div className="my-5 flex items-center gap-3">
         <div className="border-kumo-border flex-1 border-t" />
         <Text size="sm" DANGEROUS_className="shrink-0 text-kumo-subtle">
-          {t('auth.dividerOr')}
+          {texts.authPages.dividerOr}
         </Text>
         <div className="border-kumo-border flex-1 border-t" />
       </div>
@@ -127,7 +127,7 @@ export function LoginPage() {
       <div className="my-5 flex items-center gap-3">
         <div className="border-kumo-border flex-1 border-t" />
         <Text size="sm" DANGEROUS_className="shrink-0 text-kumo-subtle">
-          {t('auth.dividerOr')}
+          {texts.authPages.dividerOr}
         </Text>
         <div className="border-kumo-border flex-1 border-t" />
       </div>
@@ -146,31 +146,23 @@ export function LoginPage() {
           onClick={() => void onPasskeyLogin()}
         >
           <Key className="size-5" weight="duotone" aria-hidden />
-          {t('auth.passkeyLogin')}
+          {texts.authPages.passkeyLogin}
         </Button>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-4">
         <Link render={<RouterLink to="/register" />} variant="inline" className="text-sm">
-          {t('register')}
+          {texts.authPages.register}
         </Link>
         <Link render={<RouterLink to="/reset-password" />} variant="inline" className="text-sm">
-          {t('resetPassword')}
+          {texts.authPages.resetPassword}
         </Link>
         <Button
           type="button"
           variant="ghost"
           shape="square"
           size="sm"
-          aria-label={
-            locale === 'zh'
-              ? theme === 'dark'
-                ? '切换到浅色模式'
-                : '切换到深色模式'
-              : theme === 'dark'
-                ? 'Switch to light mode'
-                : 'Switch to dark mode'
-          }
+          aria-label={theme === 'dark' ? texts.authPages.switchLightMode : texts.authPages.switchDarkMode}
           onClick={toggle}
         >
           {theme === 'dark' ? <Sun className="size-5" weight="regular" /> : <Moon className="size-5" weight="regular" />}

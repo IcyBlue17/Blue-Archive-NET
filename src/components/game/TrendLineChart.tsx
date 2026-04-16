@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Text } from '@cloudflare/kumo/components/text'
 import type { GameName, TrendEntry } from '../../lib/types'
+import { useAppTexts } from '../../content/texts'
 
 const TREND_DAYS = 60
 
@@ -35,6 +36,7 @@ function yAxisDecimals(game: GameName) {
 }
 
 export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameName }) {
+  const texts = useAppTexts()
   const pts = useMemo(() => pickTrendPoints(data), [data])
 
   const layout = useMemo(() => {
@@ -88,7 +90,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
   if (!layout) {
     return (
       <Text DANGEROUS_className="text-kumo-subtle">
-        最近 {TREND_DAYS} 天内可绘点不足，暂无趋势图（多打几把或稍后再试）
+        {texts.trendChart.insufficient(TREND_DAYS)}
       </Text>
     )
   }
@@ -102,7 +104,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label="Rating 趋势"
+        aria-label={texts.trendChart.ariaLabel}
       >
         <g className="text-kumo-border" opacity={0.35}>
           {horizontal.map((g, i) => (
@@ -172,8 +174,8 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
         />
       </svg>
       <div className="text-kumo-subtle mt-1 flex justify-between gap-4 text-xs">
-        <span>纵轴：Rating</span>
-        <span>横轴：日期</span>
+        <span>{texts.trendChart.yAxis}</span>
+        <span>{texts.trendChart.xAxis}</span>
       </div>
     </div>
   )

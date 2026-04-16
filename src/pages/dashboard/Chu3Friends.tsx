@@ -14,6 +14,7 @@ import { qk } from '../../lib/query'
 import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
 import { imgCross1 } from '../../lib/imgSign'
 import type { Chu3RivalEntry } from '../../lib/types'
+import { useAppTexts } from '../../content/texts'
 
 function formatTime1(iso: string, locale: 'zh' | 'en') {
   if (!iso) return '—'
@@ -39,7 +40,8 @@ function RivalCardSkeleton() {
 }
 
 export function Chu3FriendsPage() {
-  const { locale, t } = useI18n()
+  const { locale } = useI18n()
+  const texts = useAppTexts()
   const toast = useKumoToastManager()
   const qc = useQueryClient()
   const [addName, setAddName] = useState('')
@@ -77,13 +79,13 @@ export function Chu3FriendsPage() {
       })
       setAddName('')
       toast.add({
-        title: locale === 'zh' ? '好友已添加' : 'Friend added',
-        description: locale === 'zh' ? `${row.userName} 已加入好友列表` : `${row.userName} was added`,
+        title: texts.friendsPage.addSuccessTitle,
+        description: texts.friendsPage.addSuccessDesc(row.userName),
       })
     } catch (e) {
-      const msg = e instanceof Error ? e.message : locale === 'zh' ? '添加失败' : 'Request failed'
+      const msg = e instanceof Error ? e.message : texts.friendsPage.addFailed
       toast.add({
-        title: locale === 'zh' ? '添加好友失败' : 'Add friend failed',
+        title: texts.friendsPage.addFailedTitle,
         description: msg,
         variant: 'error',
       })
@@ -101,13 +103,13 @@ export function Chu3FriendsPage() {
         (old ?? []).filter((it) => it.rivalExtId !== row.rivalExtId),
       )
       toast.add({
-        title: locale === 'zh' ? '好友已移除' : 'Friend removed',
-        description: locale === 'zh' ? `${row.userName} 已从列表移除` : `${row.userName} was removed`,
+        title: texts.friendsPage.removeSuccessTitle,
+        description: texts.friendsPage.removeSuccessDesc(row.userName),
       })
     } catch (e) {
-      const msg = e instanceof Error ? e.message : locale === 'zh' ? '移除失败' : 'Request failed'
+      const msg = e instanceof Error ? e.message : texts.friendsPage.removeFailed
       toast.add({
-        title: locale === 'zh' ? '移除好友失败' : 'Remove friend failed',
+        title: texts.friendsPage.removeFailedTitle,
         description: msg,
         variant: 'error',
       })
@@ -133,16 +135,13 @@ export function Chu3FriendsPage() {
         )
       }
       toast.add({
-        title: locale === 'zh' ? (isAdd ? '已登录到喜爱' : '已取消喜爱') : isAdd ? 'Pinned to favorites' : 'Removed from favorites',
-        description:
-          locale === 'zh'
-            ? `${row.userName} ${isAdd ? '现在会作为劲敌槽位返回给客户端' : '已从劲敌槽位移除'}`
-            : `${row.userName} ${isAdd ? 'is now in rival favorites' : 'was removed from rival favorites'}`,
+        title: isAdd ? texts.friendsPage.favoriteAddedTitle : texts.friendsPage.favoriteRemovedTitle,
+        description: texts.friendsPage.favoriteDesc(row.userName, isAdd),
       })
     } catch (e) {
-      const msg = e instanceof Error ? e.message : locale === 'zh' ? '操作失败' : 'Request failed'
+      const msg = e instanceof Error ? e.message : texts.friendsPage.actionFailed
       toast.add({
-        title: locale === 'zh' ? '喜爱设置失败' : 'Favorite action failed',
+        title: texts.friendsPage.favoriteFailedTitle,
         description: msg,
         variant: 'error',
       })
@@ -153,16 +152,16 @@ export function Chu3FriendsPage() {
 
   return (
     <div>
-      <PageHeader title={t('friends')} crumbs={[{ label: t('dashboard'), href: '/home' }, { label: t('friends') }]} />
+      <PageHeader title={texts.nav.friends} crumbs={[{ label: texts.nav.dashboard, href: '/home' }, { label: texts.nav.friends }]} />
 
       <LayerCard className="p-4">
-        <LayerCard.Secondary>{locale === 'zh' ? '添加 CHUNITHM 好友' : 'Add CHUNITHM friend'}</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.friendsPage.addSection}</LayerCard.Secondary>
         <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
-          {locale === 'zh' ? '这里填写 Aqua 用户名，不是游戏内昵称。' : 'Use Aqua username here, not the in-game display name.'}
+          {texts.friendsPage.addHint}
         </Text>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <Input
-            placeholder={locale === 'zh' ? '输入 Aqua 用户名' : 'Enter Aqua username'}
+            placeholder={texts.friendsPage.usernamePlaceholder}
             value={addName}
             onChange={(e) => setAddName(e.target.value)}
             onKeyDown={(e) => {
@@ -173,22 +172,20 @@ export function Chu3FriendsPage() {
             }}
           />
           <Button variant="primary" onClick={() => void addOne()} disabled={adding || !addName.trim()}>
-            {adding ? (locale === 'zh' ? '添加中…' : 'Adding…') : (locale === 'zh' ? '添加好友' : 'Add friend')}
+            {adding ? texts.friendsPage.adding : texts.friendsPage.add}
           </Button>
         </div>
       </LayerCard>
 
       <LayerCard className="mt-6 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <LayerCard.Secondary>{locale === 'zh' ? '好友列表' : 'Friend list'}</LayerCard.Secondary>
+          <LayerCard.Secondary>{texts.friendsPage.list}</LayerCard.Secondary>
           <Text DANGEROUS_className="text-kumo-subtle text-sm">
-            {locale === 'zh' ? `共 ${rows.length} 位好友` : `${rows.length} friends`}
+            {texts.friendsPage.count(rows.length)}
           </Text>
         </div>
         <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
-          {locale === 'zh'
-            ? `已登录到喜爱 ${favCount} / 4。`
-            : `${favCount} / 4 pinned.`}
+          {texts.friendsPage.favoriteCount(favCount)}
         </Text>
 
         {rivalQuery.isPending && !rivalQuery.data ? (
@@ -231,12 +228,12 @@ export function Chu3FriendsPage() {
                             {row.userName}
                             {row.isFavorite ? (
                               <span className="bg-kumo-recessed text-kumo-text ml-2 rounded-full px-2 py-0.5 text-xs">
-                                {locale === 'zh' ? '喜爱中' : 'Pinned'}
+                                {texts.friendsPage.pinned}
                               </span>
                             ) : null}
                           </div>
                           <div className="text-kumo-subtle mt-1 text-sm">
-                            {locale === 'zh' ? `等级 ${row.level}` : `Level ${row.level}`}
+                            {texts.friendsPage.level(row.level)}
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -247,26 +244,26 @@ export function Chu3FriendsPage() {
                             disabled={favBusy || !canAddFav}
                           >
                             {favBusy
-                              ? (locale === 'zh' ? '处理中…' : 'Working…')
+                              ? texts.friendsPage.working
                               : row.isFavorite
-                                ? (locale === 'zh' ? '取消喜爱' : 'Unpin')
-                                : (locale === 'zh' ? '登录到喜爱' : 'Pin as rival')}
+                                ? texts.friendsPage.unpin
+                                : texts.friendsPage.pin}
                           </Button>
                           <Button variant="secondary" size="sm" onClick={() => void removeOne(row)} disabled={removing}>
-                            {removing ? (locale === 'zh' ? '移除中…' : 'Removing…') : (locale === 'zh' ? '删除' : 'Remove')}
+                            {removing ? texts.friendsPage.removing : texts.friendsPage.remove}
                           </Button>
                         </div>
                       </div>
                       <dl className="mt-3 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-                        <dt className="text-kumo-subtle">{locale === 'zh' ? 'Rating' : 'Rating'}</dt>
+                        <dt className="text-kumo-subtle">{texts.friendsPage.rating}</dt>
                         <dd className="text-kumo-text">{formatDisplayRating(row.playerRating, 'chu3')}</dd>
-                        <dt className="text-kumo-subtle">{locale === 'zh' ? '最高' : 'Best'}</dt>
+                        <dt className="text-kumo-subtle">{texts.friendsPage.best}</dt>
                         <dd className="text-kumo-text">{formatDisplayRating(row.highestRating, 'chu3')}</dd>
-                        <dt className="text-kumo-subtle">{locale === 'zh' ? 'ID' : 'ID'}</dt>
+                        <dt className="text-kumo-subtle">{texts.friendsPage.id}</dt>
                         <dd className="text-kumo-text">{row.rivalExtId}</dd>
-                        <dt className="text-kumo-subtle">{locale === 'zh' ? '战队' : 'Team'}</dt>
+                        <dt className="text-kumo-subtle">{texts.friendsPage.team}</dt>
                         <dd className="truncate text-kumo-text">{row.teamName || '—'}</dd>
-                        <dt className="text-kumo-subtle">{locale === 'zh' ? '添加时间' : 'Added at'}</dt>
+                        <dt className="text-kumo-subtle">{texts.friendsPage.addedAt}</dt>
                         <dd className="text-kumo-text">{formatTime1(row.addedAt, locale)}</dd>
                       </dl>
                     </div>
@@ -277,7 +274,7 @@ export function Chu3FriendsPage() {
           </div>
         ) : (
           <Text DANGEROUS_className="text-kumo-subtle mt-4 block text-sm">
-            {locale === 'zh' ? '还没有 CHUNITHM 好友，先加一个试试。' : 'No CHUNITHM friends yet. Add one to start.'}
+            {texts.friendsPage.empty}
           </Text>
         )}
       </LayerCard>

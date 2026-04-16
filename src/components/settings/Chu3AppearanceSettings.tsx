@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { Text } from "@cloudflare/kumo/components/text";
 import * as gameApi from "../../api/game";
 import { detailSet } from "../../api/settings";
+import { getAppTexts } from "../../content/texts";
 import { fmtNameErr1 } from "../../lib/censor";
 import { CHU3_USERBOX_LABELS } from "../../lib/chu3Userbox";
+import type { SettingFieldLocale } from "../../lib/settingsFieldLabels";
 import { SegaUsernameEditor, normalizeSegaUsername } from "./SegaUsernameEditor";
 
 /** 仅游戏内名称；收藏品外观已迁移至 `/collectibles`。 */
-export function Chu3AppearanceSettings() {
+export function Chu3AppearanceSettings({ locale }: { locale: SettingFieldLocale }) {
+  const copy = getAppTexts(locale);
   const [userNameDraft, setUserNameDraft] = useState("");
   const [userNameSaved, setUserNameSaved] = useState("");
   const [saving, setSaving] = useState<string | null>(null);
@@ -23,7 +26,7 @@ export function Chu3AppearanceSettings() {
       setUserNameDraft(un);
       setUserNameSaved(un);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "加载失败");
+      setErr(e instanceof Error ? e.message : copy.common.loadingFailed);
     }
   }
 
@@ -37,15 +40,15 @@ export function Chu3AppearanceSettings() {
     setMsg(null);
     try {
       await detailSet("chu3", field, value);
-      setMsg("已保存");
+      setMsg(copy.common.saved);
       await reload();
     } catch (e) {
       setErr(
         field === "userName"
-          ? fmtNameErr1(e, "改名")
+          ? fmtNameErr1(e, copy.chu3Appearance.renameAction)
           : e instanceof Error
             ? e.message
-            : "保存失败",
+            : copy.common.failed,
       );
     } finally {
       setSaving(null);
@@ -55,7 +58,7 @@ export function Chu3AppearanceSettings() {
   return (
     <section className="mt-10 border-t border-kumo-border pt-8">
       <h3 className="text-kumo-text mb-2 text-base font-semibold">
-        CHUNITHM 游戏内名称
+        {copy.chu3Appearance.section}
       </h3>
       {err ? (
         <Text DANGEROUS_className="text-kumo-danger mb-2 text-sm">{err}</Text>
@@ -67,7 +70,7 @@ export function Chu3AppearanceSettings() {
       <div className="mb-6 grid max-w-2xl gap-3">
         <SegaUsernameEditor
           label={CHU3_USERBOX_LABELS.userName}
-          locale="zh"
+          locale={locale}
           value={userNameDraft}
           onChange={setUserNameDraft}
           saving={saving === "userName"}

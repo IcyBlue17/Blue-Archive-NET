@@ -4,6 +4,7 @@ import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import type { GameName } from '../../lib/types'
 import { parseComposition, type MusicMetaLite } from '../../lib/scoring'
 import { imgCross1 } from '../../lib/imgSign'
+import { useAppTexts } from '../../content/texts'
 
 function CompGrid({
   title,
@@ -72,6 +73,7 @@ export function RatingCompositionSection({
   ratingComposition: Record<string, unknown> | undefined | null
   allMusics: Record<string, MusicMetaLite>
 }) {
+  const texts = useAppTexts()
   const blocks = useMemo(() => {
     const c = ratingComposition ?? {}
     const out: { title: string; key: string; raw: string }[] = []
@@ -94,7 +96,7 @@ export function RatingCompositionSection({
 
   return (
     <LayerCard className="mt-6 p-4">
-      <LayerCard.Secondary>Rating 构成</LayerCard.Secondary>
+      <LayerCard.Secondary>{texts.gamesPage.ratingComposition}</LayerCard.Secondary>
       {blocks.map((b) => (
         <CompGrid key={b.key} title={b.title} comp={b.raw} allMusics={allMusics} game={game} />
       ))}

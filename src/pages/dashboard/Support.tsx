@@ -3,15 +3,15 @@ import { LinkButton } from '@cloudflare/kumo/components/button'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { PageHeader } from '../../components/common/PageHeader'
 import { DISCORD_INVITE, GITHUB_REPOSITORY, QQ_INVITE, TELEGRAM_INVITE } from '../../lib/config'
-import { useI18n } from '../../lib/i18n'
+import { useAppTexts } from '../../content/texts'
 
 export function SupportPage() {
-  const { t } = useI18n()
+  const texts = useAppTexts()
   return (
     <div>
-      <PageHeader title={t('support')} crumbs={[{ label: t('home'), href: '/home' }]} />
+      <PageHeader title={texts.nav.support} crumbs={[{ label: texts.nav.home, href: '/home' }]} />
       <LayerCard className="p-4">
-        <LayerCard.Secondary>社区与支持</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.support.community}</LayerCard.Secondary>
         <div className="mt-4 flex flex-col gap-3">
           {DISCORD_INVITE ? (
             <LinkButton href={DISCORD_INVITE} target="_blank" rel="noreferrer">
@@ -34,7 +34,7 @@ export function SupportPage() {
             </LinkButton>
           ) : null}
           {!DISCORD_INVITE && !TELEGRAM_INVITE && !QQ_INVITE && !GITHUB_REPOSITORY ? (
-            <Text DANGEROUS_className="text-kumo-subtle">未配置社区链接（.env）</Text>
+            <Text DANGEROUS_className="text-kumo-subtle">{texts.support.noLinks}</Text>
           ) : null}
         </div>
       </LayerCard>

@@ -14,6 +14,7 @@ import type { AquaNetUser, GameName, GenericGameSummary } from '../../lib/types'
 import { isLoggedIn } from '../../api/client'
 import { gameTitle } from '../../lib/gameTitles'
 import { useI18n } from '../../lib/i18n'
+import { useAppTexts } from '../../content/texts'
 
 const GAMES: GameName[] = ['chu3', 'mai2', 'ongeki', 'wacca']
 
@@ -24,7 +25,8 @@ function pickPublicUser(raw: unknown): Partial<AquaNetUser> {
 
 export function UserProfilePage() {
   const { username, game: gameParam } = useParams<{ username: string; game?: string }>()
-  const { t, locale } = useI18n()
+  const { locale } = useI18n()
+  const texts = useAppTexts()
   const toast = useKumoToastManager()
   const qc = useQueryClient()
   const loc = locale === 'en' ? 'en' : 'zh'
@@ -44,7 +46,7 @@ export function UserProfilePage() {
     void userApi
       .userInfo(username)
       .then((d) => setPublicInfo(pickPublicUser(d)))
-      .catch((e) => setErr(e instanceof Error ? e.message : 'Not found'))
+      .catch((e) => setErr(e instanceof Error ? e.message : texts.userProfile.notFound))
   }, [username])
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export function UserProfilePage() {
           const row = await gameApi.chu3RivalAdd(username)
           setSummary((old) => (old ? { ...old, rival: true, rivalExtId: row.rivalExtId } : old))
         } else {
-          if (!summary.rivalExtId) throw new Error(locale === 'zh' ? '缺少好友标识' : 'Missing rival id')
+          if (!summary.rivalExtId) throw new Error(texts.userProfile.missingRivalId)
           await gameApi.chu3RivalRemove(summary.rivalExtId)
           setSummary((old) => (old ? { ...old, rival: false, rivalExtId: null } : old))
         }
@@ -85,16 +87,13 @@ export function UserProfilePage() {
       }
 
       toast.add({
-        title: locale === 'zh' ? (isAdd ? '已添加好友' : '已移除好友') : isAdd ? 'Friend added' : 'Friend removed',
-        description:
-          locale === 'zh'
-            ? `${username} ${isAdd ? '已加入列表' : '已从列表移除'}`
-            : `${username} ${isAdd ? 'was added' : 'was removed'}`,
+        title: isAdd ? texts.userProfile.friendAdded : texts.userProfile.friendRemoved,
+        description: texts.userProfile.friendChangedDesc(username, isAdd),
       })
     } catch (e) {
-      const msg = e instanceof Error ? e.message : locale === 'zh' ? '操作失败' : 'Request failed'
+      const msg = e instanceof Error ? e.message : texts.common.requestFailed
       toast.add({
-        title: locale === 'zh' ? '好友操作失败' : 'Friend action failed',
+        title: texts.userProfile.friendActionFailed,
         description: msg,
         variant: 'error',
       })
@@ -103,32 +102,24 @@ export function UserProfilePage() {
     }
   }
 
-  if (!username) return <Text>Invalid user</Text>
+  if (!username) return <Text>{texts.userProfile.invalidUser}</Text>
 
   const display = publicInfo?.displayName || publicInfo?.username || username
   const showRivalBtn = isLoggedIn() && typeof summary?.rival === 'boolean' && (game === 'mai2' || game === 'chu3')
   const rivalText =
     game === 'chu3'
       ? summary?.rival
-        ? locale === 'zh'
-          ? '移除好友'
-          : 'Remove friend'
-        : locale === 'zh'
-          ? '添加好友'
-          : 'Add friend'
+        ? texts.userProfile.removeFriend
+        : texts.userProfile.addFriend
       : summary?.rival
-        ? locale === 'zh'
-          ? '移除劲敌'
-          : 'Remove rival'
-        : locale === 'zh'
-          ? '添加劲敌'
-          : 'Add rival'
+        ? texts.userProfile.removeRival
+        : texts.userProfile.addRival
 
   return (
     <div className="bg-kumo-background min-h-screen p-6">
       <div className="mx-auto max-w-3xl">
         <Link to="/home">
-          <Text DANGEROUS_className="text-kumo-accent mb-4 inline-block">{t('home')}</Text>
+          <Text DANGEROUS_className="text-kumo-accent mb-4 inline-block">{texts.nav.home}</Text>
         </Link>
         <LayerCard className="p-6">
           <LayerCard.Primary>{display}</LayerCard.Primary>
@@ -153,12 +144,12 @@ export function UserProfilePage() {
           />
         </div>
         <div className="mt-4">
-          <GameSummaryPanel game={game} summary={summary} title={`${game} · 数据`} />
+          <GameSummaryPanel game={game} summary={summary} title={texts.userProfile.gameDataTitle(game)} />
         </div>
         <div className="mt-4">
           {showRivalBtn ? (
             <Button variant="secondary" size="sm" onClick={toggleRival} disabled={rivalBusy}>
-              {rivalBusy ? (locale === 'zh' ? '处理中…' : 'Working…') : rivalText}
+              {rivalBusy ? texts.common.working : rivalText}
             </Button>
           ) : null}
         </div>

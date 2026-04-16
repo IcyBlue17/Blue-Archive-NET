@@ -8,6 +8,7 @@ import { Select } from "@cloudflare/kumo/components/select";
 import { Text } from "@cloudflare/kumo/components/text";
 import * as dataApi from "../../api/data";
 import * as gameApi from "../../api/game";
+import { getAppTexts } from "../../content/texts";
 import { CHU3_MATCHINGS } from "../../lib/config";
 import type { SettingFieldLocale } from "../../lib/settingsFieldLabels";
 import type { ChusanMatchingOption, GameOption } from "../../lib/types";
@@ -30,6 +31,7 @@ export function ChusanExtraSettings({
   onReload: () => Promise<void>;
   err: string | null;
 }) {
+  const copy = getAppTexts(locale);
   const toast = useKumoToastManager();
   const [linkedVerse, setLinkedVerse] = useState(false);
   const [overlay, setOverlay] = useState(false);
@@ -132,20 +134,17 @@ export function ChusanExtraSettings({
       const json1 = JSON.parse(text1) as unknown;
       await gameApi.importGame("chu3", json1);
       toast.add({
-        title: locale === "zh" ? "导入成功" : "Import completed",
-        description:
-          locale === "zh" ? "CHUNITHM 存档已导入。" : "CHUNITHM save imported.",
+        title: copy.chusanExtra.importSuccessTitle,
+        description: copy.chusanExtra.importSuccessDesc,
       });
       await onReload();
     } catch (e) {
       toast.add({
-        title: locale === "zh" ? "导入失败" : "Import failed",
+        title: copy.chusanExtra.importFailedTitle,
         description:
           e instanceof Error
             ? e.message
-            : locale === "zh"
-              ? "导入失败"
-              : "Import failed",
+            : copy.common.failed,
         variant: "error",
       });
     } finally {
@@ -182,7 +181,7 @@ export function ChusanExtraSettings({
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === "zh" ? "CHUNITHM 基础" : "CHUNITHM basics"}
+          {copy.chusanExtra.basics}
         </h3>
         <GameOptionFields
           options={basicOptions}
@@ -194,7 +193,7 @@ export function ChusanExtraSettings({
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === "zh" ? "登录奖励" : "Login rewards"}
+          {copy.chusanExtra.loginRewards}
         </h3>
         <ChusanLoginRewardSettings
           options={options}
@@ -206,21 +205,19 @@ export function ChusanExtraSettings({
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === "zh" ? "战队" : "Team"}
+          {copy.chusanExtra.team}
         </h3>
         <RouterLink
           to="/team"
           className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
         >
-          {locale === "zh" ? "前往战队页" : "Open team page"}
+          {copy.chusanExtra.openTeamPage}
         </RouterLink>
       </section>
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === "zh"
-            ? "全国对战 & Linked Verse"
-            : "National matching & Linked Verse"}
+          {copy.chusanExtra.matching}
         </h3>
 
         {linkedVerse ? (
@@ -240,14 +237,14 @@ export function ChusanExtraSettings({
             size="sm"
             onClick={() => setOverlay(true)}
           >
-            {locale === "zh" ? "选择对战服预设…" : "Choose matching preset…"}
+            {copy.chusanExtra.choosePreset}
           </Button>
         </div>
 
         {custom ? (
           <div className="mt-4">
             <Text DANGEROUS_className="mb-2" size="sm">
-              {locale === "zh" ? "自定义对战服务器" : "Custom matching server"}
+              {copy.chusanExtra.customMatchingServer}
             </Text>
             <GameOptionFields
               options={options}
@@ -261,19 +258,17 @@ export function ChusanExtraSettings({
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === "zh" ? "对战快捷表情" : "Symbol chat"}
+          {copy.chusanExtra.symbolChat}
         </h3>
         {[1, 2, 3, 4].map((slot) => (
           <div key={slot} className="mb-4 flex max-w-xl flex-col gap-2">
             <span className="text-sm font-medium">
-              {locale === "zh" ? `快捷表情 #${slot}` : `Symbol chat #${slot}`}
+              {copy.chusanExtra.symbolChatSlot(slot)}
             </span>
             <div className="flex flex-wrap items-center gap-2">
               <Select
                 className="min-w-[12rem]"
-                aria-label={
-                  locale === "zh" ? `快捷表情 #${slot}` : `Symbol chat #${slot}`
-                }
+                aria-label={copy.chusanExtra.symbolChatSlot(slot)}
                 value={symbols[slot] ?? ""}
                 onValueChange={(v) => {
                   setSymbols((s) => ({ ...s, [slot]: String(v ?? "") }));
@@ -281,7 +276,7 @@ export function ChusanExtraSettings({
                 }}
               >
                 <Select.Option value="">
-                  {locale === "zh" ? "（默认）" : "(default)"}
+                  {copy.chusanExtra.defaultOption}
                 </Select.Option>
                 {symbolSelectOptions.map(([id, meta]) => (
                   <Select.Option key={id} value={id}>
@@ -296,7 +291,7 @@ export function ChusanExtraSettings({
                   disabled={symSaving === slot}
                   onClick={() => void saveSymbol(slot)}
                 >
-                  {locale === "zh" ? "保存" : "Save"}
+                  {copy.common.save}
                 </Button>
               ) : null}
             </div>
@@ -304,7 +299,7 @@ export function ChusanExtraSettings({
         ))}
       </section>
 
-      <Chu3AppearanceSettings />
+      <Chu3AppearanceSettings locale={locale} />
 
       <div className="mt-2">
         <Link
@@ -312,15 +307,13 @@ export function ChusanExtraSettings({
           variant="inline"
           className="text-kumo-accent text-sm font-medium"
         >
-          {locale === "zh"
-            ? "前往收藏品页面设置 →"
-            : "Open Collectibles page →"}
+          {copy.chusanExtra.openCollectibles}
         </Link>
       </div>
 
       <section>
         <h3 className="text-kumo-text mb-2 text-base font-semibold">
-          {locale === "zh" ? "导入 / 导出" : "Import / Export"}
+          {copy.chusanExtra.importExport}
         </h3>
         <input
           ref={inputRef1}
@@ -339,27 +332,19 @@ export function ChusanExtraSettings({
             disabled={importing}
             onClick={() => inputRef1.current?.click()}
           >
-            {importing
-              ? locale === "zh"
-                ? "导入中…"
-                : "Importing…"
-              : locale === "zh"
-                ? "导入存档"
-                : "Import CHUNITHM save"}
+            {importing ? copy.chusanExtra.importBusy : copy.chusanExtra.importSave}
           </Button>
           <Button
             variant="secondary"
             disabled={exporting}
             onClick={() => void doExport()}
           >
-            {locale === "zh" ? "导出存档" : "Export CHUNITHM"}
+            {copy.chusanExtra.exportSave}
           </Button>
         </div>
         {lastFile1 ? (
           <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
-            {locale === "zh"
-              ? `最近选择：${lastFile1}`
-              : `Last file: ${lastFile1}`}
+            {copy.chusanExtra.lastFile(lastFile1)}
           </Text>
         ) : null}
       </section>
@@ -376,7 +361,7 @@ export function ChusanExtraSettings({
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="text-kumo-text mb-2 text-lg font-semibold">
-              {locale === "zh" ? "选择对战服" : "Matching server"}
+              {copy.chusanExtra.matchingDialogTitle}
             </h4>
             <div className="flex flex-wrap gap-3">
               {CHU3_MATCHINGS.map((opt) => (
@@ -416,7 +401,7 @@ export function ChusanExtraSettings({
                       rel="noreferrer"
                       variant="inline"
                     >
-                      {locale === "zh" ? "教程" : "Guide"}
+                      {copy.chusanExtra.guide}
                     </Link>
                   </div>
                   <div className="text-kumo-subtle mt-2 text-xs">
@@ -441,12 +426,10 @@ export function ChusanExtraSettings({
                 }}
               >
                 <div className="font-semibold">
-                  {locale === "zh" ? "自定义" : "Custom"}
+                  {copy.chusanExtra.custom}
                 </div>
                 <p className="text-kumo-subtle mt-1 text-xs">
-                  {locale === "zh"
-                    ? "手动填写 URL（见下方字段）。"
-                    : "Enter URLs manually below."}
+                  {copy.chusanExtra.customHint}
                 </p>
               </div>
             </div>
@@ -455,7 +438,7 @@ export function ChusanExtraSettings({
               variant="secondary"
               onClick={() => setOverlay(false)}
             >
-              {locale === "zh" ? "关闭" : "Close"}
+              {copy.common.close}
             </Button>
           </div>
         </div>

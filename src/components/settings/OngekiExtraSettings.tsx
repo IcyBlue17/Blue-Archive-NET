@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Text } from '@cloudflare/kumo/components/text'
 import * as gameApi from '../../api/game'
 import { detailSet } from '../../api/settings'
+import { getAppTexts } from '../../content/texts'
 import { fmtNameErr1 } from '../../lib/censor'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import type { GameOption } from '../../lib/types'
@@ -21,6 +22,7 @@ export function OngekiExtraSettings({
   onSet: (key: string, value: string) => Promise<void>
   err: string | null
 }) {
+  const copy = getAppTexts(locale)
   const [inGameName, setInGameName] = useState('')
   const [savedName, setSavedName] = useState('')
   const [nameSaving, setNameSaving] = useState(false)
@@ -48,9 +50,9 @@ export function OngekiExtraSettings({
       await detailSet('ongeki', 'userName', next)
       setInGameName(next)
       setSavedName(next)
-      setNameMsg1(locale === 'zh' ? '已保存' : 'Saved')
+      setNameMsg1(copy.common.saved)
     } catch (e) {
-      setNameErr1(fmtNameErr1(e, locale === 'zh' ? '改名' : 'Rename'))
+      setNameErr1(fmtNameErr1(e, copy.ongekiExtra.renameAction))
     } finally {
       setNameSaving(false)
     }
@@ -64,7 +66,7 @@ export function OngekiExtraSettings({
 
       <div className="flex max-w-xl flex-col gap-2">
         <SegaUsernameEditor
-          label={locale === 'zh' ? '游戏内名称' : 'In-game name'}
+          label={copy.ongekiExtra.inGameName}
           locale={locale}
           value={inGameName}
           onChange={setInGameName}

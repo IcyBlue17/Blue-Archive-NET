@@ -6,8 +6,10 @@ import { Text } from '@cloudflare/kumo/components/text'
 import { Table } from '@cloudflare/kumo/components/table'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import * as api from '../../api/admin/loginBonus'
+import { useAppTexts } from '../../content/texts'
 
 export function AdminLoginBonusPage() {
+  const texts = useAppTexts()
   const [presets, setPresets] = useState<api.LoginBonusPreset[]>([])
   const [selected, setSelected] = useState<number | null>(null)
   const [entries, setEntries] = useState<api.LoginBonusEntry[]>([])
@@ -66,7 +68,7 @@ export function AdminLoginBonusPage() {
   }
 
   async function removePreset(id: number) {
-    if (!confirm('删除预设及其所有条目？')) return
+    if (!confirm(texts.admin.deletePresetConfirm)) return
     try {
       await api.deletePreset(id)
       if (selected === id) setSelected(null)
@@ -96,7 +98,7 @@ export function AdminLoginBonusPage() {
   }
 
   async function delEntry(id: number) {
-    if (!confirm('删除条目？')) return
+    if (!confirm(texts.admin.deleteEntryConfirm)) return
     try {
       await api.deleteEntry(id)
       if (selected != null) setEntries(await api.listEntries(selected))
@@ -109,48 +111,46 @@ export function AdminLoginBonusPage() {
     <div className="flex flex-col gap-6">
       {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
       <LayerCard className="border-kumo-warning/40 bg-kumo-warning/8 p-4">
-        <LayerCard.Secondary>注意</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.admin.note}</LayerCard.Secondary>
         <Text DANGEROUS_className="mt-3 text-sm leading-6 text-kumo-subtle">
-          CHUNITHM 客户端更稳的是吃游戏资源里原本就存在的签到 preset / entry ID。
-          这里直接新建任意自定义签到，后端可以发奖，但客户端不一定会弹出签到内容。
-          想让街机端稳定显示，最好复用游戏资源里已有的签到数据，或者给客户端补对应的 LoginBonus 资源。
+          {texts.admin.loginBonusNote}
         </Text>
       </LayerCard>
       <LayerCard className="p-4">
-        <LayerCard.Secondary>新建预设</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.admin.createPreset}</LayerCard.Secondary>
         <div className="mt-4 flex flex-wrap items-end gap-2">
-          <Input placeholder="名称" value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <Input placeholder={texts.common.name} value={newName} onChange={(e) => setNewName(e.target.value)} />
           <Input
             type="number"
-            placeholder="可选 presetId"
+            placeholder={texts.admin.optionalPresetId}
             value={newPresetId}
             onChange={(e) => setNewPresetId(e.target.value)}
           />
           <Checkbox
             controlFirst
-            label="启用"
+            label={texts.common.enabled}
             className="text-sm"
             checked={newEnabled}
             onCheckedChange={setNewEnabled}
           />
           <Checkbox
             controlFirst
-            label="可重复 (ID < 3000)"
+            label={texts.admin.repeatable}
             className="text-sm"
             checked={newRepeat}
             onCheckedChange={setNewRepeat}
           />
-          <Button onClick={createPreset}>创建</Button>
+          <Button onClick={createPreset}>{texts.common.create}</Button>
         </div>
       </LayerCard>
       <LayerCard className="p-4">
-        <LayerCard.Secondary>预设列表</LayerCard.Secondary>
+        <LayerCard.Secondary>{texts.admin.presetList}</LayerCard.Secondary>
         <Table>
           <Table.Header>
             <Table.Row>
               <Table.Head>ID</Table.Head>
-              <Table.Head>名称</Table.Head>
-              <Table.Head>启用</Table.Head>
+              <Table.Head>{texts.common.name}</Table.Head>
+              <Table.Head>{texts.common.enabled}</Table.Head>
               <Table.Head />
             </Table.Row>
           </Table.Header>
@@ -159,14 +159,14 @@ export function AdminLoginBonusPage() {
               <Table.Row key={p.id}>
                 <Table.Cell>{p.id}</Table.Cell>
                 <Table.Cell>{p.presetName}</Table.Cell>
-                <Table.Cell>{p.isEnabled ? '是' : '否'}</Table.Cell>
+                <Table.Cell>{p.isEnabled ? texts.common.yes : texts.common.no}</Table.Cell>
                 <Table.Cell>
                   <div className="flex flex-wrap gap-1">
                     <Button size="sm" variant="secondary" onClick={() => setSelected(Number(p.id))}>
-                      条目
+                      {texts.admin.entries}
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => removePreset(Number(p.id))}>
-                      删除
+                      {texts.common.delete}
                     </Button>
                   </div>
                 </Table.Cell>
@@ -177,7 +177,7 @@ export function AdminLoginBonusPage() {
       </LayerCard>
       {selected != null ? (
         <LayerCard className="p-4">
-          <LayerCard.Secondary>预设 {selected} — 新建条目</LayerCard.Secondary>
+          <LayerCard.Secondary>{texts.admin.newEntryForPreset(selected)}</LayerCard.Secondary>
           <div className="mt-4 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
             <label className="text-sm">
               loginBonusName
@@ -214,15 +214,15 @@ export function AdminLoginBonusPage() {
             ))}
           </div>
           <Button className="mt-4" onClick={createEntry}>
-            添加条目
+            {texts.admin.addEntry}
           </Button>
           <Table>
             <Table.Header>
               <Table.Row>
                 <Table.Head>ID</Table.Head>
-                <Table.Head>名称</Table.Head>
+                <Table.Head>{texts.common.name}</Table.Head>
                 <Table.Head>presentId</Table.Head>
-                <Table.Head>天数</Table.Head>
+                <Table.Head>{texts.admin.days}</Table.Head>
                 <Table.Head />
               </Table.Row>
             </Table.Header>
@@ -235,7 +235,7 @@ export function AdminLoginBonusPage() {
                   <Table.Cell>{e.needLoginDayCount}</Table.Cell>
                   <Table.Cell>
                     <Button size="sm" variant="destructive" onClick={() => delEntry(e.id)}>
-                      删除
+                      {texts.common.delete}
                     </Button>
                   </Table.Cell>
                 </Table.Row>

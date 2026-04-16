@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Select } from '@cloudflare/kumo/components/select'
+import { getAppTexts } from '../../content/texts'
 import type { GameOption } from '../../lib/types'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 
@@ -69,15 +70,16 @@ export function ChusanLoginRewardSettings({
   onSet: (key: string, value: string) => Promise<void>
   onReload: () => Promise<void>
 }) {
+  const copy = getAppTexts(locale)
   const rawValue = String(options.find((o) => o.key === 'chusanLoginRewardItems')?.value ?? '')
   const [ticketValue, setTicketValue] = useState(NONE_VALUE)
   const [saving, setSaving] = useState(false)
 
   const ticketItems = useMemo(() => {
-    const items: Record<string, string> = { [NONE_VALUE]: locale === 'zh' ? '无' : 'None' }
+    const items: Record<string, string> = { [NONE_VALUE]: copy.chusanLoginRewards.none }
     for (const one of TICKET_OPTIONS) items[`${one.itemKind}:${one.itemId}`] = displayName(one, locale)
     return items
-  }, [locale])
+  }, [copy.chusanLoginRewards.none, locale])
 
   useEffect(() => {
     const parsed = parseTokens(rawValue)
@@ -98,7 +100,7 @@ export function ChusanLoginRewardSettings({
   return (
     <div className="mt-4 flex max-w-md flex-col gap-4">
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">{locale === 'zh' ? '票券' : 'Ticket'}</span>
+        <span className="text-sm font-medium">{copy.chusanLoginRewards.ticket}</span>
         <Select
           value={ticketValue}
           items={ticketItems}
@@ -108,7 +110,7 @@ export function ChusanLoginRewardSettings({
 
       <div>
         <Button size="sm" variant="secondary" disabled={saving} onClick={() => void saveRewards()}>
-          {locale === 'zh' ? '保存登录奖励' : 'Save login rewards'}
+          {copy.chusanLoginRewards.save}
         </Button>
       </div>
     </div>

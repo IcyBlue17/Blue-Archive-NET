@@ -6,6 +6,7 @@ import { Text } from '@cloudflare/kumo/components/text'
 import { chartRating1, diffLabel1, fmtRate1, fmtScore1, fmtTime1, formatLv1, playTime1, rank1, recordKey1, score1 } from '../../lib/chu3PlaylogView'
 import { imgCross1 } from '../../lib/imgSign'
 import { musicJacketUrl } from '../../lib/musicCover'
+import { getAppTexts } from '../../content/texts'
 import type { MusicMetaLite } from '../../lib/scoring'
 import type { GamePlayRecord } from '../../lib/types'
 
@@ -32,6 +33,7 @@ export function Chu3PlaylogExplorer({
   error?: string | null
   locale?: 'zh' | 'en'
 }) {
+  const texts = getAppTexts(locale)
   const [key1, setKey1] = useState('')
   const [page1, setPage1] = useState(1)
   const [pickKey1, setPickKey1] = useState<string | null>(null)
@@ -101,7 +103,7 @@ export function Chu3PlaylogExplorer({
         { label: 'Justice Critical', value: row1.judgeCritical },
         { label: 'Justice', value: row1.judgeJustice },
         { label: 'Attack', value: row1.judgeAttack },
-        { label: locale === 'zh' ? 'Miss / Guilty' : 'Miss / Guilty', value: row1.judgeGuilty },
+        { label: 'Miss / Guilty', value: row1.judgeGuilty },
       ]
     : []
 
@@ -117,12 +119,12 @@ export function Chu3PlaylogExplorer({
 
   const infoRows1 = row1
     ? [
-        { label: locale === 'zh' ? '成绩' : 'Score', value: fmtScore1(scoreNow1) },
-        { label: locale === 'zh' ? '段位' : 'Rank', value: rankNow1 },
-        { label: locale === 'zh' ? '单曲 Rating' : 'Chart rating', value: chartRt1 },
-        { label: locale === 'zh' ? '玩家 Rating 变化' : 'Player rating delta', value: delta1 },
-        { label: locale === 'zh' ? '时间' : 'Time', value: fmtTime1(playTime1(row1), locale) },
-        { label: locale === 'zh' ? 'Track' : 'Track', value: row1.track != null ? String(row1.track) : '—' },
+        { label: texts.playlogExplorer.score, value: fmtScore1(scoreNow1) },
+        { label: texts.playlogExplorer.rank, value: rankNow1 },
+        { label: texts.playlogExplorer.chartRating, value: chartRt1 },
+        { label: texts.playlogExplorer.ratingDelta, value: delta1 },
+        { label: texts.playlogExplorer.time, value: fmtTime1(playTime1(row1), locale) },
+        { label: texts.playlogExplorer.track, value: row1.track != null ? String(row1.track) : '—' },
       ]
     : []
 
@@ -131,13 +133,13 @@ export function Chu3PlaylogExplorer({
       <LayerCard className="min-w-0 p-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <Text variant="heading3">{locale === 'zh' ? '游玩记录' : 'Play history'}</Text>
-            <Input value={key1} onChange={(e) => setKey1(e.target.value)} placeholder={locale === 'zh' ? '搜索歌曲 / 时间 / ID' : 'Search song / time / ID'} />
+            <Text variant="heading3">{texts.playlogExplorer.title}</Text>
+            <Input value={key1} onChange={(e) => setKey1(e.target.value)} placeholder={texts.playlogExplorer.searchPlaceholder} />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="secondary" disabled={page1 <= 1} onClick={() => setPage1((x1) => Math.max(1, x1 - 1))}>
-              {locale === 'zh' ? '上一页' : 'Prev'}
+              {texts.common.previousPage}
             </Button>
             {pageNums1(page1, totalPage1).map((n1) => (
               <Button key={n1} size="sm" variant={n1 === page1 ? 'primary' : 'secondary'} onClick={() => setPage1(n1)}>
@@ -145,7 +147,7 @@ export function Chu3PlaylogExplorer({
               </Button>
             ))}
             <Button size="sm" variant="secondary" disabled={page1 >= totalPage1} onClick={() => setPage1((x1) => Math.min(totalPage1, x1 + 1))}>
-              {locale === 'zh' ? '下一页' : 'Next'}
+              {texts.common.nextPage}
             </Button>
           </div>
         </div>
@@ -185,7 +187,7 @@ export function Chu3PlaylogExplorer({
               )
             })
           ) : (
-            <Text DANGEROUS_className="text-kumo-subtle py-6 text-center">{locale === 'zh' ? '没有匹配的记录。' : 'No records matched.'}</Text>
+            <Text DANGEROUS_className="text-kumo-subtle py-6 text-center">{texts.playlogExplorer.noMatches}</Text>
           )}
         </div>
       </LayerCard>
@@ -200,7 +202,7 @@ export function Chu3PlaylogExplorer({
                 <Text variant="heading3" DANGEROUS_className="mt-1 break-words text-[1.35rem]">
                   {meta1?.name ?? `Music ${row1.musicId}`}
                 </Text>
-                <Text DANGEROUS_className="text-kumo-subtle mt-1 text-sm">{meta1?.composer || (locale === 'zh' ? '未知作曲' : 'Unknown composer')}</Text>
+                <Text DANGEROUS_className="text-kumo-subtle mt-1 text-sm">{meta1?.composer || texts.playlogExplorer.unknownComposer}</Text>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-kumo-fill px-2 py-1">{diffLabel1(row1.level, meta1)}</span>
                   <span className="rounded-full bg-kumo-fill px-2 py-1">Lv {formatLv1(meta1, row1.level)}</span>
@@ -222,13 +224,13 @@ export function Chu3PlaylogExplorer({
               {row1.isNewRecord ? <span className="rounded-full bg-pink-500/15 px-2 py-1 text-pink-700 dark:text-pink-300">New Record</span> : null}
               {row1.isAllJustice ? <span className="rounded-full bg-sky-500/15 px-2 py-1 text-sky-700 dark:text-sky-300">AJ</span> : null}
               {row1.isFullCombo ? <span className="rounded-full bg-kumo-accent/15 px-2 py-1 text-kumo-accent">FC</span> : null}
-              {row1.isClear ? <span className="rounded-full bg-kumo-fill px-2 py-1">{locale === 'zh' ? '通关' : 'Clear'}</span> : null}
-              {row1.isFreeToPlay ? <span className="rounded-full bg-kumo-fill px-2 py-1">{locale === 'zh' ? '免费曲' : 'Free play'}</span> : null}
+              {row1.isClear ? <span className="rounded-full bg-kumo-fill px-2 py-1">{texts.playlogExplorer.clear}</span> : null}
+              {row1.isFreeToPlay ? <span className="rounded-full bg-kumo-fill px-2 py-1">{texts.playlogExplorer.freePlay}</span> : null}
               {row1.track != null ? <span className="rounded-full bg-kumo-fill px-2 py-1">{`Track ${row1.track}`}</span> : null}
             </div>
 
             <div className="mt-5">
-              <Text DANGEROUS_className="mb-2 text-sm font-medium">{locale === 'zh' ? '判定统计' : 'Judge counts'}</Text>
+              <Text DANGEROUS_className="mb-2 text-sm font-medium">{texts.playlogExplorer.judgeCounts}</Text>
               <div className="border-kumo-border overflow-hidden rounded-xl border">
                 {judgeRows1.map((item1) => (
                   <div key={item1.label} className="border-kumo-border grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
@@ -240,7 +242,7 @@ export function Chu3PlaylogExplorer({
             </div>
 
             <div className="mt-5">
-              <Text DANGEROUS_className="mb-2 text-sm font-medium">{locale === 'zh' ? '各键型比率' : 'Lane rates'}</Text>
+              <Text DANGEROUS_className="mb-2 text-sm font-medium">{texts.playlogExplorer.laneRates}</Text>
               <div className="border-kumo-border overflow-hidden rounded-xl border">
                 {rateRows1.map((item1) => (
                   <div key={item1.label} className="border-kumo-border grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
@@ -252,7 +254,7 @@ export function Chu3PlaylogExplorer({
             </div>
           </>
         ) : (
-          <Text DANGEROUS_className="text-kumo-subtle">{locale === 'zh' ? '请选择左侧记录。' : 'Pick a play from the list.'}</Text>
+          <Text DANGEROUS_className="text-kumo-subtle">{texts.playlogExplorer.pickPlay}</Text>
         )}
       </LayerCard>
     </div>

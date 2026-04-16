@@ -7,6 +7,7 @@ import { toDisplayRating } from '../../lib/gameRatingDisplay'
 import { formatPlaylogLevelLabel } from '../../lib/playlogDisplay'
 import { musicJacketUrl } from '../../lib/musicCover'
 import { imgCross1 } from '../../lib/imgSign'
+import { useAppTexts } from '../../content/texts'
 
 type Row = GenericGamePlaylog & MusicMetaLite & { worldsEndTag?: string }
 
@@ -86,6 +87,7 @@ export function RecentScoresSection({
   recent: GenericGamePlaylog[] | undefined
   musicById: Record<number, MusicMetaLite>
 }) {
+  const texts = useAppTexts()
   const rounding = useRounding()
   const rows = useMemo(() => {
     if (!recent?.length) return []
@@ -98,15 +100,15 @@ export function RecentScoresSection({
   if (!rows.length) {
     return (
       <LayerCard className="p-4">
-        <LayerCard.Secondary>最近成绩</LayerCard.Secondary>
-        <Text DANGEROUS_className="text-kumo-subtle mt-2">暂无记录</Text>
+        <LayerCard.Secondary>{texts.gamesPage.recentScores}</LayerCard.Secondary>
+        <Text DANGEROUS_className="text-kumo-subtle mt-2">{texts.gamesPage.noRecords}</Text>
       </LayerCard>
     )
   }
 
   return (
     <LayerCard className="p-4">
-      <LayerCard.Secondary>最近成绩</LayerCard.Secondary>
+      <LayerCard.Secondary>{texts.gamesPage.recentScores}</LayerCard.Secondary>
       <div className="mt-4 flex flex-col gap-2">
         {rows.map((r, i) => (
           <RecentScoreRow

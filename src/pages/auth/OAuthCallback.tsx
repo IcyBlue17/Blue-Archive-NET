@@ -4,7 +4,7 @@ import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { Text } from '@cloudflare/kumo/components/text'
 import { setToken } from '../../api/client'
 import { useAuth } from '../../hooks/useAuth'
-import { useI18n } from '../../lib/i18n'
+import { useAppTexts } from '../../content/texts'
 
 // Validate JWT format (header.payload.signature)
 function isValidJwtFormat(token: string): boolean {
@@ -28,7 +28,7 @@ export function OAuthCallbackPage() {
   const [params] = useSearchParams()
   const nav = useNavigate()
   const { refresh } = useAuth()
-  const { t } = useI18n()
+  const texts = useAppTexts()
   const [note, setNote] = useState<string | null>(null)
 
   useEffect(() => {
@@ -67,14 +67,14 @@ export function OAuthCallbackPage() {
       return
     }
 
-    setNote(t('auth.oauthCallbackMissing'))
+    setNote(texts.authPages.oauthCallbackMissing)
     const tId = window.setTimeout(() => nav('/login', { replace: true }), 2000)
     return () => window.clearTimeout(tId)
-  }, [params, nav, refresh, t])
+  }, [params, nav, refresh, texts.authPages.oauthCallbackMissing])
 
   return (
     <LayerCard className="p-6">
-      <Text size="sm">{note ?? t('auth.oauthCallbackWorking')}</Text>
+      <Text size="sm">{note ?? texts.authPages.oauthCallbackWorking}</Text>
     </LayerCard>
   )
 }

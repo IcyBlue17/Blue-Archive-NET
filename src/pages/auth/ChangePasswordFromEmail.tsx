@@ -4,12 +4,12 @@ import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { Text } from '@cloudflare/kumo/components/text'
-import { useI18n } from '../../lib/i18n'
 import * as userApi from '../../api/user'
+import { useAppTexts } from '../../content/texts'
 
 /** Route: /reset-password with ?token= from email (legacy path compatibility) */
 export function ChangePasswordFromEmailPage() {
-  const { t } = useI18n()
+  const texts = useAppTexts()
   const [params] = useSearchParams()
   const token = params.get('token') ?? ''
   const [password, setPassword] = useState('')
@@ -20,7 +20,7 @@ export function ChangePasswordFromEmailPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!token) {
-      setError('缺少 token')
+      setError(texts.authPages.missingToken)
       return
     }
     setPending(true)
@@ -29,7 +29,7 @@ export function ChangePasswordFromEmailPage() {
       await userApi.changePassword({ token, password })
       setDone(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed')
+      setError(err instanceof Error ? err.message : texts.common.failed)
     } finally {
       setPending(false)
     }
@@ -38,9 +38,9 @@ export function ChangePasswordFromEmailPage() {
   if (!token) {
     return (
       <LayerCard className="p-6">
-        <Text>无效的密码重置链接。</Text>
+        <Text>{texts.authPages.invalidResetLink}</Text>
         <Link to="/reset-password">
-          <Text DANGEROUS_className="text-kumo-accent mt-4">请求新链接</Text>
+          <Text DANGEROUS_className="text-kumo-accent mt-4">{texts.authPages.requestNewLink}</Text>
         </Link>
       </LayerCard>
     )
@@ -48,13 +48,13 @@ export function ChangePasswordFromEmailPage() {
 
   return (
     <LayerCard className="p-6">
-      <LayerCard.Secondary>{t('resetPassword')}</LayerCard.Secondary>
+      <LayerCard.Secondary>{texts.authPages.resetPassword}</LayerCard.Secondary>
       {done ? (
-        <Text DANGEROUS_className="mt-4 text-kumo-success">密码已更新，请登录。</Text>
+        <Text DANGEROUS_className="mt-4 text-kumo-success">{texts.authPages.passwordUpdated}</Text>
       ) : (
         <form onSubmit={onSubmit} className="mt-4 flex flex-col gap-4">
           <label className="flex flex-col gap-1">
-            <Text size="sm">{t('password')}</Text>
+            <Text size="sm">{texts.authPages.password}</Text>
             <Input
               type="password"
               value={password}
@@ -65,13 +65,13 @@ export function ChangePasswordFromEmailPage() {
           </label>
           {error ? <Text DANGEROUS_className="text-kumo-danger">{error}</Text> : null}
           <Button type="submit" disabled={pending}>
-            {t('submit')}
+            {texts.authPages.submit}
           </Button>
         </form>
       )}
       <Link to="/login" className="mt-4 inline-block">
         <Text size="sm" DANGEROUS_className="text-kumo-accent">
-          {t('login')}
+          {texts.authPages.login}
         </Text>
       </Link>
     </LayerCard>

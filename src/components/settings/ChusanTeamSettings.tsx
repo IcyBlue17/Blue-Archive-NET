@@ -6,10 +6,12 @@ import { Text } from '@cloudflare/kumo/components/text'
 import * as gameApi from '../../api/game'
 import { qk } from '../../lib/query'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
+import { useAppTexts } from '../../content/texts'
 
 const RANK_LIMIT = 10
 
-export function ChusanTeamSettings({ username, locale }: { username: string; locale: SettingFieldLocale }) {
+export function ChusanTeamSettings({ username }: { username: string; locale: SettingFieldLocale }) {
+  const texts = useAppTexts()
   const qc = useQueryClient()
   const [teamId, setTeamId] = useState('')
   const [teamName, setTeamName] = useState('')
@@ -41,11 +43,11 @@ export function ChusanTeamSettings({ username, locale }: { username: string; loc
     const idNum = Number.parseInt(teamId, 10)
     const emblemNum = Number.parseInt(emblemId || '0', 10)
     if (!Number.isFinite(idNum) || idNum <= 0) {
-      setErr(locale === 'zh' ? 'teamId 必须是大于 0 的整数' : 'teamId must be a positive integer')
+      setErr(texts.chusanTeamSettings.invalidTeamId)
       return
     }
     if (!Number.isFinite(emblemNum) || emblemNum < 0) {
-      setErr(locale === 'zh' ? 'emblemId 不能小于 0' : 'emblemId must be >= 0')
+      setErr(texts.chusanTeamSettings.invalidEmblem)
       return
     }
 
@@ -59,9 +61,9 @@ export function ChusanTeamSettings({ username, locale }: { username: string; loc
         qc.invalidateQueries({ queryKey: qk.gameDash(username, 'chu3') }),
         qc.invalidateQueries({ queryKey: qk.chu3Rivals }),
       ])
-      setMsg(locale === 'zh' ? '队伍设置已保存' : 'Team settings saved')
+      setMsg(texts.chusanTeamSettings.saved)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'failed')
+      setErr(e instanceof Error ? e.message : texts.common.failed)
     } finally {
       setSaving(false)
     }
@@ -73,36 +75,34 @@ export function ChusanTeamSettings({ username, locale }: { username: string; loc
   return (
     <section>
       <h3 className="text-kumo-text mb-2 text-base font-semibold">
-        {locale === 'zh' ? '战队' : 'Team'}
+        {texts.chusanTeamSettings.team}
       </h3>
       <Text DANGEROUS_className="text-kumo-subtle mb-3 text-sm">
-        {locale === 'zh'
-          ? '同一个 teamId 代表同一支战队。多个用户填写相同 teamId，就会共享战队名称、徽章和排名。'
-          : 'Users sharing the same teamId join the same team and share its name, emblem and rank.'}
+        {texts.chusanTeamSettings.hint}
       </Text>
 
       {summaryQuery.isPending && !summary ? (
         <Text DANGEROUS_className="text-kumo-subtle text-sm">
-          {locale === 'zh' ? '正在读取队伍数据…' : 'Loading team data…'}
+          {texts.chusanTeamSettings.loading}
         </Text>
       ) : (
         <div className="border-kumo-border bg-kumo-background-alt mb-4 grid gap-3 rounded-xl border p-4 md:grid-cols-3">
           <div>
-            <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '当前战队' : 'Current team'}</div>
+            <div className="text-kumo-subtle text-xs">{texts.chusanTeamSettings.currentTeam}</div>
             <div className="text-kumo-text mt-1 text-lg font-semibold">{summary?.teamName || '—'}</div>
             <div className="text-kumo-subtle mt-1 text-sm">ID {summary?.teamId || 0}</div>
           </div>
           <div>
-            <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '战队总 EXP / 排名' : 'Team EXP / Rank'}</div>
+            <div className="text-kumo-subtle text-xs">{texts.chusanTeamSettings.teamExpRank}</div>
             <div className="text-kumo-text mt-1 text-lg font-semibold">
               {(summary?.teamPoint ?? 0).toLocaleString()} / #{summary?.teamRank || 0}
             </div>
             <div className="text-kumo-subtle mt-1 text-sm">
-              {locale === 'zh' ? `成员 ${summary?.memberCount || 0} 人` : `${summary?.memberCount || 0} members`}
+              {texts.chusanTeamSettings.members(summary?.memberCount || 0)}
             </div>
           </div>
           <div>
-            <div className="text-kumo-subtle text-xs">{locale === 'zh' ? '个人贡献 / 徽章' : 'My EXP / Emblem'}</div>
+            <div className="text-kumo-subtle text-xs">{texts.chusanTeamSettings.myExpEmblem}</div>
             <div className="text-kumo-text mt-1 text-lg font-semibold">
               {(summary?.myPoint ?? 0).toLocaleString()} / {summary?.emblemId ?? 0}
             </div>
@@ -112,15 +112,15 @@ export function ChusanTeamSettings({ username, locale }: { username: string; loc
 
       <div className="mb-4 grid max-w-3xl gap-4 md:grid-cols-3">
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{locale === 'zh' ? 'teamId' : 'teamId'}</span>
+          <span className="text-sm font-medium">teamId</span>
           <Input type="number" value={teamId} onChange={(e) => setTeamId(e.target.value)} />
         </label>
         <label className="flex flex-col gap-1 md:col-span-2">
-          <span className="text-sm font-medium">{locale === 'zh' ? '战队名称' : 'Team name'}</span>
+          <span className="text-sm font-medium">{texts.chusanTeamSettings.teamName}</span>
           <Input value={teamName} onChange={(e) => setTeamName(e.target.value)} />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">{locale === 'zh' ? '徽章 ID' : 'Emblem ID'}</span>
+          <span className="text-sm font-medium">{texts.chusanTeamSettings.emblemId}</span>
           <Input type="number" value={emblemId} onChange={(e) => setEmblemId(e.target.value)} />
         </label>
       </div>
@@ -129,12 +129,12 @@ export function ChusanTeamSettings({ username, locale }: { username: string; loc
       {err ? <Text DANGEROUS_className="text-kumo-danger mb-2 text-sm">{err}</Text> : null}
 
       <Button variant="secondary" disabled={saving} onClick={() => void save()}>
-        {locale === 'zh' ? '保存战队设置' : 'Save team settings'}
+        {texts.chusanTeamSettings.save}
       </Button>
 
       <div className="mt-6">
         <h4 className="text-kumo-text mb-2 text-sm font-semibold">
-          {locale === 'zh' ? '战队排行（Top 10）' : 'Team ranking (Top 10)'}
+          {texts.chusanTeamSettings.ranking}
         </h4>
         <div className="border-kumo-border divide-kumo-border overflow-hidden rounded-xl border">
           {ranking.length ? (
@@ -149,20 +149,20 @@ export function ChusanTeamSettings({ username, locale }: { username: string; loc
                     <span className="truncate">{row.teamName || `Team ${row.teamId}`}</span>
                   </div>
                   <div className="text-kumo-subtle text-xs">
-                    ID {row.teamId} · {locale === 'zh' ? `徽章 ${row.emblemId}` : `Emblem ${row.emblemId}`}
+                    ID {row.teamId} · {texts.chusanTeamSettings.emblem(row.emblemId)}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-kumo-text font-semibold">{row.teamPoint.toLocaleString()}</div>
                   <div className="text-kumo-subtle text-xs">
-                    {locale === 'zh' ? `${row.memberCount} 人` : `${row.memberCount} members`}
+                    {texts.chusanTeamSettings.members(row.memberCount)}
                   </div>
                 </div>
               </div>
             ))
           ) : (
             <div className="bg-kumo-background-alt px-4 py-3 text-sm text-kumo-subtle">
-              {locale === 'zh' ? '暂无战队数据' : 'No team data yet'}
+              {texts.chusanTeamSettings.noData}
             </div>
           )}
         </div>

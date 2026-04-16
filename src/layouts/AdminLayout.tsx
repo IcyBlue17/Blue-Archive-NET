@@ -2,18 +2,18 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
 import { Tabs } from '@cloudflare/kumo/components/tabs'
 import { PageHeader } from '../components/common/PageHeader'
-import { useI18n } from '../lib/i18n'
+import { useAppTexts } from '../content/texts'
 
 const ADMIN_TABS = [
-  { path: '/admin', value: 'overview', label: '概览' },
-  { path: '/admin/users', value: 'users', label: '用户' },
-  { path: '/admin/login-bonus', value: 'login-bonus', label: '登录奖励' },
-  { path: '/admin/unlock-challenge', value: 'unlock', label: '解锁挑战' },
-  { path: '/admin/download-order', value: 'download-order', label: 'DownloadOrder' },
+  { path: '/admin', value: 'overview', labelKey: 'overview' },
+  { path: '/admin/users', value: 'users', labelKey: 'users' },
+  { path: '/admin/login-bonus', value: 'login-bonus', labelKey: 'loginBonus' },
+  { path: '/admin/unlock-challenge', value: 'unlock', labelKey: 'unlock' },
+  { path: '/admin/download-order', value: 'download-order', labelKey: 'downloadOrder' },
 ] as const
 
 export function AdminLayout() {
-  const { t } = useI18n()
+  const texts = useAppTexts()
   const loc = useLocation()
   const nav = useNavigate()
 
@@ -28,16 +28,16 @@ export function AdminLayout() {
   return (
     <div>
       <PageHeader
-        title={t('admin')}
+        title={texts.nav.admin}
         crumbs={[
-          { label: t('home'), href: '/home' },
-          { label: t('admin'), href: '/admin' },
+          { label: texts.nav.home, href: '/home' },
+          { label: texts.nav.admin, href: '/admin' },
         ]}
       />
       <Tabs
         className="mb-6"
         variant="segmented"
-        tabs={ADMIN_TABS.map((x) => ({ value: x.value, label: x.label }))}
+        tabs={ADMIN_TABS.map((x) => ({ value: x.value, label: texts.admin.tabs[x.labelKey] }))}
         value={active}
         onValueChange={(v) => {
           const item = ADMIN_TABS.find((x) => x.value === v)
@@ -53,7 +53,7 @@ export function AdminLayout() {
               `rounded-md px-3 py-1 text-sm no-underline ${isActive ? 'bg-kumo-fill text-kumo-strong' : 'text-kumo-subtle'}`
             }
           >
-            {x.label}
+            {texts.admin.tabs[x.labelKey]}
           </NavLink>
         ))}
       </div>

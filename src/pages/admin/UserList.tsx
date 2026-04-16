@@ -6,8 +6,10 @@ import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import * as adminUsers from '../../api/admin/users'
+import { useAppTexts } from '../../content/texts'
 
 export function AdminUserListPage() {
+  const texts = useAppTexts()
   const nav = useNavigate()
   const [page, setPage] = useState(0)
   const [size] = useState(20)
@@ -49,9 +51,9 @@ export function AdminUserListPage() {
     <div className="flex flex-col gap-4">
       <LayerCard className="p-4">
         <div className="flex flex-wrap gap-2">
-          <Input placeholder="搜索用户名或邮箱" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input placeholder={texts.admin.userSearchPlaceholder} value={q} onChange={(e) => setQ(e.target.value)} />
           <Button variant="secondary" onClick={search}>
-            搜索
+            {texts.common.search}
           </Button>
           <Button
             variant="ghost"
@@ -60,7 +62,7 @@ export function AdminUserListPage() {
               void load()
             }}
           >
-            清除
+            {texts.common.clear}
           </Button>
         </div>
       </LayerCard>
@@ -70,10 +72,10 @@ export function AdminUserListPage() {
           <Table.Header>
             <Table.Row>
               <Table.Head>ID</Table.Head>
-              <Table.Head>用户名</Table.Head>
-              <Table.Head>显示名</Table.Head>
-              <Table.Head>邮箱</Table.Head>
-              <Table.Head>卡片数</Table.Head>
+              <Table.Head>{texts.common.player}</Table.Head>
+              <Table.Head>{texts.admin.displayName}</Table.Head>
+              <Table.Head>{texts.admin.email}</Table.Head>
+              <Table.Head>{texts.admin.cards}</Table.Head>
               <Table.Head />
             </Table.Row>
           </Table.Header>
@@ -87,7 +89,7 @@ export function AdminUserListPage() {
                 <Table.Cell>{u.cardCount}</Table.Cell>
                 <Table.Cell>
                   <Button size="sm" variant="secondary" onClick={() => nav(`/admin/users/${u.id}`)}>
-                    详情
+                    {texts.admin.detail}
                   </Button>
                 </Table.Cell>
               </Table.Row>
@@ -98,17 +100,17 @@ export function AdminUserListPage() {
       {data && !searchHits ? (
         <div className="flex items-center gap-2">
           <Button variant="secondary" disabled={page <= 0} onClick={() => setPage((p) => p - 1)}>
-            上一页
+            {texts.common.previousPage}
           </Button>
           <Text size="sm">
-            {page + 1} / {data.totalPages || 1}（共 {data.totalElements}）
+            {texts.admin.totalPages(page + 1, data.totalPages || 1, data.totalElements)}
           </Text>
           <Button
             variant="secondary"
             disabled={page + 1 >= (data.totalPages || 1)}
             onClick={() => setPage((p) => p + 1)}
           >
-            下一页
+            {texts.common.nextPage}
           </Button>
         </div>
       ) : null}
