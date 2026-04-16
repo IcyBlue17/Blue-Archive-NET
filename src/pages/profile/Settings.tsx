@@ -23,6 +23,7 @@ import { ChusanExtraSettings } from '../../components/settings/ChusanExtraSettin
 import { GameOptionFields } from '../../components/settings/GameOptionFields'
 import { GlobalGameSettingsSection } from '../../components/settings/GlobalGameSettingsSection'
 import { Mai2ExtraSettings } from '../../components/settings/Mai2ExtraSettings'
+import { OngekiExtraSettings } from '../../components/settings/OngekiExtraSettings'
 import { readToken, useAuth } from '../../hooks/useAuth'
 import { qk } from '../../lib/query'
 import * as settingsApi from '../../api/settings'
@@ -440,12 +441,12 @@ export function SettingsPage() {
             <SettingListSkeleton />
           ) : (
             <div className="mt-4">
-              <GameOptionFields
+              <OngekiExtraSettings
+                username={me?.username ?? ''}
                 options={options}
-                gameFilter={(g) => g === 'ongeki'}
                 locale={loc}
                 onSet={setOptKey}
-                error={err}
+                err={err}
               />
             </div>
           )}

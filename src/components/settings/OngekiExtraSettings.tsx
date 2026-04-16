@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Button } from '@cloudflare/kumo/components/button'
 import { Text } from '@cloudflare/kumo/components/text'
 import * as gameApi from '../../api/game'
+import { detailSet } from '../../api/settings'
+import { fmtNameErr1 } from '../../lib/censor'
 import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
 import type { GameOption } from '../../lib/types'
-import { fmtNameErr1 } from '../../lib/censor'
 import { GameOptionFields } from './GameOptionFields'
 import { SegaUsernameEditor, normalizeSegaUsername } from './SegaUsernameEditor'
 
-export function Mai2ExtraSettings({
+export function OngekiExtraSettings({
   username,
   options,
   locale,
@@ -22,18 +22,19 @@ export function Mai2ExtraSettings({
   err: string | null
 }) {
   const [inGameName, setInGameName] = useState('')
-  const [nameDirty, setNameDirty] = useState(false)
+  const [savedName, setSavedName] = useState('')
   const [nameSaving, setNameSaving] = useState(false)
-  const [exporting, setExporting] = useState(false)
   const [nameErr1, setNameErr1] = useState<string | null>(null)
+  const [nameMsg1, setNameMsg1] = useState<string | null>(null)
 
   useEffect(() => {
     if (!username) return
     void gameApi
-      .userSummary(username, 'mai2')
+      .userSummary(username, 'ongeki')
       .then((s) => {
-        setInGameName(s.name ?? '')
-        setNameDirty(false)
+        const next = typeof s.name === 'string' ? s.name : ''
+        setInGameName(next)
+        setSavedName(next)
       })
       .catch(() => {})
   }, [username])
@@ -41,11 +42,13 @@ export function Mai2ExtraSettings({
   async function saveName() {
     const next = normalizeSegaUsername(inGameName)
     setNameErr1(null)
+    setNameMsg1(null)
     setNameSaving(true)
     try {
-      const r = await gameApi.changeName('mai2', next.trim())
-      setInGameName(r.newName)
-      setNameDirty(false)
+      await detailSet('ongeki', 'userName', next)
+      setInGameName(next)
+      setSavedName(next)
+      setNameMsg1(locale === 'zh' ? '已保存' : 'Saved')
     } catch (e) {
       setNameErr1(fmtNameErr1(e, locale === 'zh' ? '改名' : 'Rename'))
     } finally {
@@ -53,51 +56,30 @@ export function Mai2ExtraSettings({
     }
   }
 
-  async function doExport() {
-    setExporting(true)
-    try {
-      const data = await gameApi.exportGame('mai2')
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `export-mai2-${inGameName || username}.json`
-      a.click()
-      URL.revokeObjectURL(a.href)
-    } finally {
-      setExporting(false)
-    }
-  }
-
   return (
     <div className="flex flex-col gap-6">
       {err ? <Text DANGEROUS_className="text-kumo-danger text-sm">{err}</Text> : null}
       {nameErr1 ? <Text DANGEROUS_className="text-kumo-danger text-sm">{nameErr1}</Text> : null}
+      {nameMsg1 ? <Text DANGEROUS_className="text-kumo-success text-sm">{nameMsg1}</Text> : null}
 
       <div className="flex max-w-xl flex-col gap-2">
         <SegaUsernameEditor
           label={locale === 'zh' ? '游戏内名称' : 'In-game name'}
           locale={locale}
           value={inGameName}
-          onChange={(value) => {
-            setInGameName(value)
-            setNameDirty(true)
-          }}
+          onChange={setInGameName}
           saving={nameSaving}
-          saveDisabled={!nameDirty || !inGameName.trim()}
+          saveDisabled={nameSaving || inGameName === savedName || !inGameName.trim()}
           onSave={() => void saveName()}
         />
       </div>
 
       <GameOptionFields
         options={options}
-        gameFilter={(g) => g === 'mai2'}
+        gameFilter={(g) => g === 'ongeki'}
         locale={locale}
         onSet={onSet}
       />
-
-      <Button variant="secondary" disabled={exporting} onClick={() => void doExport()}>
-        {locale === 'zh' ? '导出 maimai 存档 (JSON)' : 'Export maimai save (JSON)'}
-      </Button>
     </div>
   )
 }

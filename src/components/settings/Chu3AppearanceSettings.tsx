@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
 import { Text } from "@cloudflare/kumo/components/text";
 import * as gameApi from "../../api/game";
 import { detailSet } from "../../api/settings";
 import { fmtNameErr1 } from "../../lib/censor";
 import { CHU3_USERBOX_LABELS } from "../../lib/chu3Userbox";
+import { SegaUsernameEditor, normalizeSegaUsername } from "./SegaUsernameEditor";
 
 /** 仅游戏内名称；收藏品外观已迁移至 `/collectibles`。 */
 export function Chu3AppearanceSettings() {
@@ -66,29 +65,15 @@ export function Chu3AppearanceSettings() {
       ) : null}
 
       <div className="mb-6 grid max-w-2xl gap-3">
-        <label
-          className="text-kumo-text text-sm font-medium"
-          htmlFor="chu3-userName"
-        >
-          {CHU3_USERBOX_LABELS.userName}
-        </label>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          <Input
-            id="chu3-userName"
-            type="text"
-            className="flex-1"
-            value={userNameDraft}
-            onChange={(e) => setUserNameDraft(e.target.value)}
-          />
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={saving === "userName" || userNameDraft === userNameSaved}
-            onClick={() => void saveField("userName", userNameDraft)}
-          >
-            保存
-          </Button>
-        </div>
+        <SegaUsernameEditor
+          label={CHU3_USERBOX_LABELS.userName}
+          locale="zh"
+          value={userNameDraft}
+          onChange={setUserNameDraft}
+          saving={saving === "userName"}
+          saveDisabled={userNameDraft === userNameSaved}
+          onSave={() => void saveField("userName", normalizeSegaUsername(userNameDraft))}
+        />
       </div>
     </section>
   );
