@@ -8,6 +8,7 @@ import { Text } from '@cloudflare/kumo/components/text'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
 import * as gameApi from '../../api/game'
+import { formatDateTimeMaybe } from '../../lib/format'
 import { formatDisplayRating } from '../../lib/gameRatingDisplay'
 import { useI18n } from '../../lib/i18n'
 import { qk } from '../../lib/query'
@@ -15,13 +16,6 @@ import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
 import { imgCross1 } from '../../lib/imgSign'
 import type { Chu3RivalEntry } from '../../lib/types'
 import { useAppTexts } from '../../content/texts'
-
-function formatTime1(iso: string, locale: 'zh' | 'en') {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US')
-}
 
 function RivalCardSkeleton() {
   return (
@@ -264,7 +258,7 @@ export function Chu3FriendsPage() {
                         <dt className="text-kumo-subtle">{texts.friendsPage.team}</dt>
                         <dd className="truncate text-kumo-text">{row.teamName || '—'}</dd>
                         <dt className="text-kumo-subtle">{texts.friendsPage.addedAt}</dt>
-                        <dd className="text-kumo-text">{formatTime1(row.addedAt, locale)}</dd>
+                        <dd className="text-kumo-text">{formatDateTimeMaybe(row.addedAt, locale)}</dd>
                       </dl>
                     </div>
                   </div>

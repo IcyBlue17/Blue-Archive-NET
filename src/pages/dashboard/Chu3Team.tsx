@@ -10,6 +10,7 @@ import { SkeletonBox } from '../../components/common/Skeleton'
 import * as gameApi from '../../api/game'
 import { useAuth } from '../../hooks/useAuth'
 import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
+import { formatDateTimeMaybe } from '../../lib/format'
 import { formatDisplayRating } from '../../lib/gameRatingDisplay'
 import { useI18n } from '../../lib/i18n'
 import { imgCross1 } from '../../lib/imgSign'
@@ -20,13 +21,6 @@ import { useAppTexts } from '../../content/texts'
 function int1(raw: string) {
   const n = Number.parseInt(raw, 10)
   return Number.isFinite(n) ? n : NaN
-}
-
-function time1(raw: string | undefined, locale: 'zh' | 'en') {
-  if (!raw) return '—'
-  const d = new Date(raw)
-  if (Number.isNaN(d.getTime())) return raw
-  return d.toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US')
 }
 
 function TeamSkeleton() {
@@ -99,7 +93,7 @@ function MemberRow({
             <div>{texts.teamPage.level(row.level)}</div>
             <div>{texts.common.rating} {formatDisplayRating(row.playerRating, 'chu3')}</div>
             <div>{texts.teamPage.exp(row.teamPoint)}</div>
-            <div>{texts.teamPage.last(time1(row.lastPlayDate, locale))}</div>
+            <div>{texts.teamPage.last(formatDateTimeMaybe(row.lastPlayDate, locale))}</div>
           </div>
         </div>
       </div>
@@ -144,7 +138,7 @@ function JoinReqRow({
             {texts.teamPage.level(row.applicantLevel)} · {texts.common.rating} {formatDisplayRating(row.applicantRating, 'chu3')}
           </div>
           <div className="text-kumo-subtle mt-1 text-xs">
-            {texts.teamPage.requested(time1(row.createdAt, locale))}
+            {texts.teamPage.requested(formatDateTimeMaybe(row.createdAt, locale))}
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" disabled={busy} onClick={onApprove}>
@@ -547,7 +541,7 @@ export function Chu3TeamPage() {
                   {texts.teamPage.leaderValue(outgoing.leaderName || '—')}
                 </div>
                 <div className="text-kumo-subtle mt-1 text-xs">
-                  {texts.teamPage.requestTime(time1(outgoing.createdAt, locale))}
+                  {texts.teamPage.requestTime(formatDateTimeMaybe(outgoing.createdAt, locale))}
                 </div>
                 <div className="mt-3">
                   <Button variant="secondary" disabled={busy === 'cancel-request'} onClick={() => void cancelReq1()}>

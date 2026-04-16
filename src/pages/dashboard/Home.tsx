@@ -13,6 +13,7 @@ import { qk } from '../../lib/query'
 import * as cardApi from '../../api/card'
 import type { CardSummary, CardSummaryGame, GameName } from '../../lib/types'
 import { cardSummaryKeyToGame, formatDisplayRating } from '../../lib/gameRatingDisplay'
+import { coerceInt, formatDateMaybe, formatDateTimeMaybe, formatRatioPercent } from '../../lib/format'
 import { gameTitle } from '../../lib/gameTitles'
 import { useI18n } from '../../lib/i18n'
 import { useAppTexts } from '../../content/texts'
@@ -31,30 +32,6 @@ type Chu3HomeProfile = {
 
 type Chu3HomeBox = {
   user?: Chu3HomeProfile | null
-}
-
-function formatLogin(iso: string | undefined) {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleString()
-}
-
-function num1(v: unknown) {
-  if (typeof v === 'number') return v
-  if (typeof v === 'string' && v !== '') return parseInt(v, 10) || 0
-  return 0
-}
-
-function formatDate1(iso: string | undefined, locale: string) {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')
-}
-
-function formatChu3Complete(totalMapNum: number) {
-  if (!Number.isFinite(totalMapNum)) return '—'
-  return `${((Math.max(0, totalMapNum) / CHU3_COMPLETE_MAX) * 100).toFixed(2)}%`
 }
 
 function SummaryCardSkeleton() {
@@ -117,11 +94,11 @@ export function HomePage() {
   const showChu3CardSkeleton = showChu3Card && chu3BoxQuery.isPending && !chu3Profile
   const chu3NameRaw = chu3Profile?.userName || chu3Row?.name || user?.displayName || user?.username || '—'
   const chu3Name = /[a-z]/i.test(chu3NameRaw) ? chu3NameRaw.toUpperCase() : chu3NameRaw
-  const chu3Avatar = chu3CharacterImageUrl(num1(chu3Profile?.characterId), '02')
-  const chu3Rating = formatDisplayRating(num1(chu3Profile?.playerRating) || chu3Row?.rating || 0, 'chu3')
-  const chu3Level = num1(chu3Profile?.level)
-  const chu3Complete = formatChu3Complete(num1(chu3Profile?.totalMapNum))
-  const chu3LastPlay = formatDate1(chu3Profile?.lastPlayDate || chu3Row?.lastLogin, locale)
+  const chu3Avatar = chu3CharacterImageUrl(coerceInt(chu3Profile?.characterId), '02')
+  const chu3Rating = formatDisplayRating(coerceInt(chu3Profile?.playerRating) || chu3Row?.rating || 0, 'chu3')
+  const chu3Level = coerceInt(chu3Profile?.level)
+  const chu3Complete = formatRatioPercent(coerceInt(chu3Profile?.totalMapNum), CHU3_COMPLETE_MAX)
+  const chu3LastPlay = formatDateMaybe(chu3Profile?.lastPlayDate || chu3Row?.lastLogin, locale)
   const chu3CardId = user?.ghostCard?.extId != null ? String(user.ghostCard.extId) : user?.ghostCard?.luid || '—'
 
   return (
@@ -206,7 +183,7 @@ export function HomePage() {
                     {texts.common.rating}: {ratingStr}
                   </div>
                   <div className="text-kumo-subtle mt-1 text-xs">
-                    {texts.homePage.lastLogin}: {formatLogin(row.lastLogin)}
+                    {texts.homePage.lastLogin}: {formatDateTimeMaybe(row.lastLogin, locale)}
                   </div>
                 </div>
               )

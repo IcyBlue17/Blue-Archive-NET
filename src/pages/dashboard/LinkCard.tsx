@@ -9,6 +9,7 @@ import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
 import { useAppTexts } from '../../content/texts'
 import { useAuth } from '../../hooks/useAuth'
+import { formatDateTimeMaybe } from '../../lib/format'
 import { qk } from '../../lib/query'
 import * as cardApi from '../../api/card'
 import type { Card, CardSummary, CardSummaryGame } from '../../lib/types'
@@ -28,12 +29,6 @@ function aimeDigits1(raw: string) {
 function aimeCardFmt1(raw: string) {
   const digits1 = aimeDigits1(raw)
   return digits1.replace(/(.{4})(?=.)/g, '$1 ').trim()
-}
-
-function formatLogin(iso: string | undefined) {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleString()
 }
 
 export function LinkCardPage() {
@@ -119,7 +114,7 @@ export function LinkCardPage() {
                   <div className="font-medium">{title}</div>
                   <div className="text-kumo-subtle text-sm">{row.name}</div>
                   <div className="text-kumo-subtle text-xs">
-                    {copy.linkCard.rating} {ratingStr} · {formatLogin(row.lastLogin)}
+                    {copy.linkCard.rating} {ratingStr} · {formatDateTimeMaybe(row.lastLogin, locale)}
                   </div>
                 </div>
               )
