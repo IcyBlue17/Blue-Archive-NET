@@ -10,8 +10,15 @@ import * as userApi from '../../api/user'
 import { useI18n } from '../../lib/i18n'
 
 /** 与原版 `SetupInstructions.svelte` 一致的示例片段 + 可替换占位（便于对照 segatools）。 */
+function formatKeychip(raw: string) {
+  const normalized = raw.replace(/[^0-9A-Z]/gi, '').toUpperCase()
+  if (!normalized) return ''
+  if (normalized.length <= 4) return normalized
+  return `${normalized.slice(0, 4)}-${normalized.slice(4, 15)}`
+}
+
 function buildSampleIni(dns: string, keychipId: string) {
-  const idLine = keychipId || 'A0123456789'
+  const idLine = formatKeychip(keychipId) || 'A39E-01R94432534'
   return `[dns]
 default=${dns || 'https://your-aquadx-host.example'}
 
@@ -46,7 +53,7 @@ export function SetupPage() {
       setKeychip(k)
       toast.add({
         title: 'Keychip 已就绪',
-        description: '若账号此前已分配过，则编号不变；可直接复制下方 segatools 示例。',
+        description: '已分配新的 keychip，旧编号已失效；可直接复制下方 segatools 示例。',
         variant: 'success',
       })
     } catch (e) {
@@ -91,7 +98,7 @@ export function SetupPage() {
         </Text>
         {keychip ? (
           <div className="mt-4">
-            <ClipboardText text={keychip} />
+            <ClipboardText text={formatKeychip(keychip)} />
           </div>
         ) : (
           <Text DANGEROUS_className="mt-2">尚未分配</Text>
