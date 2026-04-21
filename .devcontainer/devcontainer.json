@@ -1,0 +1,35 @@
+{
+    "name": "Blue-Archive-NET",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true,
+            "upgradePackages": true
+        },
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "postCreateCommand": "bash .devcontainer/setup.sh",
+    "remoteEnv": {
+        "BUN_INSTALL": "${containerEnv:HOME}/.bun",
+        "HOMEBREW_PREFIX": "/home/linuxbrew/.linuxbrew",
+        "PATH": "${containerEnv:HOME}/.bun/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${containerEnv:PATH}"
+    },
+    "forwardPorts": [5173],
+    "portsAttributes": {
+        "5173": {
+            "label": "Vite Dev Server",
+            "onAutoForward": "notify"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "bradlc.vscode-tailwindcss",
+                "oven.bun-vscode"
+            ]
+        }
+    }
+}
