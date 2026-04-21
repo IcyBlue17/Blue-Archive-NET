@@ -1,0 +1,17 @@
+import { Link } from 'react-router-dom'
+import { Text } from '@cloudflare/kumo/components/text'
+import { Button } from '@cloudflare/kumo/components/button'
+import { useAppTexts } from '../content/texts'
+
+export function PageNotFound() {
+  const texts = useAppTexts()
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">
+      <Text variant="heading1">404</Text>
+      <Text variant="secondary">{texts.notFound.title}</Text>
+      <Link to="/home">
+        <Button variant="secondary">{texts.notFound.backHome}</Button>
+      </Link>
+    </div>
+  )
+}

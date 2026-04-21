@@ -1,0 +1,41 @@
+@source "../../node_modules/@cloudflare/kumo/dist*.{js,jsx,ts,tsx}";
+@import "@cloudflare/kumo/styles/tailwind";
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-mode='dark'], [data-mode='dark'] *));
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.aq-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--kumo-fill, #d8dce2) 78%, transparent);
+}
+
+.aq-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, white 42%, transparent) 48%,
+    transparent 100%
+  );
+  animation: aq-shimmer 1.45s ease-in-out infinite;
+}
+
+@keyframes aq-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
