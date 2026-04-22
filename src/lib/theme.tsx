@@ -32,7 +32,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useLayoutEffect(() => {
     const root = document.documentElement
-    root.dataset.theme = theme
+    root.setAttribute('data-theme', 'kumo')
     root.classList.toggle('dark', theme === 'dark')
 
     if (theme === 'dark') root.setAttribute('data-mode', 'dark')
