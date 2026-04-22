@@ -5,7 +5,7 @@
     "": {
       "name": "banet",
       "dependencies": {
-        "@cloudflare/kumo": "^1.16.0",
+        "@cloudflare/kumo": "^1.19.0",
         "@marsidev/react-turnstile": "^1.5.0",
         "@phosphor-icons/react": "^2.1.10",
         "@simplewebauthn/browser": "^13.3.0",
@@ -82,7 +82,7 @@
 
     "@base-ui/utils": ["@base-ui/utils@0.2.6", "", { "dependencies": { "@babel/runtime": "^7.28.6", "@floating-ui/utils": "^0.2.11", "reselect": "^5.1.1", "use-sync-external-store": "^1.6.0" }, "peerDependencies": { "@types/react": "^17 || ^18 || ^19", "react": "^17 || ^18 || ^19", "react-dom": "^17 || ^18 || ^19" }, "optionalPeers": ["@types/react"] }, "sha512-yQ+qeuqohwhsNpoYDqqXaLllYAkPCP4vYdDrVo8FQXaAPfHWm1pG/Vm+jmGTA5JFS0BAIjookyapuJFY8F9PIw=="],
 
-    "@cloudflare/kumo": ["@cloudflare/kumo@1.16.0", "", { "dependencies": { "@base-ui/react": "^1.2.0", "@shikijs/langs": "^4.0.0", "@shikijs/themes": "^4.0.0", "clsx": "^2.1.1", "motion": "^12.34.1", "react-day-picker": "^9.13.2", "shiki": "^4.0.0", "tailwind-merge": "^3.4.0" }, "peerDependencies": { "@phosphor-icons/react": "^2.1.10", "echarts": "^6.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0", "zod": "^4.0.0" }, "optionalPeers": ["zod"], "bin": { "kumo": "bin/kumo.js" } }, "sha512-uCrj7jGPvdXj8lrdQBfMGKzV3JTDi7hUBsLf4jpirD7QHvZMsGe6XuU+KKvQFqDTmj5ELXQVES4YVoducxZ7Tg=="],
+    "@cloudflare/kumo": ["@cloudflare/kumo@1.19.0", "", { "dependencies": { "@base-ui/react": "^1.2.0", "@shikijs/langs": "^4.0.0", "@shikijs/themes": "^4.0.0", "clsx": "^2.1.1", "motion": "^12.34.1", "react-day-picker": "^9.13.2", "shiki": "^4.0.0", "tailwind-merge": "^3.4.0" }, "peerDependencies": { "@phosphor-icons/react": "^2.1.10", "echarts": "^6.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0", "zod": "^4.0.0" }, "optionalPeers": ["zod"], "bin": { "kumo": "bin/kumo.js" } }, "sha512-Ob91fqIbVwXMk/DTrod8oqs/uLiHOA1AbddJxfoPAuKRSjvVeImck34aow6ZJhWrfJi3uxLFOAI3569r5QFE0A=="],
 
     "@date-fns/tz": ["@date-fns/tz@1.4.1", "", {}, "sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA=="],
 
