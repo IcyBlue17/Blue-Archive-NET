@@ -54,7 +54,7 @@ function GameDashSkeleton() {
         <SkeletonBox className="h-5 w-28 rounded-md" />
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="border-kumo-border rounded-md border px-3 py-2">
+            <div key={i} className="border-kumo-line rounded-md border px-3 py-2">
               <SkeletonBox className="h-3 w-16 rounded-md" />
               <SkeletonBox className="mt-2 h-5 w-20 rounded-md" />
             </div>

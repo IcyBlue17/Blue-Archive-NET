@@ -1,6 +1,6 @@
 import type { ChusanMatchingOption } from './types'
 
-export const APP_NAME = (import.meta.env.VITE_APP_NAME as string)?.trim() || 'Blue Archive'
+export const APP_NAME = (import.meta.env.VITE_APP_NAME as string)?.trim() || 'banet'
 
 export const AQUA_HOST = (import.meta.env.VITE_AQUA_HOST as string)?.trim() || ''
 

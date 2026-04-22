@@ -63,8 +63,8 @@ function DashboardShell() {
   }
 
   return (
-    <div className="bg-kumo-background flex h-dvh w-full overflow-hidden">
-      <Sidebar className="h-dvh shrink-0 border-r border-kumo-border">
+    <div className="bg-kumo-surface flex h-dvh w-full overflow-hidden">
+      <Sidebar className="h-dvh shrink-0 border-r border-kumo-line">
         <Sidebar.Header className="gap-2 p-4">
           <div className="flex items-center gap-2">
             <BrandImage kind="mark" />

@@ -95,14 +95,14 @@ export function OAuthButtons({
               void go(id)
             }}
             className={
-              'border-kumo-border bg-kumo-background text-kumo-text flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ' +
+              'border-kumo-line bg-kumo-base text-kumo-default flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ' +
               (isOn && !disabled && !bindBlocked
-                ? 'hover:bg-kumo-muted/40 cursor-pointer'
+                ? 'hover:bg-kumo-fill-hover cursor-pointer'
                 : 'cursor-not-allowed opacity-55')
             }
           >
             <span
-              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-border bg-kumo-background"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-line bg-kumo-base"
               aria-hidden
             >
               <ProviderIcon className={OAUTH_PROVIDER_ICON_CLASS[id]} aria-hidden />

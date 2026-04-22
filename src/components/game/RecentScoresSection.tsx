@@ -42,8 +42,8 @@ const RecentScoreRow = memo(function RecentScoreRow({
 
   return (
     <div
-      className={`border-kumo-border flex items-center gap-3 rounded-lg border px-3 py-2 ${
-        index % 2 === 0 ? 'bg-kumo-surface-secondary/40' : ''
+      className={`border-kumo-line flex items-center gap-3 rounded-lg border px-3 py-2 ${
+        index % 2 === 0 ? 'bg-kumo-recessed' : ''
       }`}
       style={{ contentVisibility: 'auto' }}
     >
@@ -66,9 +66,9 @@ const RecentScoreRow = memo(function RecentScoreRow({
           {row.isAllPerfect || row.isAllJustice ? (
             <span className="text-kumo-success font-medium">AP/AJ</span>
           ) : null}
-          {row.isFullCombo ? <span className="text-kumo-accent font-medium">FC</span> : null}
+          {row.isFullCombo ? <span className="text-kumo-brand font-medium">FC</span> : null}
           <span>Lv {lvLabel}</span>
-          <span className="text-kumo-text">{rankStr}</span>
+          <span className="text-kumo-default">{rankStr}</span>
           <span title={(row.achievement / 10000).toFixed(4)}>{pct}%</span>
           {showEndRating && typeof row.afterRating === 'number' ? (
             <span>{texts.common.rating} {toDisplayRating(row.afterRating, game).toFixed(2)}</span>

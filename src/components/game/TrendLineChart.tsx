@@ -99,13 +99,13 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
   return (
     <div className="w-full">
       <svg
-        className="text-kumo-text w-full max-w-full"
+        className="text-kumo-default w-full max-w-full"
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={texts.trendChart.ariaLabel}
       >
-        <g className="text-kumo-border" opacity={0.35}>
+        <g className="text-kumo-line" opacity={0.35}>
           {horizontal.map((g, i) => (
             <line
               key={`h-${i}`}
@@ -124,7 +124,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
           x2={padL}
           y2={H - padB}
           stroke="currentColor"
-          className="text-kumo-border"
+          className="text-kumo-line"
           strokeOpacity={0.55}
           vectorEffect="non-scaling-stroke"
         />
@@ -134,7 +134,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
           x2={W - padR}
           y2={H - padB}
           stroke="currentColor"
-          className="text-kumo-border"
+          className="text-kumo-line"
           strokeOpacity={0.55}
           vectorEffect="non-scaling-stroke"
         />
@@ -167,7 +167,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
           d={pathD}
           fill="none"
           stroke="currentColor"
-          className="text-kumo-accent"
+          className="text-kumo-brand"
           strokeWidth={2}
           vectorEffect="non-scaling-stroke"
         />

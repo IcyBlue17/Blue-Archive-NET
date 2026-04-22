@@ -3,7 +3,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Key, Trash } from '@phosphor-icons/react'
 import { startRegistration } from '@simplewebauthn/browser'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useKumoToastManager } from '@cloudflare/kumo'
 import { Button } from '@cloudflare/kumo/components/button'
+import { ClipboardText } from '@cloudflare/kumo/components/clipboard-text'
 import { Input } from '@cloudflare/kumo/components/input'
 import { Text } from '@cloudflare/kumo/components/text'
 import { Tabs } from '@cloudflare/kumo/components/tabs'
@@ -79,6 +81,7 @@ export function SettingsPage() {
   const { page } = useParams<{ page?: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const toast = useKumoToastManager()
   const { locale } = useI18n()
   const copy = useAppTexts()
   const { user: me, refresh, loading: loadingUser } = useAuth()
@@ -92,6 +95,7 @@ export function SettingsPage() {
   const [pkMsg, setPkMsg] = useState<string | null>(null)
   const [pkErr, setPkErr] = useState<string | null>(null)
   const [pkBusy, setPkBusy] = useState(false)
+  const [bindCode, setBindCode] = useState<userApi.UserBotBindCode | null>(null)
 
   const providersQuery = useQuery({
     queryKey: qk.oauthProviders,
@@ -109,6 +113,12 @@ export function SettingsPage() {
   const passkeysQuery = useQuery({
     queryKey: qk.passkeys,
     queryFn: () => passkeyApi.passkeyList(),
+    enabled: tab === 'profile' && !!me,
+  })
+
+  const botBindingQuery = useQuery({
+    queryKey: qk.botBinding,
+    queryFn: () => userApi.botBinding(),
     enabled: tab === 'profile' && !!me,
   })
 
@@ -180,6 +190,27 @@ export function SettingsPage() {
     }
   }
 
+  async function issueBindCode() {
+    setErr(null)
+    try {
+      const code = await userApi.issueBotBindCode()
+      setBindCode(code)
+      toast.add({
+        title: copy.settingsPage.profile.botBindCodeReadyTitle,
+        description: copy.settingsPage.profile.botBindCodeReadyDesc,
+        variant: 'success',
+      })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : copy.common.failed
+      setErr(msg)
+      toast.add({
+        title: copy.settingsPage.profile.botBindCodeFailedTitle,
+        description: msg,
+        variant: 'error',
+      })
+    }
+  }
+
   async function setOptKey(key: string, raw: string) {
     setErr(null)
     try {
@@ -227,7 +258,50 @@ export function SettingsPage() {
                 {copy.settingsPage.profile.email}: {me?.email ?? copy.common.empty}
               </Text>
 
-              <div className="border-kumo-border mt-6 border-t pt-4">
+              <div className="border-kumo-line mt-6 border-t pt-4">
+                <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                  {copy.settingsPage.profile.botBindingSection}
+                </Text>
+                <Text size="sm" DANGEROUS_className="mb-3 text-kumo-subtle">
+                  {copy.settingsPage.profile.botBindingHint}
+                </Text>
+                {botBindingQuery.isPending ? (
+                  <SkeletonBox className="h-10 w-full rounded-lg" />
+                ) : botBindingQuery.data?.binding ? (
+                  <div className="rounded-xl border border-kumo-line px-4 py-3">
+                    <Text size="sm" DANGEROUS_className="font-medium">
+                      {copy.settingsPage.profile.botBound}
+                    </Text>
+                    <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                      {copy.settingsPage.profile.botExternalUserId}: {botBindingQuery.data.binding.externalUserId}
+                    </Text>
+                    {botBindingQuery.data.binding.externalUsername ? (
+                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                        {copy.settingsPage.profile.botExternalUsername}: {botBindingQuery.data.binding.externalUsername}
+                      </Text>
+                    ) : null}
+                  </div>
+                ) : (
+                  <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                    {copy.settingsPage.profile.botUnboundHint}
+                  </Text>
+                )}
+                <div className="mt-3 flex flex-col gap-2">
+                  <Button type="button" variant="secondary" onClick={() => void issueBindCode()}>
+                    {copy.settingsPage.profile.generateBotBindCode}
+                  </Button>
+                  {bindCode ? (
+                    <>
+                      <ClipboardText text={bindCode.code} />
+                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                        {copy.settingsPage.profile.botBindCodeExpires(bindCode.expiresAt)}
+                      </Text>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="border-kumo-line mt-6 border-t pt-4">
                 <Text size="sm" DANGEROUS_className="mb-2 font-medium">
                   {copy.settingsPage.profile.oauthSection}
                 </Text>
@@ -250,10 +324,10 @@ export function SettingsPage() {
                         return (
                           <li
                             key={a.provider}
-                            className="border-kumo-border bg-kumo-background flex items-center gap-3 rounded-xl border px-4 py-3"
+                            className="border-kumo-line bg-kumo-base flex items-center gap-3 rounded-xl border px-4 py-3"
                           >
                             <span
-                              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-border bg-kumo-background"
+                              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-line bg-kumo-base"
                               aria-hidden
                             >
                               {ProviderIcon ? (
@@ -298,7 +372,7 @@ export function SettingsPage() {
                 />
               </div>
 
-              <div className="border-kumo-border mt-6 border-t pt-4">
+              <div className="border-kumo-line mt-6 border-t pt-4">
                 <Text size="sm" DANGEROUS_className="mb-2 font-medium">
                   {copy.settingsPage.profile.passkeySection}
                 </Text>
@@ -326,7 +400,7 @@ export function SettingsPage() {
                       (passkeysQuery.data ?? []).map((c) => (
                         <li
                           key={c.credentialId}
-                          className="flex items-center justify-between gap-2 rounded-lg border border-kumo-border px-3 py-2"
+                          className="flex items-center justify-between gap-2 rounded-lg border border-kumo-line px-3 py-2"
                         >
                           <div className="min-w-0">
                             <Text size="sm" DANGEROUS_className="truncate">
@@ -429,24 +503,31 @@ export function SettingsPage() {
         <Text DANGEROUS_className="text-kumo-subtle">{copy.settingsPage.loadingUser}</Text>
       ) : null}
 
-      {tab === 'ongeki' ? (
+      {tab === 'ongeki' && showOptionsSkeleton ? (
         <LayerCard className="p-4">
           <LayerCard.Secondary>{copy.settingsPage.tabs.ongeki}</LayerCard.Secondary>
-          {showOptionsSkeleton ? (
-            <SettingListSkeleton />
-          ) : (
-            <div className="mt-4">
-              <ArcadeExtraSettings
-                game="ongeki"
-                username={me?.username ?? ''}
-                options={options}
-                locale={loc}
-                onSet={setOptKey}
-                err={err}
-              />
-            </div>
-          )}
+          <SettingListSkeleton />
         </LayerCard>
+      ) : null}
+
+      {tab === 'ongeki' && !showOptionsSkeleton && me?.username ? (
+        <LayerCard className="p-4">
+          <LayerCard.Secondary>{copy.settingsPage.tabs.ongeki}</LayerCard.Secondary>
+          <div className="mt-4">
+            <ArcadeExtraSettings
+              game="ongeki"
+              username={me.username}
+              options={options}
+              locale={loc}
+              onSet={setOptKey}
+              err={err}
+            />
+          </div>
+        </LayerCard>
+      ) : null}
+
+      {tab === 'ongeki' && !showOptionsSkeleton && !me?.username ? (
+        <Text DANGEROUS_className="text-kumo-subtle">{copy.settingsPage.loadingUser}</Text>
       ) : null}
 
       {tab === 'wacca' ? (

@@ -26,6 +26,7 @@ export const qk = {
   me: ['me'] as const,
   adminStatus: ['admin-status'] as const,
   settings: ['settings'] as const,
+  botBinding: ['bot-binding'] as const,
   homeSummary: (username: string) => ['home-summary', username] as const,
   homeChu3Box: (username: string) => ['home-chu3-box', username] as const,
   chu3Rivals: ['chu3-rivals'] as const,

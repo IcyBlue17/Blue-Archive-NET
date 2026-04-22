@@ -30,7 +30,7 @@ function TeamSkeleton() {
       <SkeletonBox className="mt-3 h-4 w-64 rounded-md" />
       <div className="mt-4 grid gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="border-kumo-border rounded-xl border p-3">
+          <div key={i} className="border-kumo-line rounded-xl border p-3">
             <SkeletonBox className="h-4 w-16 rounded-md" />
             <SkeletonBox className="mt-2 h-6 w-20 rounded-md" />
           </div>
@@ -48,9 +48,9 @@ function StatBox({
   value: string | number
 }) {
   return (
-    <div className="border-kumo-border rounded-xl border p-3">
+    <div className="border-kumo-line rounded-xl border p-3">
       <div className="text-kumo-subtle text-xs">{label}</div>
-      <div className="text-kumo-text mt-2 text-xl font-semibold">{value}</div>
+      <div className="text-kumo-default mt-2 text-xl font-semibold">{value}</div>
     </div>
   )
 }
@@ -65,9 +65,9 @@ function MemberRow({
   const texts = useAppTexts()
   const img = chu3CharacterImageUrl(row.characterId, '02')
   return (
-    <div className="border-kumo-border rounded-xl border p-3">
+    <div className="border-kumo-line rounded-xl border p-3">
       <div className="flex items-start gap-3">
-        <div className="border-kumo-border bg-kumo-recessed flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
+        <div className="border-kumo-line bg-kumo-recessed flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
           {img ? (
             <img
               src={img}
@@ -82,9 +82,9 @@ function MemberRow({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="truncate font-semibold text-kumo-text">{row.userName}</div>
+            <div className="truncate font-semibold text-kumo-default">{row.userName}</div>
             {row.isLeader ? (
-              <span className="bg-kumo-recessed rounded-full px-2 py-0.5 text-xs text-kumo-text">
+              <span className="bg-kumo-recessed rounded-full px-2 py-0.5 text-xs text-kumo-default">
                 {texts.teamPage.leader}
               </span>
             ) : null}
@@ -117,9 +117,9 @@ function JoinReqRow({
   const texts = useAppTexts()
   const img = chu3CharacterImageUrl(row.applicantCharacterId, '02')
   return (
-    <div className="border-kumo-border rounded-xl border p-3">
+    <div className="border-kumo-line rounded-xl border p-3">
       <div className="flex items-start gap-3">
-        <div className="border-kumo-border bg-kumo-recessed flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
+        <div className="border-kumo-line bg-kumo-recessed flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
           {img ? (
             <img
               src={img}
@@ -133,7 +133,7 @@ function JoinReqRow({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-kumo-text">{row.applicantName}</div>
+          <div className="font-semibold text-kumo-default">{row.applicantName}</div>
           <div className="text-kumo-subtle mt-1 text-sm">
             {texts.teamPage.level(row.applicantLevel)} · {texts.common.rating} {formatDisplayRating(row.applicantRating, 'chu3')}
           </div>
@@ -388,7 +388,7 @@ export function Chu3TeamPage() {
           <LayerCard className="p-4">
             <LayerCard.Secondary>{texts.teamPage.currentTeam}</LayerCard.Secondary>
             <div className="mt-3">
-              <div className="text-kumo-text text-2xl font-bold">{myTeam.teamName || texts.common.teamWithId(myTeam.teamId)}</div>
+              <div className="text-kumo-default text-2xl font-bold">{myTeam.teamName || texts.common.teamWithId(myTeam.teamId)}</div>
               <div className="text-kumo-subtle mt-1 text-sm">
                 {texts.common.id} {myTeam.teamId} · {texts.teamPage.leaderValue(myTeam.leaderName || '—')}
               </div>
@@ -530,8 +530,8 @@ export function Chu3TeamPage() {
             </div>
 
             {outgoing ? (
-              <div className="border-kumo-border bg-kumo-background-alt mt-4 rounded-xl border p-3">
-                <div className="font-semibold text-kumo-text">
+              <div className="border-kumo-line bg-kumo-tint mt-4 rounded-xl border p-3">
+                <div className="font-semibold text-kumo-default">
                   {texts.teamPage.pendingRequest}
                 </div>
                 <div className="text-kumo-subtle mt-2 text-sm">
@@ -554,8 +554,8 @@ export function Chu3TeamPage() {
                 <SkeletonBox className="h-24 w-full rounded-xl" />
               </div>
             ) : previewTeam ? (
-              <div className="border-kumo-border bg-kumo-background-alt mt-4 rounded-xl border p-3">
-                <div className="font-semibold text-kumo-text">{previewTeam.teamName || texts.common.teamWithId(previewTeam.teamId)}</div>
+              <div className="border-kumo-line bg-kumo-tint mt-4 rounded-xl border p-3">
+                <div className="font-semibold text-kumo-default">{previewTeam.teamName || texts.common.teamWithId(previewTeam.teamId)}</div>
                 <div className="text-kumo-subtle mt-2 text-sm">
                   {texts.common.id} {previewTeam.teamId} · {texts.teamPage.leaderValue(previewTeam.leaderName || '—')}
                 </div>

@@ -76,7 +76,7 @@ export function GameOptionFields({
               className="items-start"
               label={
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-kumo-text text-sm font-medium">{name}</span>
+                  <span className="text-kumo-default text-sm font-medium">{name}</span>
                   {desc ? <span className="text-kumo-subtle text-xs">{desc}</span> : null}
                 </span>
               }
@@ -91,7 +91,7 @@ export function GameOptionFields({
           return (
             <div key={field.key} className="flex flex-col gap-2">
               <label className="flex flex-col gap-0.5">
-                <span className="text-kumo-text text-sm font-medium">{name}</span>
+                <span className="text-kumo-default text-sm font-medium">{name}</span>
                 {desc ? <span className="text-kumo-subtle text-xs">{desc}</span> : null}
               </label>
               <div className="flex flex-wrap items-center gap-2">
@@ -117,7 +117,7 @@ export function GameOptionFields({
         return (
           <div key={field.key} className="flex flex-col gap-2">
             <label className="flex flex-col gap-0.5">
-              <span className="text-kumo-text text-sm font-medium">{name}</span>
+              <span className="text-kumo-default text-sm font-medium">{name}</span>
               {desc ? <span className="text-kumo-subtle text-xs">{desc}</span> : null}
             </label>
             <div className="flex flex-wrap items-center gap-2">

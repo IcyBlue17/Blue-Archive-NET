@@ -300,10 +300,10 @@ export function Chu3MusicLibrary({
                   key={row.musicId}
                   type="button"
                   onClick={() => setPickMusicId(row.musicId)}
-                  className={`border-kumo-border rounded-xl border p-3 text-left transition-colors ${
+                  className={`border-kumo-line rounded-xl border p-3 text-left transition-colors ${
                     row.musicId === picked?.musicId
-                      ? "bg-kumo-fill/70"
-                      : "bg-kumo-surface-secondary/30 hover:bg-kumo-surface-secondary/60"
+                      ? "bg-kumo-fill"
+                      : "bg-kumo-recessed hover:bg-kumo-tint"
                   }`}
                 >
                   <div className="flex gap-3">
@@ -323,7 +323,7 @@ export function Chu3MusicLibrary({
                           #{row.musicId}
                         </span>
                         {row.playCount > 0 ? (
-                          <span className="rounded-full bg-kumo-accent/12 px-2 py-0.5 text-xs text-kumo-accent">
+                          <span className="rounded-full bg-kumo-fill px-2 py-0.5 text-xs text-kumo-brand">
                             {texts.musicLibrary.playCount(row.playCount)}
                           </span>
                         ) : null}
@@ -346,7 +346,7 @@ export function Chu3MusicLibrary({
                         ).map((idx) => (
                           <span
                             key={`${row.musicId}-${idx}`}
-                            className="rounded-full bg-kumo-background px-2 py-1 text-xs"
+                            className="rounded-full bg-kumo-base px-2 py-1 text-xs"
                           >
                             {diffLabelByIdx(idx, row.meta)}{" "}
                             {formatLv(row.meta, idx)}
@@ -412,7 +412,7 @@ export function Chu3MusicLibrary({
                 return (
                   <div
                     key={`${picked.musicId}-${idx}`}
-                    className="border-kumo-border rounded-xl border p-3"
+                    className="border-kumo-line rounded-xl border p-3"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
@@ -431,7 +431,7 @@ export function Chu3MusicLibrary({
                             </span>
                           ) : null}
                           {best.isFullCombo ? (
-                            <span className="rounded-full bg-kumo-accent/15 px-2 py-1 text-kumo-accent">
+                            <span className="rounded-full bg-kumo-fill px-2 py-1 text-kumo-brand">
                               FC
                             </span>
                           ) : null}
@@ -440,7 +440,7 @@ export function Chu3MusicLibrary({
                     </div>
                     {best ? (
                       <div className="mt-3 space-y-2">
-                        <div className="rounded-lg bg-kumo-surface-secondary/50 p-3">
+                        <div className="rounded-lg bg-kumo-recessed p-3">
                           <div className="grid grid-cols-[84px_1fr] gap-2 text-sm sm:grid-cols-[96px_1fr]">
                             <div className="text-kumo-subtle">
                               {texts.musicLibrary.bestScore}

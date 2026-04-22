@@ -36,7 +36,7 @@ function CompGrid({
         {items.map((p, i) => (
           <div
             key={`${p.musicId}-${p.diffId}-${i}`}
-            className="bg-kumo-surface-secondary border-kumo-border flex gap-3 rounded-lg border p-3"
+            className="bg-kumo-recessed border-kumo-line flex gap-3 rounded-lg border p-3"
           >
             <img
               src={p.img}
@@ -52,7 +52,7 @@ function CompGrid({
               <div className="truncate text-sm font-medium">{p.name ?? `#${p.musicId}`}</div>
               <div className="text-kumo-subtle mt-1 flex flex-wrap gap-2 text-xs">
                 <span>Lv {p.difficulty ?? '—'}</span>
-                <span className="text-kumo-accent">{p.rank}</span>
+                <span className="text-kumo-brand">{p.rank}</span>
                 <span>{(p.score / 10000).toFixed(4)}%</span>
                 {p.ratingChange != null ? <span>Δ {p.ratingChange}</span> : null}
               </div>

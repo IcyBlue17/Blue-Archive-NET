@@ -41,7 +41,7 @@ export function PlaysHeatmap({ trend }: { trend: TrendEntry[] }) {
 
   return (
     <div className="overflow-x-auto pb-2">
-      <div className="border-kumo-border bg-emerald-500/[0.07] dark:bg-emerald-400/[0.09] rounded-lg border p-3">
+      <div className="border-kumo-line bg-emerald-500/[0.07] dark:bg-emerald-400/[0.09] rounded-lg border p-3">
         <div ref={hostRef} className="cal-host min-h-[140px]" />
       </div>
       <div className="text-kumo-subtle mt-2 text-xs">{texts.gamesPage.calendarHint}</div>

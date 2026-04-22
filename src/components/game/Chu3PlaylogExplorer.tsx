@@ -159,8 +159,8 @@ export function Chu3PlaylogExplorer({
                   key={key}
                   type="button"
                   onClick={() => setPickKey(key)}
-                  className={`border-kumo-border rounded-xl border p-3 text-left transition-colors ${
-                    key === picked?.key ? 'bg-kumo-fill/70' : 'bg-kumo-surface-secondary/30 hover:bg-kumo-surface-secondary/60'
+                  className={`border-kumo-line rounded-xl border p-3 text-left transition-colors ${
+                    key === picked?.key ? 'bg-kumo-fill' : 'bg-kumo-recessed hover:bg-kumo-tint'
                   }`}
                 >
                   <div className="flex gap-3">
@@ -204,11 +204,11 @@ export function Chu3PlaylogExplorer({
               </div>
             </div>
 
-            <div className="border-kumo-border mt-4 overflow-hidden rounded-xl border">
+            <div className="border-kumo-line mt-4 overflow-hidden rounded-xl border">
               {infoRows.map((item) => (
-                <div key={item.label} className="border-kumo-border grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
+                <div key={item.label} className="border-kumo-line grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
                   <div className="text-kumo-subtle">{item.label}</div>
-                  <div className="font-medium text-kumo-text">{item.value}</div>
+                  <div className="font-medium text-kumo-default">{item.value}</div>
                 </div>
               ))}
             </div>
@@ -216,7 +216,7 @@ export function Chu3PlaylogExplorer({
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
               {row.isNewRecord ? <span className="rounded-full bg-pink-500/15 px-2 py-1 text-pink-700 dark:text-pink-300">{texts.playlogExplorer.newRecord}</span> : null}
               {row.isAllJustice ? <span className="rounded-full bg-sky-500/15 px-2 py-1 text-sky-700 dark:text-sky-300">AJ</span> : null}
-              {row.isFullCombo ? <span className="rounded-full bg-kumo-accent/15 px-2 py-1 text-kumo-accent">FC</span> : null}
+              {row.isFullCombo ? <span className="rounded-full bg-kumo-fill px-2 py-1 text-kumo-brand">FC</span> : null}
               {row.isClear ? <span className="rounded-full bg-kumo-fill px-2 py-1">{texts.playlogExplorer.clear}</span> : null}
               {row.isFreeToPlay ? <span className="rounded-full bg-kumo-fill px-2 py-1">{texts.playlogExplorer.freePlay}</span> : null}
               {row.track != null ? <span className="rounded-full bg-kumo-fill px-2 py-1">{texts.playlogExplorer.trackBadge(row.track)}</span> : null}
@@ -224,11 +224,11 @@ export function Chu3PlaylogExplorer({
 
             <div className="mt-5">
               <Text DANGEROUS_className="mb-2 text-sm font-medium">{texts.playlogExplorer.judgeCounts}</Text>
-              <div className="border-kumo-border overflow-hidden rounded-xl border">
+              <div className="border-kumo-line overflow-hidden rounded-xl border">
                 {judgeRows.map((item) => (
-                  <div key={item.label} className="border-kumo-border grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
+                  <div key={item.label} className="border-kumo-line grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
                     <div className="text-kumo-subtle">{item.label}</div>
-                    <div className="font-medium text-kumo-text">{item.value ?? '—'}</div>
+                    <div className="font-medium text-kumo-default">{item.value ?? '—'}</div>
                   </div>
                 ))}
               </div>
@@ -236,11 +236,11 @@ export function Chu3PlaylogExplorer({
 
             <div className="mt-5">
               <Text DANGEROUS_className="mb-2 text-sm font-medium">{texts.playlogExplorer.laneRates}</Text>
-              <div className="border-kumo-border overflow-hidden rounded-xl border">
+              <div className="border-kumo-line overflow-hidden rounded-xl border">
                 {rateRows.map((item) => (
-                  <div key={item.label} className="border-kumo-border grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
+                  <div key={item.label} className="border-kumo-line grid grid-cols-[92px_1fr] gap-3 border-b px-3 py-2 text-sm sm:grid-cols-[130px_1fr] last:border-b-0">
                     <div className="text-kumo-subtle">{item.label}</div>
-                    <div className="font-medium text-kumo-text">{fmtRate(item.value)}</div>
+                    <div className="font-medium text-kumo-default">{fmtRate(item.value)}</div>
                   </div>
                 ))}
               </div>

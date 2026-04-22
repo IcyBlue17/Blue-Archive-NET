@@ -65,7 +65,7 @@ export function GlobalGameSettingsSection({
 
   return (
     <div className="flex flex-col gap-6">
-      <blockquote className="border-kumo-border text-kumo-subtle border-l-2 pl-3 text-sm">
+      <blockquote className="border-kumo-line text-kumo-subtle border-l-2 pl-3 text-sm">
         {copy.globalSettings.webHint}
       </blockquote>
 
@@ -82,9 +82,9 @@ export function GlobalGameSettingsSection({
         onCheckedChange={(c) => setRoundingPersist(c)}
       />
 
-      <div className="bg-kumo-border h-px w-full opacity-40" />
+      <div className="bg-kumo-line h-px w-full opacity-40" />
 
-      <blockquote className="border-kumo-border text-kumo-subtle border-l-2 pl-3 text-sm">
+      <blockquote className="border-kumo-line text-kumo-subtle border-l-2 pl-3 text-sm">
         {copy.globalSettings.regionHint}
       </blockquote>
 
@@ -108,7 +108,7 @@ export function GlobalGameSettingsSection({
         {regionErr ? <Text DANGEROUS_className="text-kumo-danger text-sm">{regionErr}</Text> : null}
       </div>
 
-      <div className="bg-kumo-border h-px w-full opacity-40" />
+      <div className="bg-kumo-line h-px w-full opacity-40" />
 
       <div>
         <Text DANGEROUS_className="mb-3" size="sm">

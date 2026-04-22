@@ -629,9 +629,9 @@ export function CollectiblesPage() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="border-kumo-border bg-kumo-base flex flex-col overflow-hidden rounded-lg border shadow-sm"
+              className="border-kumo-line bg-kumo-base flex flex-col overflow-hidden rounded-lg border shadow-sm"
             >
-              <div className="border-kumo-border bg-kumo-tint border-b px-3 py-2.5 text-center">
+              <div className="border-kumo-line bg-kumo-tint border-b px-3 py-2.5 text-center">
                 <SkeletonBox className="mx-auto h-4 w-24 rounded-md" />
               </div>
               <div className="flex flex-1 flex-col gap-3 p-3">
@@ -685,9 +685,9 @@ export function CollectiblesPage() {
             return (
               <div
                 key={row.field}
-                className="border-kumo-border bg-kumo-base flex flex-col overflow-hidden rounded-lg border shadow-sm"
+                className="border-kumo-line bg-kumo-base flex flex-col overflow-hidden rounded-lg border shadow-sm"
               >
-                <div className="border-kumo-border bg-kumo-tint border-b px-3 py-2.5 text-center text-sm font-semibold text-kumo-default">
+                <div className="border-kumo-line bg-kumo-tint border-b px-3 py-2.5 text-center text-sm font-semibold text-kumo-default">
                   {label(row.field)}
                 </div>
                 <div className="flex flex-1 flex-col gap-3 p-3">
@@ -700,10 +700,10 @@ export function CollectiblesPage() {
                     ) : null}
                   </div>
                   {textOnly ? (
-                    <div className="border-kumo-border shrink-0 border-b border-dashed" aria-hidden />
+                    <div className="border-kumo-line shrink-0 border-b border-dashed" aria-hidden />
                   ) : (
                     <div
-                      className={`border-kumo-border bg-kumo-recessed flex flex-1 items-center justify-center overflow-hidden rounded-lg border ${
+                      className={`border-kumo-line bg-kumo-recessed flex flex-1 items-center justify-center overflow-hidden rounded-lg border ${
                         isWidePreview
                           ? 'min-h-[88px] px-1 py-2'
                           : isCharacter
@@ -752,10 +752,10 @@ export function CollectiblesPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="chu3-picker-title"
-            className="border-kumo-border bg-kumo-base text-kumo-default flex max-h-[min(92vh,900px)] w-full max-w-5xl flex-col overflow-hidden rounded-t-xl border shadow-2xl sm:rounded-xl"
+            className="border-kumo-line bg-kumo-base text-kumo-default flex max-h-[min(92vh,900px)] w-full max-w-5xl flex-col overflow-hidden rounded-t-xl border shadow-2xl sm:rounded-xl"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="border-kumo-border bg-kumo-tint flex shrink-0 items-start justify-between gap-3 border-b px-4 py-3">
+            <div className="border-kumo-line bg-kumo-tint flex shrink-0 items-start justify-between gap-3 border-b px-4 py-3">
               <div className="min-w-0">
                 <h2 id="chu3-picker-title" className="text-kumo-default text-lg font-semibold">
                   {label(activeRow.field)}
@@ -766,7 +766,7 @@ export function CollectiblesPage() {
               </Button>
             </div>
 
-            <div className="border-kumo-border bg-kumo-base shrink-0 border-b px-4 py-3">
+            <div className="border-kumo-line bg-kumo-base shrink-0 border-b px-4 py-3">
               <div className={`grid items-end gap-3 ${activeRow.field === 'characterId' ? 'md:grid-cols-[minmax(0,1fr)_220px]' : ''}`}>
                 <label className="flex flex-col gap-1">
                   <span className="text-kumo-subtle text-xs">
@@ -786,7 +786,7 @@ export function CollectiblesPage() {
                     <select
                       value={charaWorksFilter}
                       onChange={(e) => setCharaWorksFilter(e.target.value)}
-                      className="border-kumo-border bg-kumo-base h-11 rounded-xl border px-3 text-sm text-kumo-default"
+                      className="border-kumo-line bg-kumo-base h-11 rounded-xl border px-3 text-sm text-kumo-default"
                       aria-label={texts.collectibles.worksFilter}
                     >
                       <option value="">{texts.collectibles.allWorks}</option>
@@ -803,9 +803,9 @@ export function CollectiblesPage() {
 
             <div className="bg-kumo-recessed min-h-0 flex-1 overflow-y-auto px-4 py-4">
               {activeRow.field === 'characterId' && pickedCharaId != null ? (
-                <div className="mb-4 rounded-xl border border-kumo-border bg-kumo-base p-4">
+                <div className="mb-4 rounded-xl border border-kumo-line bg-kumo-base p-4">
                   <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
-                    <div className="bg-kumo-recessed mx-auto flex aspect-[4/5] w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-kumo-border">
+                    <div className="bg-kumo-recessed mx-auto flex aspect-[4/5] w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-kumo-line">
                       {(() => {
                         const charaImg = chu3CollectibleImageUrl('characterId', pickedCharaId, allItems)
                         return charaImg ? (
@@ -934,20 +934,20 @@ export function CollectiblesPage() {
                         variant="secondary"
                         disabled={saving || unlockingCharaId != null}
                         onClick={() => void selectCollectible(activeRow.field, o.itemId)}
-                        className={`border-kumo-border !bg-kumo-base !text-kumo-default h-auto min-h-0 w-full flex-col items-stretch gap-0 overflow-hidden rounded-xl border p-0 text-left shadow-sm transition-colors hover:border-kumo-accent/50 ${
-                          isPicked || isEquipped ? 'ring-kumo-accent ring-2 ring-offset-2 ring-offset-kumo-base' : ''
+                        className={`border-kumo-line !bg-kumo-base !text-kumo-default h-auto min-h-0 w-full flex-col items-stretch gap-0 overflow-hidden rounded-xl border p-0 text-left shadow-sm transition-colors hover:border-kumo-brand ${
+                          isPicked || isEquipped ? 'ring-kumo-brand ring-2 ring-offset-2 ring-offset-kumo-base' : ''
                         }`}
                       >
-                        <div className="text-kumo-default border-kumo-border line-clamp-2 border-b px-3 py-2.5 text-sm font-medium">
+                        <div className="text-kumo-default border-kumo-line line-clamp-2 border-b px-3 py-2.5 text-sm font-medium">
                           {displayName}
                         </div>
                         {activeRow.field === 'characterId' ? (
-                          <div className="border-kumo-border border-b px-3 py-2">
+                          <div className="border-kumo-line border-b px-3 py-2">
                             <span
                               className={`rounded-md px-2 py-1 text-xs ${
                                 isOwnedCharacter
-                                  ? 'bg-kumo-success/15 text-kumo-success'
-                                  : 'bg-kumo-warning/15 text-kumo-warning'
+                                  ? 'bg-kumo-success-tint text-kumo-success'
+                                  : 'bg-kumo-warning-tint text-kumo-warning'
                               }`}
                             >
                               {isOwnedCharacter
@@ -959,7 +959,7 @@ export function CollectiblesPage() {
                           </div>
                         ) : null}
                         {textOnly || !hasImg ? (
-                          <div className="border-kumo-border shrink-0 border-b" aria-hidden />
+                          <div className="border-kumo-line shrink-0 border-b" aria-hidden />
                         ) : (
                           <div
                             className={`bg-kumo-recessed flex items-center justify-center ${
@@ -995,7 +995,7 @@ export function CollectiblesPage() {
             </div>
 
             {totalPages > 1 && filteredOptions.length > 0 ? (
-              <div className="border-kumo-border bg-kumo-base flex shrink-0 flex-wrap items-center justify-center gap-1 border-t px-4 py-3">
+              <div className="border-kumo-line bg-kumo-base flex shrink-0 flex-wrap items-center justify-center gap-1 border-t px-4 py-3">
                 <Button
                   size="sm"
                   variant="secondary"

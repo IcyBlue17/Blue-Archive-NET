@@ -19,7 +19,7 @@ import { useAppTexts } from '../../content/texts'
 
 function RivalCardSkeleton() {
   return (
-    <div className="border-kumo-border rounded-xl border p-4">
+    <div className="border-kumo-line rounded-xl border p-4">
       <div className="flex items-start gap-4">
         <SkeletonBox className="size-20 rounded-xl" />
         <div className="min-w-0 flex-1 space-y-2">
@@ -200,9 +200,9 @@ export function Chu3FriendsPage() {
               const favBusy = favBusyId === row.rivalExtId
               const canAddFav = !!row.isFavorite || favCount < 4
               return (
-                <div key={row.rivalExtId} className="border-kumo-border rounded-xl border p-4">
+                <div key={row.rivalExtId} className="border-kumo-line rounded-xl border p-4">
                   <div className="flex items-start gap-4">
-                    <div className="border-kumo-border bg-kumo-recessed flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
+                    <div className="border-kumo-line bg-kumo-recessed flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
                       {img ? (
                         <img
                           src={img}
@@ -218,10 +218,10 @@ export function Chu3FriendsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="truncate text-base font-semibold text-kumo-text">
+                          <div className="truncate text-base font-semibold text-kumo-default">
                             {row.userName}
                             {row.isFavorite ? (
-                              <span className="bg-kumo-recessed text-kumo-text ml-2 rounded-full px-2 py-0.5 text-xs">
+                              <span className="bg-kumo-recessed text-kumo-default ml-2 rounded-full px-2 py-0.5 text-xs">
                                 {texts.friendsPage.pinned}
                               </span>
                             ) : null}
@@ -250,15 +250,15 @@ export function Chu3FriendsPage() {
                       </div>
                       <dl className="mt-3 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
                         <dt className="text-kumo-subtle">{texts.friendsPage.rating}</dt>
-                        <dd className="text-kumo-text">{formatDisplayRating(row.playerRating, 'chu3')}</dd>
+                        <dd className="text-kumo-default">{formatDisplayRating(row.playerRating, 'chu3')}</dd>
                         <dt className="text-kumo-subtle">{texts.friendsPage.best}</dt>
-                        <dd className="text-kumo-text">{formatDisplayRating(row.highestRating, 'chu3')}</dd>
+                        <dd className="text-kumo-default">{formatDisplayRating(row.highestRating, 'chu3')}</dd>
                         <dt className="text-kumo-subtle">{texts.friendsPage.id}</dt>
-                        <dd className="text-kumo-text">{row.rivalExtId}</dd>
+                        <dd className="text-kumo-default">{row.rivalExtId}</dd>
                         <dt className="text-kumo-subtle">{texts.friendsPage.team}</dt>
-                        <dd className="truncate text-kumo-text">{row.teamName || '—'}</dd>
+                        <dd className="truncate text-kumo-default">{row.teamName || '—'}</dd>
                         <dt className="text-kumo-subtle">{texts.friendsPage.addedAt}</dt>
-                        <dd className="text-kumo-text">{formatDateTimeMaybe(row.addedAt, locale)}</dd>
+                        <dd className="text-kumo-default">{formatDateTimeMaybe(row.addedAt, locale)}</dd>
                       </dl>
                     </div>
                   </div>

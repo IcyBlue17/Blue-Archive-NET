@@ -73,10 +73,10 @@ export function SetupPage() {
       </LayerCard>
       <LayerCard className="mb-6 p-4">
         <LayerCard.Secondary>{copy.setup.iniExample}</LayerCard.Secondary>
-        <blockquote className="border-kumo-border text-kumo-subtle mt-3 border-l-2 pl-3 text-sm">
+        <blockquote className="border-kumo-line text-kumo-subtle mt-3 border-l-2 pl-3 text-sm">
           {copy.setup.iniHint}
         </blockquote>
-        <pre className="bg-kumo-surface-secondary border-kumo-border mt-4 max-h-80 overflow-auto rounded-lg border p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+        <pre className="bg-kumo-recessed border-kumo-line mt-4 max-h-80 overflow-auto rounded-lg border p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap">
           {iniText}
         </pre>
         <Button

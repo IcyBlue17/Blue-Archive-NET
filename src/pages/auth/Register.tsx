@@ -56,11 +56,11 @@ export function RegisterPage() {
       <LayerCard.Secondary>{texts.authPages.register}</LayerCard.Secondary>
       <OAuthButtons mode="login" enabledProviderIds={oauthProviders} />
       <div className="my-5 flex items-center gap-3">
-        <div className="border-kumo-border flex-1 border-t" />
+        <div className="border-kumo-line flex-1 border-t" />
         <Text size="sm" DANGEROUS_className="shrink-0 text-kumo-subtle">
           {texts.authPages.dividerOr}
         </Text>
-        <div className="border-kumo-border flex-1 border-t" />
+        <div className="border-kumo-line flex-1 border-t" />
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">

@@ -8,9 +8,9 @@ import { useAppTexts } from '../../content/texts'
 
 function ValueRow({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="grid grid-cols-[minmax(0,190px)_1fr] gap-3 border-b border-kumo-border px-3 py-2 text-sm last:border-b-0">
+    <div className="grid grid-cols-[minmax(0,190px)_1fr] gap-3 border-b border-kumo-line px-3 py-2 text-sm last:border-b-0">
       <div className="text-kumo-subtle">{label}</div>
-      <div className="break-all font-medium text-kumo-text">{value}</div>
+      <div className="break-all font-medium text-kumo-default">{value}</div>
     </div>
   )
 }
@@ -72,7 +72,7 @@ export function AdminConfigReloadPage() {
       {result ? (
         <>
           <AdminSection title={texts.admin.configReload.summary} bodyClassName="mt-4">
-            <div className="overflow-hidden rounded-xl border border-kumo-border">
+            <div className="overflow-hidden rounded-xl border border-kumo-line">
               <ValueRow label={texts.admin.configReload.status} value={result.status} />
               <ValueRow
                 label={texts.admin.configReload.sourcePath}
@@ -90,7 +90,7 @@ export function AdminConfigReloadPage() {
               {result.reloadedPrefixes.map((prefix) => (
                 <span
                   key={prefix}
-                  className="rounded-md bg-kumo-fill px-2 py-1 text-xs text-kumo-text"
+                  className="rounded-md bg-kumo-fill px-2 py-1 text-xs text-kumo-default"
                 >
                   {prefix}
                 </span>
@@ -100,7 +100,7 @@ export function AdminConfigReloadPage() {
 
           <div className="grid gap-6 xl:grid-cols-2">
             <AdminSection title={texts.admin.configReload.chusanTitle} bodyClassName="mt-4">
-              <div className="overflow-hidden rounded-xl border border-kumo-border">
+              <div className="overflow-hidden rounded-xl border border-kumo-line">
                 <ValueRow
                   label={texts.admin.configReload.teamName}
                   value={result.chusan.teamName || texts.admin.configReload.emptyValue}
@@ -127,7 +127,7 @@ export function AdminConfigReloadPage() {
             </AdminSection>
 
             <AdminSection title={texts.admin.configReload.oauthTitle} bodyClassName="mt-4">
-              <div className="overflow-hidden rounded-xl border border-kumo-border">
+              <div className="overflow-hidden rounded-xl border border-kumo-line">
                 <ValueRow
                   label={texts.admin.configReload.frontendBaseUrl}
                   value={result.oauth.frontendBaseUrl || texts.admin.configReload.emptyValue}
@@ -145,7 +145,7 @@ export function AdminConfigReloadPage() {
                 {result.oauth.allowedOrigins.map((origin) => (
                   <span
                     key={origin}
-                    className="rounded-md bg-kumo-fill px-2 py-1 text-xs text-kumo-text"
+                    className="rounded-md bg-kumo-fill px-2 py-1 text-xs text-kumo-default"
                   >
                     {origin}
                   </span>
@@ -154,7 +154,7 @@ export function AdminConfigReloadPage() {
             </AdminSection>
 
             <AdminSection title={texts.admin.configReload.censorTitle} bodyClassName="mt-4">
-              <div className="overflow-hidden rounded-xl border border-kumo-border">
+              <div className="overflow-hidden rounded-xl border border-kumo-line">
                 <BoolRow
                   label={texts.admin.configReload.enabled}
                   value={result.censor.enabled}
@@ -187,7 +187,7 @@ export function AdminConfigReloadPage() {
             </AdminSection>
 
             <AdminSection title={texts.admin.configReload.gameDataTitle} bodyClassName="mt-4">
-              <div className="overflow-hidden rounded-xl border border-kumo-border">
+              <div className="overflow-hidden rounded-xl border border-kumo-line">
                 <ValueRow
                   label={texts.admin.configReload.chu3Events}
                   value={result.gameData.chu3Events}
@@ -205,7 +205,7 @@ export function AdminConfigReloadPage() {
           </div>
 
           <AdminSection title={texts.admin.configReload.rawResponse} bodyClassName="mt-4">
-            <pre className="max-h-96 overflow-auto rounded-xl border border-kumo-border bg-kumo-background px-3 py-3 text-xs leading-6">
+            <pre className="max-h-96 overflow-auto rounded-xl border border-kumo-line bg-kumo-base px-3 py-3 text-xs leading-6">
               {JSON.stringify(result, null, 2)}
             </pre>
           </AdminSection>

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "aquanet-v2",
+      "name": "banet",
       "dependencies": {
         "@cloudflare/kumo": "^1.16.0",
         "@marsidev/react-turnstile": "^1.5.0",

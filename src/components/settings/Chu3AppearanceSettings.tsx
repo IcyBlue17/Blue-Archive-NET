@@ -54,8 +54,8 @@ export function Chu3AppearanceSettings({ locale }: { locale: SettingFieldLocale 
   }
 
   return (
-    <section className="mt-10 border-t border-kumo-border pt-8">
-      <h3 className="text-kumo-text mb-2 text-base font-semibold">
+    <section className="mt-10 border-t border-kumo-line pt-8">
+      <h3 className="text-kumo-default mb-2 text-base font-semibold">
         {copy.chu3Appearance.section}
       </h3>
       {err ? (

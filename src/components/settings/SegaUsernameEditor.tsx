@@ -74,7 +74,7 @@ export function SegaUsernameEditor({
           <button
             key={symbol}
             type="button"
-            className="border-kumo-border bg-kumo-background hover:bg-kumo-surface-secondary text-kumo-text rounded-md border px-3 py-2 text-lg leading-none"
+            className="border-kumo-line bg-kumo-base hover:bg-kumo-recessed text-kumo-default rounded-md border px-3 py-2 text-lg leading-none"
             onClick={() => appendSymbol(symbol)}
           >
             {symbol}

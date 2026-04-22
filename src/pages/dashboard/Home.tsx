@@ -36,7 +36,7 @@ type Chu3HomeBox = {
 
 function SummaryCardSkeleton() {
   return (
-    <div className="border-kumo-border rounded-lg border px-4 py-3">
+    <div className="border-kumo-line rounded-lg border px-4 py-3">
       <SkeletonBox className="h-5 w-24 rounded-md" />
       <SkeletonBox className="mt-3 h-4 w-32 rounded-md" />
       <SkeletonBox className="mt-2 h-4 w-24 rounded-md" />
@@ -48,7 +48,7 @@ function SummaryCardSkeleton() {
 function Chu3ProfileCardSkeleton() {
   return (
     <LayerCard className="mt-6 overflow-hidden p-0">
-      <div className="border-kumo-border border-b px-5 py-5">
+      <div className="border-kumo-line border-b px-5 py-5">
         <SkeletonBox className="h-9 w-52 rounded-lg" />
       </div>
       <div className="grid gap-5 px-4 py-4 md:grid-cols-[112px_minmax(0,1fr)] md:items-center">
@@ -60,7 +60,7 @@ function Chu3ProfileCardSkeleton() {
           <SkeletonBox className="h-5 w-36 rounded-md" />
         </div>
       </div>
-      <div className="border-kumo-border border-t px-4 py-3">
+      <div className="border-kumo-line border-t px-4 py-3">
         <SkeletonBox className="ml-auto h-5 w-40 rounded-md" />
       </div>
     </LayerCard>
@@ -108,13 +108,13 @@ export function HomePage() {
         <Chu3ProfileCardSkeleton />
       ) : showChu3Card ? (
         <LayerCard className="mt-6 overflow-hidden p-0">
-          <div className="border-kumo-border border-b px-5 py-5">
-            <div className="text-kumo-text truncate text-[clamp(1.5rem,4vw,2.35rem)] font-black tracking-[0.32em]">
+          <div className="border-kumo-line border-b px-5 py-5">
+            <div className="text-kumo-default truncate text-[clamp(1.5rem,4vw,2.35rem)] font-black tracking-[0.32em]">
               {chu3Name}
             </div>
           </div>
           <div className="grid gap-5 px-4 py-4 md:grid-cols-[116px_minmax(0,1fr)] md:items-center">
-            <div className="border-kumo-border bg-kumo-recessed mx-auto flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
+            <div className="border-kumo-line bg-kumo-recessed mx-auto flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
               {chu3Avatar ? (
                 <img
                   src={chu3Avatar}
@@ -129,16 +129,16 @@ export function HomePage() {
             </div>
             <dl className="grid min-w-0 grid-cols-[max-content_1fr] gap-x-5 gap-y-2 text-sm sm:text-base">
               <dt className="font-semibold text-kumo-default">{texts.homePage.id}</dt>
-              <dd className="truncate text-kumo-text">{chu3CardId}</dd>
+              <dd className="truncate text-kumo-default">{chu3CardId}</dd>
               <dt className="font-semibold text-kumo-default">{texts.homePage.level}</dt>
-              <dd className="text-kumo-text">{chu3Level || '—'}</dd>
+              <dd className="text-kumo-default">{chu3Level || '—'}</dd>
               <dt className="font-semibold text-kumo-default">{texts.homePage.rating}</dt>
-              <dd className="text-kumo-text">{chu3Rating}</dd>
+              <dd className="text-kumo-default">{chu3Rating}</dd>
               <dt className="font-semibold text-kumo-default">{texts.homePage.completion}</dt>
-              <dd className="text-kumo-text">{chu3Complete}</dd>
+              <dd className="text-kumo-default">{chu3Complete}</dd>
             </dl>
           </div>
-          <div className="border-kumo-border bg-kumo-recessed/50 flex justify-end border-t px-4 py-3">
+          <div className="border-kumo-line bg-kumo-recessed flex justify-end border-t px-4 py-3">
             <Text DANGEROUS_className="text-right text-sm font-medium">
               {texts.homePage.lastPlayed(chu3LastPlay)}
             </Text>

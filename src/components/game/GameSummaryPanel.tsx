@@ -47,9 +47,9 @@ export function GameSummaryPanel({
       <LayerCard.Secondary>{title ?? texts.gamesPage.statsTitle(summary.name)}</LayerCard.Secondary>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
-          <div key={s.label} className="border-kumo-border rounded-md border px-3 py-2">
+          <div key={s.label} className="border-kumo-line rounded-md border px-3 py-2">
             <div className="text-kumo-subtle text-xs">{s.label}</div>
-            <div className="text-kumo-text mt-0.5 font-medium">{s.value}</div>
+            <div className="text-kumo-default mt-0.5 font-medium">{s.value}</div>
           </div>
         ))}
       </div>
@@ -62,7 +62,7 @@ export function GameSummaryPanel({
             {summary.ranks.map((rk) => (
               <span
                 key={rk.name}
-                className="bg-kumo-surface-secondary text-kumo-subtle rounded px-2 py-1 text-xs"
+                className="bg-kumo-recessed text-kumo-subtle rounded px-2 py-1 text-xs"
               >
                 {rk.name}: {rk.count}
               </span>

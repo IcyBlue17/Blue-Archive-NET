@@ -82,7 +82,7 @@ export function LinkCardPage() {
         {loadingSummary && !ghostSummary ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="border-kumo-border rounded-md border px-3 py-2">
+              <div key={i} className="border-kumo-line rounded-md border px-3 py-2">
                 <SkeletonBox className="h-5 w-24 rounded-md" />
                 <SkeletonBox className="mt-3 h-4 w-28 rounded-md" />
                 <SkeletonBox className="mt-2 h-3 w-36 rounded-md" />
@@ -97,7 +97,7 @@ export function LinkCardPage() {
               summary={ghostSummary}
               locale={locale === 'en' ? 'en' : 'zh'}
               texts={copy}
-              itemClassName="border-kumo-border rounded-md border px-3 py-2"
+              itemClassName="border-kumo-line rounded-md border px-3 py-2"
               nameClassName="text-kumo-subtle text-sm"
               detailClassName="text-kumo-subtle text-xs"
               ratingLabel={copy.linkCard.rating}
@@ -127,7 +127,7 @@ export function LinkCardPage() {
         </div>
       </LayerCard>
       <LayerCard className="p-0 overflow-hidden">
-        <div className="border-kumo-border bg-kumo-surface-secondary border-b px-4 py-3">
+        <div className="border-kumo-line bg-kumo-recessed border-b px-4 py-3">
           <Text size="sm" DANGEROUS_className="font-medium">
             {copy.linkCard.linkedCards}
           </Text>
@@ -153,7 +153,7 @@ export function LinkCardPage() {
                 {(me?.cards ?? []).map((c) => (
                   <Table.Row
                     key={c.luid}
-                    className="hover:bg-kumo-surface-secondary/60 transition-colors"
+                    className="hover:bg-kumo-tint transition-colors"
                   >
                     <Table.Cell>
                       <span className="font-mono text-sm">{c.luid}</span>
@@ -165,12 +165,12 @@ export function LinkCardPage() {
                             {copy.linkCard.ghost}
                           </span>
                         ) : (
-                          <span className="bg-kumo-success/15 text-kumo-success rounded-md px-2 py-0.5 text-xs">
+                          <span className="bg-kumo-success-tint text-kumo-success rounded-md px-2 py-0.5 text-xs">
                             {copy.linkCard.linked}
                           </span>
                         )}
                         {c.rankingBanned ? (
-                          <span className="bg-kumo-danger/15 text-kumo-danger rounded-md px-2 py-0.5 text-xs">
+                          <span className="bg-kumo-danger-tint text-kumo-danger rounded-md px-2 py-0.5 text-xs">
                             {copy.linkCard.rankingBanned}
                           </span>
                         ) : null}

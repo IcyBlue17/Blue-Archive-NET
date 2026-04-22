@@ -231,7 +231,7 @@ export function AdminDownloadOrderPage() {
         <label className="mt-3 flex flex-col gap-1 text-sm">
           {texts.admin.downloadOrder.optionalInstallUrls}
           <textarea
-            className="min-h-24 rounded-md border border-kumo-line bg-kumo-bg p-2 font-mono text-sm"
+            className="min-h-24 rounded-md border border-kumo-line bg-kumo-base p-2 font-mono text-sm"
             value={form.optionalInstallUrls ?? ''}
             onChange={(e) => setIniField('optionalInstallUrls', e.target.value)}
           />
@@ -269,7 +269,7 @@ export function AdminDownloadOrderPage() {
           <label className="mt-3 flex flex-col gap-1 text-sm">
             {texts.admin.downloadOrder.optionalInstallUrls}
             <textarea
-              className="min-h-24 rounded-md border border-kumo-line bg-kumo-bg p-2 font-mono text-sm"
+              className="min-h-24 rounded-md border border-kumo-line bg-kumo-base p-2 font-mono text-sm"
               value={editingIni.optionalInstallUrls ?? ''}
               onChange={(e) => setEditingIni({ ...editingIni, optionalInstallUrls: e.target.value })}
             />
@@ -325,7 +325,7 @@ export function AdminDownloadOrderPage() {
           <label className="flex flex-col gap-1 text-sm">
             INI
             <select
-              className="rounded-md border border-kumo-line bg-kumo-bg p-2"
+              className="rounded-md border border-kumo-line bg-kumo-base p-2"
               value={assignmentForm.iniId}
               onChange={(e) => setAssignmentForm({ ...assignmentForm, iniId: Number(e.target.value) })}
             >
@@ -360,7 +360,7 @@ export function AdminDownloadOrderPage() {
             <label className="flex flex-col gap-1 text-sm">
               INI
               <select
-                className="rounded-md border border-kumo-line bg-kumo-bg p-2"
+                className="rounded-md border border-kumo-line bg-kumo-base p-2"
                 value={editingAssignment.iniId}
                 onChange={(e) => setEditingAssignment({ ...editingAssignment, iniId: Number(e.target.value) })}
               >

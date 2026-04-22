@@ -116,20 +116,20 @@ export function LoginPage() {
       </form>
 
       <div className="my-5 flex items-center gap-3">
-        <div className="border-kumo-border flex-1 border-t" />
+        <div className="border-kumo-line flex-1 border-t" />
         <Text size="sm" DANGEROUS_className="shrink-0 text-kumo-subtle">
           {texts.authPages.dividerOr}
         </Text>
-        <div className="border-kumo-border flex-1 border-t" />
+        <div className="border-kumo-line flex-1 border-t" />
       </div>
       <OAuthButtons mode="login" enabledProviderIds={oauthProviders} />
 
       <div className="my-5 flex items-center gap-3">
-        <div className="border-kumo-border flex-1 border-t" />
+        <div className="border-kumo-line flex-1 border-t" />
         <Text size="sm" DANGEROUS_className="shrink-0 text-kumo-subtle">
           {texts.authPages.dividerOr}
         </Text>
-        <div className="border-kumo-border flex-1 border-t" />
+        <div className="border-kumo-line flex-1 border-t" />
       </div>
 
       <div>

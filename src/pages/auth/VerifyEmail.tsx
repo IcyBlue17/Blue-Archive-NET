@@ -44,7 +44,7 @@ export function VerifyEmailPage() {
         <Text>{msg}</Text>
       </div>
       <Link to="/login" className="mt-4 inline-block">
-        <Text size="sm" DANGEROUS_className="text-kumo-accent">
+        <Text size="sm" DANGEROUS_className="text-kumo-brand">
           {texts.authPages.login}
         </Text>
       </Link>

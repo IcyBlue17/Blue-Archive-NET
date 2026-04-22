@@ -174,7 +174,7 @@ export function ChusanExtraSettings({
       ) : null}
 
       <section>
-        <h3 className="text-kumo-text mb-2 text-base font-semibold">
+        <h3 className="text-kumo-default mb-2 text-base font-semibold">
           {copy.chusanExtra.basics}
         </h3>
         <GameOptionFields
@@ -186,7 +186,7 @@ export function ChusanExtraSettings({
       </section>
 
       <section>
-        <h3 className="text-kumo-text mb-2 text-base font-semibold">
+        <h3 className="text-kumo-default mb-2 text-base font-semibold">
           {copy.chusanExtra.loginRewards}
         </h3>
         <ChusanLoginRewardSettings
@@ -198,7 +198,7 @@ export function ChusanExtraSettings({
       </section>
 
       <section>
-        <h3 className="text-kumo-text mb-2 text-base font-semibold">
+        <h3 className="text-kumo-default mb-2 text-base font-semibold">
           {copy.chusanExtra.team}
         </h3>
         <RouterLink
@@ -210,7 +210,7 @@ export function ChusanExtraSettings({
       </section>
 
       <section>
-        <h3 className="text-kumo-text mb-2 text-base font-semibold">
+        <h3 className="text-kumo-default mb-2 text-base font-semibold">
           {copy.chusanExtra.matching}
         </h3>
 
@@ -251,7 +251,7 @@ export function ChusanExtraSettings({
       </section>
 
       <section>
-        <h3 className="text-kumo-text mb-2 text-base font-semibold">
+        <h3 className="text-kumo-default mb-2 text-base font-semibold">
           {copy.chusanExtra.symbolChat}
         </h3>
         {[1, 2, 3, 4].map((slot) => (
@@ -299,14 +299,14 @@ export function ChusanExtraSettings({
         <Link
           render={<RouterLink to="/collectibles" />}
           variant="inline"
-          className="text-kumo-accent text-sm font-medium"
+          className="text-kumo-brand text-sm font-medium"
         >
           {copy.chusanExtra.openCollectibles}
         </Link>
       </div>
 
       <section>
-        <h3 className="text-kumo-text mb-2 text-base font-semibold">
+        <h3 className="text-kumo-default mb-2 text-base font-semibold">
           {copy.chusanExtra.importExport}
         </h3>
         <input
@@ -350,11 +350,11 @@ export function ChusanExtraSettings({
           onClick={() => setOverlay(false)}
         >
           <div
-            className="bg-kumo-background border-kumo-border max-h-[90vh] max-w-3xl overflow-auto rounded-lg border p-6 shadow-xl"
+            className="bg-kumo-base border-kumo-line max-h-[90vh] max-w-3xl overflow-auto rounded-lg border p-6 shadow-xl"
             role="dialog"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="text-kumo-text mb-2 text-lg font-semibold">
+            <h4 className="text-kumo-default mb-2 text-lg font-semibold">
               {copy.chusanExtra.matchingDialogTitle}
             </h4>
             <div className="flex flex-wrap gap-3">
@@ -370,7 +370,7 @@ export function ChusanExtraSettings({
                     "h-auto cursor-pointer flex-col items-stretch rounded-lg p-4 text-left",
                     !custom &&
                       matchingUrl === opt.matching &&
-                      "ring-kumo-accent ring-2",
+                      "ring-kumo-brand ring-2",
                   )}
                   onClick={() => void pickMatching(opt)}
                   onKeyDown={(e) => {
@@ -381,7 +381,7 @@ export function ChusanExtraSettings({
                   }}
                 >
                   <div className="font-semibold">{preset?.name ?? opt.id}</div>
-                  <div className="text-kumo-accent mt-2 text-xs">
+                  <div className="text-kumo-brand mt-2 text-xs">
                     <Link
                       href={opt.ui}
                       target="_blank"
@@ -412,7 +412,7 @@ export function ChusanExtraSettings({
                 className={cn(
                   buttonVariants({ variant: "secondary" }),
                   "h-auto cursor-pointer flex-col items-stretch rounded-lg p-4 text-left",
-                  custom && "ring-kumo-accent ring-2",
+                  custom && "ring-kumo-brand ring-2",
                 )}
                 onClick={clickCustom}
                 onKeyDown={(e) => {

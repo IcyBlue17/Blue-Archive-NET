@@ -39,7 +39,7 @@ export function ChangePasswordFromEmailPage() {
       <LayerCard className="p-6">
         <Text>{texts.authPages.invalidResetLink}</Text>
         <Link to="/reset-password">
-          <Text DANGEROUS_className="text-kumo-accent mt-4">{texts.authPages.requestNewLink}</Text>
+          <Text DANGEROUS_className="text-kumo-brand mt-4">{texts.authPages.requestNewLink}</Text>
         </Link>
       </LayerCard>
     )
@@ -69,7 +69,7 @@ export function ChangePasswordFromEmailPage() {
         </form>
       )}
       <Link to="/login" className="mt-4 inline-block">
-        <Text size="sm" DANGEROUS_className="text-kumo-accent">
+        <Text size="sm" DANGEROUS_className="text-kumo-brand">
           {texts.authPages.login}
         </Text>
       </Link>

@@ -116,16 +116,16 @@ export function UserProfilePage() {
         : texts.userProfile.addRival
 
   return (
-    <div className="bg-kumo-background min-h-screen p-6">
+    <div className="bg-kumo-surface min-h-screen p-6">
       <div className="mx-auto max-w-3xl">
         <Link to="/home">
-          <Text DANGEROUS_className="text-kumo-accent mb-4 inline-block">{texts.nav.home}</Text>
+          <Text DANGEROUS_className="text-kumo-brand mb-4 inline-block">{texts.nav.home}</Text>
         </Link>
         <LayerCard className="p-6">
           <LayerCard.Primary>{display}</LayerCard.Primary>
           <Text DANGEROUS_className="text-kumo-subtle mt-1">@{username}</Text>
           {publicInfo?.profileBio ? (
-            <Text DANGEROUS_className="text-kumo-text mt-3 block text-sm">{publicInfo.profileBio}</Text>
+            <Text DANGEROUS_className="text-kumo-default mt-3 block text-sm">{publicInfo.profileBio}</Text>
           ) : null}
           {publicInfo?.country ? (
             <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-xs">

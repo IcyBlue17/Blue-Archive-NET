@@ -1,6 +1,22 @@
 import type { AquaNetUser } from '../lib/types'
 import { setToken, userPost, userPostForm } from './client'
 
+export interface BotBindingInfo {
+  externalUserId: string
+  externalUsername?: string | null
+  createdAt: number
+  updatedAt: number
+}
+
+export interface UserBotBindingResponse {
+  binding?: BotBindingInfo | null
+}
+
+export interface UserBotBindCode {
+  code: string
+  expiresAt: number
+}
+
 export async function register(p: {
   username: string
   email: string
@@ -73,4 +89,12 @@ export async function uploadPfp(file: File) {
 
 export async function changeRegion(regionId: number) {
   return userPost('/api/v2/user/change-region', { regionId: String(regionId) })
+}
+
+export async function botBinding() {
+  return userPost('/api/v2/user/bot-binding', {}) as Promise<UserBotBindingResponse>
+}
+
+export async function issueBotBindCode() {
+  return userPost('/api/v2/user/bot-binding/code', {}) as Promise<UserBotBindCode>
 }
