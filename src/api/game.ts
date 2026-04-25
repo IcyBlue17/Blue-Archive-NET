@@ -2,6 +2,7 @@ import type {
   Chu3RivalEntry,
   Chu3TeamDetail,
   Chu3TeamJoinResult,
+  Chu3LxnsImportResult,
   Chu3TeamRankEntry,
   Chu3TeamRequestBox,
   Chu3TeamSummary,
@@ -48,6 +49,14 @@ export async function exportGame(game: GameName) {
 
 export async function importGame(game: GameName, data: unknown) {
   return userPost(`/api/v2/game/${game}/import`, {}, { json: data }) as Promise<Record<string, unknown>>
+}
+
+export async function importChu3Lxns(body: {
+  lxnsToken: string
+  friendCode?: string
+  importRecent?: boolean
+}) {
+  return userPost('/api/v2/game/chu3/import-lxns', {}, { json: body }) as Promise<Chu3LxnsImportResult>
 }
 
 export async function importMusicDetail(game: GameName, data: unknown) {

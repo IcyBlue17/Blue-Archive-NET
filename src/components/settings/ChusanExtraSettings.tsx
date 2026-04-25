@@ -3,6 +3,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { cn } from "@cloudflare/kumo";
 import { useKumoToastManager } from "@cloudflare/kumo";
 import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
 import { Link } from "@cloudflare/kumo/components/link";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Text } from "@cloudflare/kumo/components/text";
@@ -12,7 +13,7 @@ import { getAppTexts } from "../../content/texts";
 import { CHU3_MATCHINGS } from "../../lib/config";
 import { downloadJsonFile } from "../../lib/download";
 import type { SettingFieldLocale } from "../../lib/settingsFieldLabels";
-import type { ChusanMatchingOption, GameOption } from "../../lib/types";
+import type { Chu3LxnsImportResult, ChusanMatchingOption, GameOption } from "../../lib/types";
 import { Chu3AppearanceSettings } from "./Chu3AppearanceSettings";
 import { ChusanLoginRewardSettings } from "./ChusanLoginRewardSettings";
 import { GameOptionFields } from "./GameOptionFields";
@@ -50,7 +51,11 @@ export function ChusanExtraSettings({
   const [symSaving, setSymSaving] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [lxnsImporting, setLxnsImporting] = useState(false);
   const [lastFile, setLastFile] = useState("");
+  const [lxnsToken, setLxnsToken] = useState("");
+  const [lxnsFriendCode, setLxnsFriendCode] = useState("");
+  const [lxnsResult, setLxnsResult] = useState<Chu3LxnsImportResult | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const basicOptions = useMemo(
     () => options.filter((o) => o.key !== "chusanTeamName"),
@@ -143,6 +148,31 @@ export function ChusanExtraSettings({
       });
     } finally {
       setImporting(false);
+    }
+  }
+
+  async function doLxnsImport() {
+    setLxnsImporting(true);
+    try {
+      const result = await gameApi.importChu3Lxns({
+        lxnsToken: lxnsToken.trim(),
+        friendCode: lxnsFriendCode.trim() || undefined,
+        importRecent: true,
+      });
+      setLxnsResult(result);
+      toast.add({
+        title: copy.chusanExtra.lxnsImportSuccessTitle,
+        description: copy.chusanExtra.lxnsImportSuccessDesc,
+      });
+      await onReload();
+    } catch (e) {
+      toast.add({
+        title: copy.chusanExtra.importFailedTitle,
+        description: e instanceof Error ? e.message : copy.common.failed,
+        variant: "error",
+      });
+    } finally {
+      setLxnsImporting(false);
     }
   }
 
@@ -340,6 +370,78 @@ export function ChusanExtraSettings({
           <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
             {copy.chusanExtra.lastFile(lastFile)}
           </Text>
+        ) : null}
+      </section>
+
+      <section>
+        <h3 className="text-kumo-default mb-2 text-base font-semibold">
+          {copy.chusanExtra.lxnsImport}
+        </h3>
+        <Text DANGEROUS_className="text-kumo-subtle mb-3 block text-sm">
+          {copy.chusanExtra.lxnsImportHint}
+        </Text>
+        <div className="flex max-w-xl flex-col gap-3">
+          <label className="flex flex-col gap-1">
+            <Text size="sm">{copy.chusanExtra.lxnsToken}</Text>
+            <Input
+              type="password"
+              value={lxnsToken}
+              onChange={(e) => setLxnsToken(e.target.value)}
+              placeholder="lxns token"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <Text size="sm">{copy.chusanExtra.lxnsFriendCode}</Text>
+            <Input
+              value={lxnsFriendCode}
+              onChange={(e) => setLxnsFriendCode(e.target.value)}
+              placeholder="123456789012345"
+            />
+          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              variant="primary"
+              disabled={lxnsImporting || !lxnsToken.trim()}
+              onClick={() => void doLxnsImport()}
+            >
+              {lxnsImporting ? copy.chusanExtra.lxnsImportBusy : copy.chusanExtra.lxnsImportAction}
+            </Button>
+          </div>
+        </div>
+        {lxnsResult ? (
+          <div className="border-kumo-line mt-4 rounded-xl border p-4">
+            <Text DANGEROUS_className="mb-3 font-medium">
+              {copy.chusanExtra.lxnsResult}
+            </Text>
+            <div className="grid gap-2 text-sm sm:grid-cols-2">
+              <Text>{copy.chusanExtra.lxnsPlayerName}: {lxnsResult.playerName || "—"}</Text>
+              <Text>{copy.chusanExtra.lxnsFriendCodeUsed}: {lxnsResult.friendCodeUsed ?? "—"}</Text>
+              <Text>{copy.chusanExtra.lxnsScoresFetched}: {lxnsResult.scoresFetched}</Text>
+              <Text>{copy.chusanExtra.lxnsScoresInserted}: {lxnsResult.scoresInserted}</Text>
+              <Text>{copy.chusanExtra.lxnsScoresUpdated}: {lxnsResult.scoresUpdated}</Text>
+              <Text>{copy.chusanExtra.lxnsScoresUnchanged}: {lxnsResult.scoresUnchanged}</Text>
+              <Text>{copy.chusanExtra.lxnsRecentsFetched}: {lxnsResult.recentsFetched}</Text>
+              <Text>{copy.chusanExtra.lxnsRecentsInserted}: {lxnsResult.recentsInserted}</Text>
+              <Text>{copy.chusanExtra.lxnsRecentsSkipped}: {lxnsResult.recentsSkipped}</Text>
+              <Text>{copy.chusanExtra.lxnsCurrentRating}: {(lxnsResult.currentRating / 100).toFixed(2)}</Text>
+              <Text>{copy.chusanExtra.lxnsHighestRating}: {(lxnsResult.highestRating / 100).toFixed(2)}</Text>
+              <Text>{copy.chusanExtra.lxnsCreatedProfile}: {lxnsResult.createdLocalProfile ? copy.common.yes : copy.common.no}</Text>
+            </div>
+            {lxnsResult.warnings.length ? (
+              <div className="mt-3">
+                <Text DANGEROUS_className="mb-1 font-medium text-kumo-warning">
+                  {copy.chusanExtra.lxnsWarnings}
+                </Text>
+                <div className="space-y-1">
+                  {lxnsResult.warnings.map((one, idx) => (
+                    <Text key={`${idx}-${one}`} DANGEROUS_className="text-kumo-subtle text-sm">
+                      {one}
+                    </Text>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
         ) : null}
       </section>
 

@@ -299,6 +299,23 @@ export interface Chu3TeamRequestBox {
   outgoing?: Chu3TeamJoinOutgoing | null
 }
 
+export interface Chu3LxnsImportResult {
+  playerName?: string | null
+  friendCodeUsed?: number | null
+  createdLocalProfile: boolean
+  scoresFetched: number
+  scoresInserted: number
+  scoresUpdated: number
+  scoresUnchanged: number
+  recentsFetched: number
+  recentsInserted: number
+  recentsSkipped: number
+  currentRating: number
+  highestRating: number
+  lastPlayDate?: string | null
+  warnings: string[]
+}
+
 export interface GenericRankingPlayer {
   rank: number
   name: string
