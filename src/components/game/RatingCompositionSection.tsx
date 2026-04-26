@@ -54,7 +54,7 @@ function CompGrid({
                 <span>Lv {p.difficulty ?? '—'}</span>
                 <span className="text-kumo-brand">{p.rank}</span>
                 <span>{(p.score / 10000).toFixed(4)}%</span>
-                {p.ratingChange != null ? <span>Δ {p.ratingChange}</span> : null}
+                {p.ratingChange != null ? <span>Rating {p.ratingChange}</span> : null}
               </div>
             </div>
           </div>

@@ -98,6 +98,22 @@ export function chusanRating(lv: number, score: number) {
   return 0
 }
 
+const chu3DefaultChartLevels: Record<number, number> = {
+  0: 1.5,
+  1: 5.0,
+  2: 9.0,
+  3: 12.0,
+  4: 13.5,
+}
+
+export function chu3RatingLevel(meta: MusicMetaLite | undefined, level: number): number | undefined {
+  const diffId = level === 10 ? 0 : level
+  const raw = meta?.notes?.[diffId]?.lv
+  const lv = Number(raw)
+  if (Number.isFinite(lv)) return lv
+  return chu3DefaultChartLevels[diffId]
+}
+
 export interface MusicMetaLite {
   name?: string | null
   composer?: string | null
@@ -142,7 +158,7 @@ export function parseComposition(
   const mult = +tup[1]
   const rank = String(tup[2])
 
-  const diff = meta?.notes?.[diffId === 10 ? 0 : diffId]?.lv ?? undefined
+  const diff = game === 'chu3' ? chu3RatingLevel(meta, diffId) : (meta?.notes?.[diffId === 10 ? 0 : diffId]?.lv ?? undefined)
 
   function calcDxChange(): string | undefined {
     if (diff === undefined || diff === null) return undefined

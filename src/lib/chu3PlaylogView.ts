@@ -1,4 +1,4 @@
-import { chusanRating, getMult, type MusicMetaLite } from './scoring'
+import { chusanRating, chu3RatingLevel, getMult, type MusicMetaLite } from './scoring'
 import type { GamePlayRecord } from './types'
 
 const CHU3_DIFFS = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
@@ -32,11 +32,7 @@ export function rank(score: number): string {
 }
 
 export function chartLevel(meta: MusicMetaLite | undefined, level: number): number | null {
-  if (level === 10) return null
-  const idx = noteIdx(level)
-  const raw = meta?.notes?.[idx]?.lv
-  const lv = Number(raw)
-  return Number.isFinite(lv) ? lv : null
+  return chu3RatingLevel(meta, level) ?? null
 }
 
 export function chartRating(meta: MusicMetaLite | undefined, level: number, row: Partial<GamePlayRecord>): string {
