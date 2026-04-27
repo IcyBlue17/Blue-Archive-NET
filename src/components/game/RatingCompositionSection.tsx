@@ -54,7 +54,7 @@ function CompGrid({
                 <span>Lv {p.difficulty ?? '—'}</span>
                 <span className="text-kumo-brand">{p.rank}</span>
                 <span>{(p.score / 10000).toFixed(4)}%</span>
-                {p.ratingChange != null ? <span>Rating {p.ratingChange}</span> : null}
+                {p.ratingChange != null ? <span>Δ {p.ratingChange}</span> : null}
               </div>
             </div>
           </div>
@@ -100,6 +100,11 @@ export function RatingCompositionSection({
       {blocks.map((b) => (
         <CompGrid key={b.key} title={b.title} comp={b.raw} allMusics={allMusics} game={game} />
       ))}
+      {game === 'chu3' ? (
+        <Text DANGEROUS_className="mt-4 text-kumo-subtle" size="sm">
+          {texts.gamesPage.chu3RatingNotice}
+        </Text>
+      ) : null}
     </LayerCard>
   )
 }

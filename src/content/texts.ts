@@ -188,6 +188,7 @@ const TEXTS = {
             recent10: "Recent 10",
             best35: "B35",
             best15: "B15",
+            chu3RatingNotice: "自制谱不参与计算，游戏资源一月一更",
             page: (page: number) => `第 ${page + 1} 页`,
         },
         musicLibrary: {
@@ -1105,6 +1106,7 @@ const TEXTS = {
             recent10: "Recent 10",
             best35: "B35",
             best15: "Best 15",
+            chu3RatingNotice: "Custom charts are excluded from calculation. Game assets update monthly.",
             page: (page: number) => `Page ${page + 1}`,
         },
         musicLibrary: {

@@ -98,14 +98,6 @@ export function chusanRating(lv: number, score: number) {
   return 0
 }
 
-export function chu3RatingLevel(meta: MusicMetaLite | undefined, level: number): number | undefined {
-  const diffId = level === 10 ? 0 : level
-  const raw = meta?.notes?.[diffId]?.lv
-  const lv = Number(raw)
-  if (Number.isFinite(lv)) return lv
-  return undefined
-}
-
 export interface MusicMetaLite {
   name?: string | null
   composer?: string | null
@@ -142,7 +134,7 @@ export function parseComposition(
 ): ParsedComposition {
   const mapData = item.split(':').map(Number)
   if (game === 'mai2') mapData.splice(2, 1)
-  const [musicId, diffId, score, storedRating] = mapData
+  const [musicId, diffId, score] = mapData
   const meta = allMusics[musicId]
 
   const tup = getMult(score, game)
@@ -150,11 +142,9 @@ export function parseComposition(
   const mult = +tup[1]
   const rank = String(tup[2])
 
-  const diff = game === 'chu3' ? chu3RatingLevel(meta, diffId) : (meta?.notes?.[diffId === 10 ? 0 : diffId]?.lv ?? undefined)
+  const diff = meta?.notes?.[diffId === 10 ? 0 : diffId]?.lv ?? undefined
 
   function calcDxChange(): string | undefined {
-    if ((game === 'chu3' || game === 'ongeki') && Number.isFinite(storedRating) && storedRating > 0)
-      return (Math.floor(storedRating) / 100).toFixed(2)
     if (diff === undefined || diff === null) return undefined
     if (game === 'mai2')
       return Math.floor(diff * mult * (Math.min(100.5, score / 10000) / 100)).toFixed(0)
