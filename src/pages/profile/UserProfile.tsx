@@ -7,6 +7,7 @@ import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { Tabs } from '@cloudflare/kumo/components/tabs'
 import { Button } from '@cloudflare/kumo/components/button'
 import { GameSummaryPanel } from '../../components/game/GameSummaryPanel'
+import { BuildInfoFooter } from '../../components/layout/buildinfo'
 import * as userApi from '../../api/user'
 import * as gameApi from '../../api/game'
 import { qk } from '../../lib/query'
@@ -116,44 +117,47 @@ export function UserProfilePage() {
         : texts.userProfile.addRival
 
   return (
-    <div className="bg-kumo-surface min-h-screen p-6">
-      <div className="mx-auto max-w-3xl">
-        <Link to="/home">
-          <Text DANGEROUS_className="text-kumo-brand mb-4 inline-block">{texts.nav.home}</Text>
-        </Link>
-        <LayerCard className="p-6">
-          <LayerCard.Primary>{display}</LayerCard.Primary>
-          <Text DANGEROUS_className="text-kumo-subtle mt-1">@{username}</Text>
-          {publicInfo?.profileBio ? (
-            <Text DANGEROUS_className="text-kumo-default mt-3 block text-sm">{publicInfo.profileBio}</Text>
-          ) : null}
-          {publicInfo?.country ? (
-            <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-xs">
-              {publicInfo.country}
-              {publicInfo.region ? ` · ${publicInfo.region}` : ''}
-            </Text>
-          ) : null}
-          {err ? <Text DANGEROUS_className="text-kumo-danger mt-2">{err}</Text> : null}
-        </LayerCard>
-        <div className="mt-6">
-          <Tabs
-            variant="underline"
-            tabs={GAMES.map((g) => ({ value: g, label: gameTitle(g, loc) }))}
-            value={game}
-            onValueChange={(v) => setGame(v as GameName)}
-          />
+    <div className="bg-kumo-surface flex min-h-screen flex-col">
+      <main className="flex-1 p-6">
+        <div className="mx-auto max-w-3xl">
+          <Link to="/home">
+            <Text DANGEROUS_className="text-kumo-brand mb-4 inline-block">{texts.nav.home}</Text>
+          </Link>
+          <LayerCard className="p-6">
+            <LayerCard.Primary>{display}</LayerCard.Primary>
+            <Text DANGEROUS_className="text-kumo-subtle mt-1">@{username}</Text>
+            {publicInfo?.profileBio ? (
+              <Text DANGEROUS_className="text-kumo-default mt-3 block text-sm">{publicInfo.profileBio}</Text>
+            ) : null}
+            {publicInfo?.country ? (
+              <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-xs">
+                {publicInfo.country}
+                {publicInfo.region ? ` · ${publicInfo.region}` : ''}
+              </Text>
+            ) : null}
+            {err ? <Text DANGEROUS_className="text-kumo-danger mt-2">{err}</Text> : null}
+          </LayerCard>
+          <div className="mt-6">
+            <Tabs
+              variant="underline"
+              tabs={GAMES.map((g) => ({ value: g, label: gameTitle(g, loc) }))}
+              value={game}
+              onValueChange={(v) => setGame(v as GameName)}
+            />
+          </div>
+          <div className="mt-4">
+            <GameSummaryPanel game={game} summary={summary} title={texts.userProfile.gameDataTitle(game)} />
+          </div>
+          <div className="mt-4">
+            {showRivalBtn ? (
+              <Button variant="secondary" size="sm" onClick={toggleRival} disabled={rivalBusy}>
+                {rivalBusy ? texts.common.working : rivalText}
+              </Button>
+            ) : null}
+          </div>
         </div>
-        <div className="mt-4">
-          <GameSummaryPanel game={game} summary={summary} title={texts.userProfile.gameDataTitle(game)} />
-        </div>
-        <div className="mt-4">
-          {showRivalBtn ? (
-            <Button variant="secondary" size="sm" onClick={toggleRival} disabled={rivalBusy}>
-              {rivalBusy ? texts.common.working : rivalText}
-            </Button>
-          ) : null}
-        </div>
-      </div>
+      </main>
+      <BuildInfoFooter className="px-6 pb-6" />
     </div>
   )
 }
