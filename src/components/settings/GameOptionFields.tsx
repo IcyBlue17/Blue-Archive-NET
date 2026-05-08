@@ -89,7 +89,7 @@ export function GameOptionFields({
         }
         if (typeNumeric(field.type)) {
           const val = draft[field.key] ?? (field.value == null ? '' : String(field.value))
-          if (field.key === 'chusanBanStatus') {
+          if (field.key === 'chusanBanState') {
             return (
               <div key={field.key} className="flex max-w-xs flex-col gap-2">
                 <label className="flex flex-col gap-0.5">
