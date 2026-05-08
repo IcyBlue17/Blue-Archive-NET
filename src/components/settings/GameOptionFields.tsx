@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@cloudflare/kumo/components/button'
 import { Checkbox } from '@cloudflare/kumo/components/checkbox'
 import { Input } from '@cloudflare/kumo/components/input'
+import { Select } from '@cloudflare/kumo/components/select'
 import { Text } from '@cloudflare/kumo/components/text'
 import { getAppTexts } from '../../content/texts'
 import type { GameOption } from '../../lib/types'
@@ -88,6 +89,28 @@ export function GameOptionFields({
         }
         if (typeNumeric(field.type)) {
           const val = draft[field.key] ?? (field.value == null ? '' : String(field.value))
+          if (field.key === 'chusanBanStatus') {
+            return (
+              <div key={field.key} className="flex max-w-xs flex-col gap-2">
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-kumo-default text-sm font-medium">{name}</span>
+                  {desc ? <span className="text-kumo-subtle text-xs">{desc}</span> : null}
+                </label>
+                <Select
+                  aria-label={name}
+                  value={val || '0'}
+                  disabled={saving === field.key}
+                  onValueChange={(v) => void saveKey(field.key, String(v ?? '0'))}
+                >
+                  {[0, 1, 2].map((one) => (
+                    <Select.Option key={one} value={one}>
+                      {one}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </div>
+            )
+          }
           return (
             <div key={field.key} className="flex flex-col gap-2">
               <label className="flex flex-col gap-0.5">

@@ -649,6 +649,10 @@ const TEXTS = {
                 name: "无限企鹅像",
                 desc: "将角色等级提示用企鹅像设为 999。",
             },
+            chusanBanStatus: {
+                name: "banstatus（娱乐功能）",
+                desc: "下发给 CHUNITHM 客户端的 banStatus 值。",
+            },
             chusanLoginRewardItems: {
                 name: "登录奖励",
                 desc: "每次 GameLogin 发放 1 张票。",
@@ -1580,6 +1584,10 @@ const TEXTS = {
             chusanInfinitePenguins: {
                 name: "Infinite Penguins",
                 desc: "Set penguin statues for character level prompting to 999.",
+            },
+            chusanBanStatus: {
+                name: "banstatus（娱乐功能）",
+                desc: "Value sent to the CHUNITHM client as banStatus.",
             },
             chusanLoginRewardItems: {
                 name: "Login Rewards",
