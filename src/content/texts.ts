@@ -286,6 +286,14 @@ const TEXTS = {
             characterUpdateFailed: "角色操作失败",
             unlockCharacterBeforeSave: "请先解锁该角色，再保存当前角色。",
             saveFailed: "保存失败",
+            experimentalCustomId: "自定义收藏品 ID（实验性）",
+            customIdLabel: "手动输入 ID",
+            customIdPlaceholder: "输入收藏品 ID",
+            applyCustomId: "应用自定义 ID",
+            registerCustomCharacter: "登记并选中角色",
+            invalidCustomId: "请输入大于等于 0 的整数 ID。",
+            invalidCharacterId: "角色 ID 需要是大于 0 的整数。",
+            characterRegistered: (level: number) => `已登记角色并设置为 Lv.${level}`,
             fieldLabels: {
                 nameplateId: "名牌",
                 frameId: "边框",
@@ -1211,6 +1219,15 @@ const TEXTS = {
             unlockCharacterBeforeSave:
                 "Unlock this character before saving it.",
             saveFailed: "Save failed",
+            experimentalCustomId: "Custom collectible ID (experimental)",
+            customIdLabel: "Manual ID",
+            customIdPlaceholder: "Enter collectible ID",
+            applyCustomId: "Apply custom ID",
+            registerCustomCharacter: "Register and select character",
+            invalidCustomId: "Enter an integer ID greater than or equal to 0.",
+            invalidCharacterId: "Character ID must be an integer greater than 0.",
+            characterRegistered: (level: number) =>
+                `Character registered at Lv.${level}`,
             fieldLabels: {
                 nameplateId: "Name plate",
                 frameId: "Frame",

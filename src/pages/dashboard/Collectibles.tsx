@@ -269,6 +269,9 @@ export function CollectiblesPage() {
   const [modalSearch, setModalSearch] = useState('')
   const [charaWorksFilter, setCharaWorksFilter] = useState('')
   const [charaLv, setCharaLv] = useState('1')
+  const [customIdEnabled, setCustomIdEnabled] = useState(false)
+  const [customIdInput, setCustomIdInput] = useState('')
+  const [customCharacterLv, setCustomCharacterLv] = useState('1')
   const [pickedCharaId, setPickedCharaId] = useState<number | null>(null)
   const [unlockingCharaId, setUnlockingCharaId] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
@@ -477,21 +480,30 @@ export function CollectiblesPage() {
     setModalSearch('')
     setModalPage(0)
     setCharaWorksFilter('')
+    setCustomIdEnabled(false)
+    const currentId = draft[field] ?? numFromUser(user, field)
+    setCustomIdInput(currentId > 0 ? String(currentId) : '')
     if (field === 'characterId') {
       const curCharaId = draft.characterId || numFromUser(user, 'characterId')
       setPickedCharaId(curCharaId > 0 ? curCharaId : null)
-      setCharaLv(String(curCharaId > 0 ? (ownedCharacterLvs[curCharaId] ?? 1) : 1))
+      const currentLv = curCharaId > 0 ? (ownedCharacterLvs[curCharaId] ?? 1) : 1
+      setCharaLv(String(currentLv))
+      setCustomCharacterLv(String(currentLv))
     } else {
       setPickedCharaId(null)
+      setCustomCharacterLv('1')
     }
     setModalField(field)
   }
 
-  function closeModal() {
+  const closeModal = useCallback(() => {
     setModalField(null)
     setPickedCharaId(null)
     setCharaWorksFilter('')
-  }
+    setCustomIdEnabled(false)
+    setCustomIdInput('')
+    setCustomCharacterLv('1')
+  }, [])
 
   const onUnlockAllChange = (on: boolean) => {
     setUnlockAll(on)
@@ -501,7 +513,7 @@ export function CollectiblesPage() {
   const selectDraftItem = useCallback((field: string, itemId: number) => {
     setDraft((d) => ({ ...d, [field]: itemId }))
     closeModal()
-  }, [])
+  }, [closeModal])
 
   const applyPickedChara = useCallback(async (characterId: number, isOwned: boolean) => {
     const level = Math.min(999, Math.max(1, parseInt(charaLv, 10) || 1))
@@ -547,7 +559,7 @@ export function CollectiblesPage() {
     } finally {
       setUnlockingCharaId(null)
     }
-  }, [charaLv, loadQuery, ownedCharacterLvs, texts.collectibles, toast])
+  }, [charaLv, closeModal, loadQuery, ownedCharacterLvs, texts.collectibles, toast])
 
   const pickCharacter = useCallback((characterId: number) => {
     if (characterId <= 0) {
@@ -556,6 +568,8 @@ export function CollectiblesPage() {
     }
     setPickedCharaId(characterId)
     setCharaLv(String(ownedCharacterLvs[characterId] ?? 1))
+    setCustomIdInput(String(characterId))
+    setCustomCharacterLv(String(ownedCharacterLvs[characterId] ?? 1))
   }, [ownedCharacterLvs, selectDraftItem])
 
   const selectCollectible = useCallback(async (field: string, itemId: number) => {
@@ -565,6 +579,57 @@ export function CollectiblesPage() {
     }
     selectDraftItem(field, itemId)
   }, [pickCharacter, selectDraftItem])
+
+  const applyCustomCollectibleId = useCallback(async () => {
+    if (!modalField) return
+    const customId = parseInt(customIdInput, 10)
+    if (!Number.isFinite(customId) || customId < 0) {
+      setErr(texts.collectibles.invalidCustomId)
+      return
+    }
+    if (modalField === 'characterId') {
+      if (customId <= 0) {
+        setErr(texts.collectibles.invalidCharacterId)
+        return
+      }
+      const level = Math.min(999, Math.max(1, parseInt(customCharacterLv, 10) || 1))
+      setUnlockingCharaId(customId)
+      setErr(null)
+      try {
+        await gameApi.unlockChu3Character(customId, level)
+        keepDraftRef.current = true
+        pendingCharaIdRef.current = customId
+        setOwnedCharacters((list) => (list.includes(customId) ? list : [...list, customId]))
+        setOwnedCharacterLvs((map) => ({ ...map, [customId]: level }))
+        setDraft((d) => ({ ...d, characterId: customId }))
+        closeModal()
+        await loadQuery.refetch()
+        toast.add({
+          title: texts.collectibles.characterRegistered(level),
+          description: texts.collectibles.saveToApply,
+          variant: 'success',
+        })
+      } catch (e) {
+        keepDraftRef.current = false
+        pendingCharaIdRef.current = null
+        setErr(e instanceof Error ? e.message : texts.collectibles.characterUpdateFailed)
+      } finally {
+        setUnlockingCharaId(null)
+      }
+      return
+    }
+    setErr(null)
+    setDraft((d) => ({ ...d, [modalField]: customId }))
+    closeModal()
+  }, [
+    closeModal,
+    customCharacterLv,
+    customIdInput,
+    loadQuery,
+    modalField,
+    texts.collectibles,
+    toast,
+  ])
 
   const applyCharacterChoice = useCallback(async () => {
     if (pickedCharaId == null) return
@@ -681,7 +746,7 @@ export function CollectiblesPage() {
             const emptyUnlocks = row.options.length === 0
             const isCharacter = row.field === 'characterId'
             const isWidePreview = isWidePreviewField(row.field)
-            const canChange = unlockAll ? catalogBundle != null && row.options.length > 0 : !emptyUnlocks || cur > 0
+            const canChange = true
             return (
               <div
                 key={row.field}
@@ -797,6 +862,55 @@ export function CollectiblesPage() {
                       ))}
                     </select>
                   </label>
+                ) : null}
+              </div>
+              <div className="mt-3 rounded-xl border border-kumo-border bg-kumo-recessed px-3 py-3">
+                <Switch
+                  controlFirst={false}
+                  label={texts.collectibles.experimentalCustomId}
+                  checked={customIdEnabled}
+                  onCheckedChange={(checked) => setCustomIdEnabled(Boolean(checked))}
+                  size="base"
+                />
+                {customIdEnabled ? (
+                  <div className={`mt-3 grid gap-3 ${activeRow.field === 'characterId' ? 'md:grid-cols-[minmax(0,1fr)_140px_auto]' : 'md:grid-cols-[minmax(0,1fr)_auto]'}`}>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-kumo-subtle text-xs">{texts.collectibles.customIdLabel}</span>
+                      <Input
+                        className="h-11"
+                        type="number"
+                        min={0}
+                        value={customIdInput}
+                        onChange={(e) => setCustomIdInput(e.target.value)}
+                        placeholder={texts.collectibles.customIdPlaceholder}
+                      />
+                    </label>
+                    {activeRow.field === 'characterId' ? (
+                      <label className="flex flex-col gap-1">
+                        <span className="text-kumo-subtle text-xs">{texts.collectibles.characterLevel}</span>
+                        <Input
+                          className="h-11"
+                          type="number"
+                          min={1}
+                          max={999}
+                          value={customCharacterLv}
+                          onChange={(e) => setCustomCharacterLv(e.target.value)}
+                        />
+                      </label>
+                    ) : null}
+                    <div className="flex items-end">
+                      <Button
+                        size="sm"
+                        className="h-11 px-4"
+                        disabled={saving || unlockingCharaId != null}
+                        onClick={() => void applyCustomCollectibleId()}
+                      >
+                        {activeRow.field === 'characterId'
+                          ? texts.collectibles.registerCustomCharacter
+                          : texts.collectibles.applyCustomId}
+                      </Button>
+                    </div>
+                  </div>
                 ) : null}
               </div>
             </div>
