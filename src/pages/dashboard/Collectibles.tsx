@@ -36,7 +36,7 @@ import { useAppTexts } from '../../content/texts'
 
 const UNLOCK_ALL_STORAGE_KEY = 'chu3-collectibles-unlock-all'
 
-const COLLECTIBLES_FIELD_ORDER = CHU3_APPEARANCE_FIELD_ORDER.filter((f) => f !== 'frameId')
+const COLLECTIBLES_FIELD_ORDER = CHU3_APPEARANCE_FIELD_ORDER
 
 const TEXT_ONLY_PREVIEW_FIELDS = new Set([
   'trophyId',
@@ -89,6 +89,9 @@ function resolveCollectibleName(
     switch (field) {
       case 'nameplateId':
         fromJson = lookups.namePlate.get(itemId)
+        break
+      case 'frameId':
+        fromJson = lookups.frame.get(itemId)
         break
       case 'trophyId':
       case 'trophyIdSub1':

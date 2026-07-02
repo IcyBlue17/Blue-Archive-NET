@@ -48,6 +48,15 @@ function stageImagePath(raw: unknown): string | null {
   return path.includes('/') ? path : `stage/${path}`
 }
 
+function categoryImagePath(raw: unknown, dir: string): string | null {
+  const s = String(raw ?? '').trim()
+  if (!s) return null
+  if (/^https?:\/\//i.test(s)) return s
+  const path = s.replace(/^\/+/, '')
+  if (!path) return null
+  return path.includes('/') ? path : `${dir}/${path}`
+}
+
 export function padChu3Id8(id: number): string {
   return String(Math.max(0, Math.floor(id))).padStart(8, '0')
 }
@@ -90,6 +99,7 @@ const FIELD_IMAGE: Partial<
   >
 > = {
   nameplateId: { dir: 'namePlate', prefix: 'CHU_UI_NamePlate_' },
+  frameId: { dir: 'frame', prefix: 'CHU_UI_Frame_' },
   characterId: {
     dir: 'chara',
     prefix: 'CHU_UI_Character_',
@@ -118,6 +128,11 @@ export function chu3CollectibleImageUrl(field: string, itemId: number, allItems?
   if (field === 'characterId') return chu3CharacterImageUrl(itemId, '00')
   const meta = FIELD_IMAGE[field]
   if (!meta) return null
+  if (field === 'frameId') {
+    const row = allItems?.frame?.[String(itemId)]
+    const fromMeta = assetImageUrl(categoryImagePath(row?.imagePath ?? row?.imageFile, meta.dir))
+    if (fromMeta) return fromMeta
+  }
   const fmt = meta.formatId ?? padChu3Id8
   const suffix = meta.suffix ?? ''
   return chu3AssetUrl(`${meta.dir}/${meta.prefix}${fmt(itemId)}${suffix}.webp`)
@@ -147,12 +162,21 @@ export async function fetchChu3AssetJson<T = Chu3JsonEntry[]>(jsonFile: string):
   return p
 }
 
+async function fetchChu3AssetJsonOr<T>(jsonFile: string, fallback: T): Promise<T> {
+  try {
+    return await fetchChu3AssetJson<T>(jsonFile)
+  } catch {
+    return fallback
+  }
+}
+
 export async function loadChu3StageCatalog(): Promise<Chu3StageJsonEntry[]> {
   return fetchChu3AssetJson<Chu3StageJsonEntry[]>('stage.json')
 }
 
 export type Chu3NameLookups = {
   namePlate: Map<number, string>
+  frame: Map<number, string>
   character: Map<number, string>
   trophy: Map<number, string>
   mapIcon: Map<number, string>
@@ -162,6 +186,7 @@ export type Chu3NameLookups = {
 
 export type Chu3CatalogBundle = {
   nameplate: Chu3JsonEntry[]
+  frame: Chu3JsonEntry[]
   character: Chu3JsonEntry[]
   trophy: Chu3JsonEntry[]
   mapicon: Chu3JsonEntry[]
@@ -170,21 +195,23 @@ export type Chu3CatalogBundle = {
 }
 
 export async function loadChu3CatalogBundle(): Promise<Chu3CatalogBundle> {
-  const [nameplate, character, trophy, mapicon, sysvoice, avatar_icon] = await Promise.all([
+  const [nameplate, frame, character, trophy, mapicon, sysvoice, avatar_icon] = await Promise.all([
     fetchChu3AssetJson('nameplate.json'),
+    fetchChu3AssetJsonOr<Chu3JsonEntry[]>('frame.json', []),
     fetchChu3AssetJson('character.json'),
     fetchChu3AssetJson('trophy.json'),
     fetchChu3AssetJson('mapicon.json'),
     fetchChu3AssetJson('sysvoice.json'),
     fetchChu3AssetJson('avatar_icon.json'),
   ])
-  return { nameplate, character, trophy, mapicon, sysvoice, avatar_icon }
+  return { nameplate, frame, character, trophy, mapicon, sysvoice, avatar_icon }
 }
 
 export function bundleToLookups(bundle: Chu3CatalogBundle): Chu3NameLookups {
   const toMap = (rows: Chu3JsonEntry[]) => new Map(rows.map((r) => [r.id, r.name]))
   return {
     namePlate: toMap(bundle.nameplate),
+    frame: toMap(bundle.frame),
     character: toMap(bundle.character),
     trophy: toMap(bundle.trophy),
     mapIcon: toMap(bundle.mapicon),
@@ -242,7 +269,9 @@ export function buildChu3CatalogOptions(
       return bundle.avatar_icon.filter((e) => e.category === cat).map((e) => ({ itemId: e.id, name: e.name }))
     }
     case 'frameId':
-      return allItemsKeysToOptions(allItems, 'frame')
+      return bundle.frame.length
+        ? bundle.frame.map((e) => ({ itemId: e.id, name: e.name }))
+        : allItemsKeysToOptions(allItems, 'frame')
     case 'stageId':
       return allItemsKeysToOptions(allItems, 'stage')
     case 'characterId':
