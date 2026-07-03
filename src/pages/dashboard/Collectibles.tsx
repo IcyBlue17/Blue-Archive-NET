@@ -193,8 +193,62 @@ function buildPaginationItems(current: number, total: number): (number | 'ellips
   return out
 }
 
-function isWidePreviewField(field: string): boolean {
-  return field === 'nameplateId' || field === 'stageId'
+function isLandscapePreviewField(field: string): boolean {
+  return field === 'nameplateId' || field === 'frameId' || field === 'stageId' || field === 'voiceId'
+}
+
+function isAvatarPreviewField(field: string): boolean {
+  return field.startsWith('avatar')
+}
+
+function equippedPreviewBoxClass(field: string, hasImg: boolean): string {
+  if (!hasImg) return 'min-h-[48px] py-2'
+  switch (field) {
+    case 'nameplateId':
+      return 'aspect-[3/1] min-h-[92px] px-3 py-2'
+    case 'frameId':
+      return 'aspect-[6/1] min-h-[72px] px-3 py-2'
+    case 'characterId':
+      return 'mx-auto aspect-[4/5] min-h-[220px] w-full max-w-[260px] px-2 py-2'
+    case 'mapIconId':
+      return 'mx-auto aspect-square w-full max-w-[220px] px-4 py-4'
+    case 'voiceId':
+      return 'aspect-[2/1] min-h-[120px] px-3 py-3'
+    case 'stageId':
+      return 'aspect-[16/9] min-h-[120px] px-3 py-2'
+    default:
+      return isAvatarPreviewField(field)
+        ? 'mx-auto aspect-square w-full max-w-[200px] px-4 py-4'
+        : 'mx-auto aspect-square w-full max-w-[200px] px-3 py-3'
+  }
+}
+
+function pickerPreviewBoxClass(field: string): string {
+  switch (field) {
+    case 'nameplateId':
+      return 'aspect-[3/1] min-h-[96px] px-3 py-2'
+    case 'frameId':
+      return 'aspect-[6/1] min-h-[76px] px-3 py-2'
+    case 'characterId':
+      return 'mx-auto aspect-[4/5] min-h-[260px] w-full max-w-[280px] px-2 py-2'
+    case 'mapIconId':
+      return 'mx-auto aspect-square w-full max-w-[220px] px-4 py-4'
+    case 'voiceId':
+      return 'aspect-[2/1] min-h-[132px] px-3 py-3'
+    case 'stageId':
+      return 'aspect-[16/9] min-h-[150px] px-3 py-3'
+    default:
+      return isAvatarPreviewField(field)
+        ? 'mx-auto aspect-square w-full max-w-[200px] px-4 py-4'
+        : 'mx-auto aspect-square w-full max-w-[220px] px-3 py-3'
+  }
+}
+
+function collectiblePreviewImageClass(field: string): string {
+  if (field === 'characterId') {
+    return 'h-full w-full scale-[1.08] object-contain object-center'
+  }
+  return 'h-full w-full object-contain object-center'
 }
 
 type Chu3CollectibleLoad = {
@@ -693,7 +747,7 @@ export function CollectiblesPage() {
           <SkeletonBox className="h-11 w-56 rounded-lg" />
           <SkeletonBox className="h-10 w-24 rounded-lg" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
@@ -739,7 +793,7 @@ export function CollectiblesPage() {
         <h2 className="text-kumo-default mb-3 text-lg font-semibold">
           {texts.collectibles.equipped}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {displayRows.map((row) => {
             const cur = numFromUser(effectiveUser, row.field)
             const name = resolveCollectibleName(row.field, cur, allItems, lookups)
@@ -747,8 +801,6 @@ export function CollectiblesPage() {
             const hasImg = chu3CollectibleHasImage(row.field)
             const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(row.field)
             const emptyUnlocks = row.options.length === 0
-            const isCharacter = row.field === 'characterId'
-            const isWidePreview = isWidePreviewField(row.field)
             const canChange = true
             return (
               <div
@@ -771,34 +823,20 @@ export function CollectiblesPage() {
                     <div className="border-kumo-line shrink-0 border-b border-dashed" aria-hidden />
                   ) : (
                     <div
-                      className={`border-kumo-line bg-kumo-recessed flex flex-1 items-center justify-center overflow-hidden rounded-lg border ${
-                        isWidePreview
-                          ? 'min-h-[88px] px-1 py-2'
-                          : isCharacter
-                            ? 'aspect-square min-h-[180px] max-h-[240px]'
-                          : hasImg
-                            ? 'aspect-square min-h-[120px] max-h-[160px]'
-                            : 'min-h-[48px] py-2'
-                      }`}
+                      className={`border-kumo-line bg-kumo-recessed flex shrink-0 items-center justify-center overflow-hidden rounded-lg border ${equippedPreviewBoxClass(row.field, hasImg)}`}
                     >
                       {img ? (
                         <img
                           src={img}
                           crossOrigin={imgCross(img)}
                           alt=""
-                          className={
-                            isWidePreview
-                              ? 'max-h-20 w-full object-contain object-center'
-                              : isCharacter
-                                ? 'max-h-full max-w-full object-contain p-1'
-                              : 'max-h-full max-w-full object-contain p-2'
-                          }
+                          className={collectiblePreviewImageClass(row.field)}
                           loading="lazy"
                         />
                       ) : null}
                     </div>
                   )}
-                  <Button size="sm" variant="primary" disabled={!canChange} onClick={() => openModal(row.field)}>
+                  <Button size="sm" variant="primary" disabled={!canChange} className="mt-auto self-start" onClick={() => openModal(row.field)}>
                     {texts.collectibles.change}
                   </Button>
                 </div>
@@ -1027,7 +1065,7 @@ export function CollectiblesPage() {
                 <div
                   className={
                     chu3CollectibleHasImage(activeRow.field)
-                      ? isWidePreviewField(activeRow.field)
+                      ? isLandscapePreviewField(activeRow.field)
                         ? 'grid grid-cols-1 gap-4 sm:grid-cols-2'
                         : 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
                       : 'grid grid-cols-1 gap-2 sm:grid-cols-2'
@@ -1042,8 +1080,6 @@ export function CollectiblesPage() {
                     const displayName = resolveCollectibleName(activeRow.field, o.itemId, allItems, lookups)
                     const hasImg = chu3CollectibleHasImage(activeRow.field)
                     const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(activeRow.field)
-                    const isCharacter = activeRow.field === 'characterId'
-                    const isWidePreview = isWidePreviewField(activeRow.field)
                     return (
                       <Button
                         key={o.itemId}
@@ -1079,26 +1115,14 @@ export function CollectiblesPage() {
                           <div className="border-kumo-line shrink-0 border-b" aria-hidden />
                         ) : (
                           <div
-                            className={`bg-kumo-recessed flex items-center justify-center ${
-                              isWidePreview
-                                ? 'min-h-[100px] px-2 py-3'
-                                : isCharacter
-                                  ? 'aspect-square min-h-[220px] max-h-[280px]'
-                                : 'aspect-[4/3] min-h-[140px] max-h-[200px]'
-                            }`}
+                            className={`bg-kumo-recessed flex items-center justify-center overflow-hidden ${pickerPreviewBoxClass(activeRow.field)}`}
                           >
                             {img ? (
                               <img
                                 src={img}
                                 crossOrigin={imgCross(img)}
                                 alt=""
-                                className={
-                                  isWidePreview
-                                    ? 'max-h-24 w-full object-contain object-center'
-                                    : isCharacter
-                                      ? 'max-h-full max-w-full object-contain p-2'
-                                    : 'max-h-[min(180px,100%)] max-w-full object-contain p-3'
-                                }
+                                className={collectiblePreviewImageClass(activeRow.field)}
                                 loading="lazy"
                               />
                             ) : null}
