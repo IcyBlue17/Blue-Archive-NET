@@ -7,6 +7,8 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
+        "deploy": "vercel deploy --prod --build-env VERCEL_GIT_COMMIT_SHA=$(git rev-parse HEAD)",
+        "deploy:preview": "vercel deploy --build-env VERCEL_GIT_COMMIT_SHA=$(git rev-parse HEAD)",
         "lint": "eslint .",
         "preview": "vite preview"
     },

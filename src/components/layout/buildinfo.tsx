@@ -5,13 +5,18 @@ type BuildInfoFooterProps = {
 const buildInfo = __BUILD_INFO__
 
 export function BuildInfoFooter({ className = '' }: BuildInfoFooterProps) {
+  const hasCommit = buildInfo.commit.length > 0 && buildInfo.commit !== 'unknown'
   return (
     <footer
       className={`text-kumo-subtle flex flex-col items-center gap-1 text-center text-xs leading-5 ${className}`}
     >
       <div>
-        <span>{buildInfo.commit}</span>
-        <span className="mx-1.5">·</span>
+        {hasCommit ? (
+          <>
+            <span>{buildInfo.commit}</span>
+            <span className="mx-1.5">·</span>
+          </>
+        ) : null}
         <span>构建于{buildInfo.builtAt}</span>
         <span className="mx-1.5">·</span>
         <span>Bun {buildInfo.bunVersion}</span>

@@ -31,8 +31,11 @@ export default defineConfig(({ mode }) => {
     env.VITE_AQUA_HOST?.trim() ||
     'http://127.0.0.1:8080'
   const target = proxy.replace(/\/$/, '')
+  // Vercel CLI 部署时源码不带 .git，构建容器里 git rev-parse 会失败。
+  // 优先用 VERCEL_GIT_COMMIT_SHA(Vercel git 集成自动注入;CLI 部署可用 --build-env 传入)。
+  const envCommit = (process.env.VERCEL_GIT_COMMIT_SHA ?? '').trim()
   const buildInfo = {
-    commit: commandOutput('git rev-parse --short=7 HEAD') || 'unknown',
+    commit: envCommit.slice(0, 7) || commandOutput('git rev-parse --short=7 HEAD') || 'unknown',
     builtAt: formatBuildTime(new Date()),
     bunVersion: process.versions.bun || commandOutput('bun --version') || 'unknown',
   }
