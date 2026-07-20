@@ -60,8 +60,6 @@ function resolveName(
   lookups: On9NameLookups | null,
 ): string {
   if (itemId <= 0) return '—'
-  // no asset catalog for this field — it's just the raw slot number
-  if (field === 'characterVoiceNo') return String(itemId)
   const key = ON9_FIELD_ALL_ITEMS_KEY[field as On9AppearanceField]
   const fromAll = key ? allItems[key]?.[String(itemId)]?.name : undefined
   let fromJson: string | undefined

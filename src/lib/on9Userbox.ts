@@ -34,14 +34,12 @@ export const ON9_FIELD_ALL_ITEMS_KEY: Record<On9AppearanceField, string> = {
   characterId: 'chara',
   nameplateId: 'nameplate',
   trophyId: 'trophy',
-  // characterVoiceNo has no asset catalog — it's just a small integer slot number
-  characterVoiceNo: '',
+  // characterVoiceNo stores a ProfileVoice id (charaId*10 + voiceNo), named in the profileVoice catalog
+  characterVoiceNo: 'profileVoice',
 }
 
-// characterVoiceNo picker always offers this fixed range, plus the equipped value if it's outside it
-const ON9_CHARACTER_VOICE_NO_MAX = 9
-
 function itemName(allItems: On9AllItems, key: string, itemId: number): string {
+  if (itemId === 0) return '—'
   if (!key) return String(itemId)
   const n = allItems[key]?.[String(itemId)]?.name
   return n ?? `(unknown ${itemId})`
@@ -79,15 +77,27 @@ function idListRow(
   }
 }
 
-function characterVoiceNoRow(equippedId: number): On9UserboxSelectRow {
-  const ids = new Set(Array.from({ length: ON9_CHARACTER_VOICE_NO_MAX + 1 }, (_, n) => n))
-  if (equippedId >= 0) ids.add(equippedId)
-  const sorted = [...ids].sort((a, b) => a - b)
-  return {
-    allItemsKey: '',
-    field: 'characterVoiceNo',
-    options: sorted.map((itemId) => ({ itemId, name: String(itemId) })),
+// A ProfileVoice id (charaId*10 + voiceNo). Voices belong to a character, so the picker only
+// offers the equipped character's voices (by real name), plus "—" (none) and the current value.
+function characterVoiceNoRow(
+  equippedVoiceId: number,
+  equippedCharaId: number,
+  allItems: On9AllItems,
+): On9UserboxSelectRow {
+  const voices = allItems.profileVoice ?? {}
+  const options = Object.entries(voices)
+    .filter(([, meta]) => Number((meta as Record<string, unknown>)?.charaId) === equippedCharaId)
+    .map(([id, meta]) => ({ itemId: parseInt(id, 10), name: meta?.name ?? id }))
+    .filter((o) => Number.isFinite(o.itemId))
+    .sort((a, b) => a.itemId - b.itemId)
+  const rows = [{ itemId: 0, name: '—' }, ...options]
+  if (equippedVoiceId > 0 && !rows.some((r) => r.itemId === equippedVoiceId)) {
+    rows.push({
+      itemId: equippedVoiceId,
+      name: voices[String(equippedVoiceId)]?.name ?? String(equippedVoiceId),
+    })
   }
+  return { allItemsKey: 'profileVoice', field: 'characterVoiceNo', options: rows }
 }
 
 export function buildOn9AppearanceSelectRows(
@@ -115,6 +125,6 @@ export function buildOn9AppearanceSelectRows(
     idListRow('characterId', ownedCharacterIds, num('characterId'), allItems),
     idListRow('nameplateId', itemIdsOfKind(ON9_IKINDS.namePlate), num('nameplateId'), allItems),
     idListRow('trophyId', itemIdsOfKind(ON9_IKINDS.trophy), num('trophyId'), allItems),
-    characterVoiceNoRow(num('characterVoiceNo')),
+    characterVoiceNoRow(num('characterVoiceNo'), num('characterId'), allItems),
   ]
 }
