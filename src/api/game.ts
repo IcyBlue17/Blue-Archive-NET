@@ -89,6 +89,39 @@ export async function userBox() {
   }>
 }
 
+export async function ongekiUserBox() {
+  return userPost('/api/v2/game/ongeki/user-box', {}) as Promise<{
+    user: unknown
+    items: unknown[]
+    cards?: Array<{
+      cardId: number
+      level?: number
+      kaikaDate?: string
+      choKaikaDate?: string
+      skillId?: number
+    }>
+    characters?: number[]
+    characterRows?: Array<{
+      characterId: number
+      intimateLevel?: number
+      costumeId?: number
+      attachmentId?: number
+    }>
+  }>
+}
+
+export async function unlockOngekiCard(cardId: number) {
+  return userPost('/api/v2/game/ongeki/user-card-unlock', {
+    cardId: String(cardId),
+  }) as Promise<{ cardId: number; isNewUnlock: boolean }>
+}
+
+export async function unlockOngekiCharacter(characterId: number) {
+  return userPost('/api/v2/game/ongeki/user-character-unlock', {
+    characterId: String(characterId),
+  }) as Promise<{ characterId: number; isNewUnlock: boolean }>
+}
+
 export async function unlockChu3Character(characterId: number, level: number) {
   return userPost('/api/v2/game/chu3/user-character-unlock', {
     characterId: String(characterId),

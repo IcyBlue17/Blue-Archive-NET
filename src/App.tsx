@@ -28,6 +28,7 @@ import { RankingPage } from './pages/games/Ranking'
 import { GameDashboardPage } from './pages/games/GameDashboard'
 import { MaiPhotoPage } from './pages/games/MaiPhoto'
 import { CollectiblesPage } from './pages/dashboard/Collectibles'
+import { On9CollectiblesPage } from './pages/dashboard/On9Collectibles'
 import { Chu3FriendsPage } from './pages/dashboard/Chu3Friends'
 import { Chu3TeamPage } from './pages/dashboard/Chu3Team'
 import { AdminOverviewPage } from './pages/admin/Overview'
@@ -72,6 +73,7 @@ export default function App() {
                       <Route path="/support" element={<SupportPage />} />
                       <Route path="/transfer" element={<TransferPage />} />
                       <Route path="/collectibles" element={<CollectiblesPage />} />
+                      <Route path="/collectibles/ongeki" element={<On9CollectiblesPage />} />
                       <Route path="/pictures" element={<MaiPhotoPage />} />
                       <Route path="/ranking" element={<Navigate to="/ranking/chu3" replace />} />
                       <Route path="/ranking/:game" element={<RankingPage />} />

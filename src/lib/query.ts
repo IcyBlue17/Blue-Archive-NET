@@ -41,4 +41,5 @@ export const qk = {
   gameLibrary: (username: string, game: GameName) => ['game-library', username, game] as const,
   gamePlaylog: (username: string, game: GameName) => ['game-playlog', username, game] as const,
   collectiblesChu3: ['collectibles', 'chu3'] as const,
+  collectiblesOngeki: ['collectibles', 'ongeki'] as const,
 }

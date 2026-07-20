@@ -8,6 +8,7 @@ import {
   BookOpen,
   ShieldStar,
   Sparkle,
+  IdentificationCard,
   List,
   UsersThree,
 } from '@phosphor-icons/react'
@@ -110,6 +111,14 @@ function DashboardShell() {
                 onNavigate={go}
               >
                 {texts.nav.collectibles}
+              </NavBtn>
+              <NavBtn
+                path="/collectibles/ongeki"
+                icon={IdentificationCard}
+                active={loc.pathname === '/collectibles/ongeki'}
+                onNavigate={go}
+              >
+                {texts.nav.on9Collectibles}
               </NavBtn>
               <NavBtn path="/pictures" icon={Images} active={loc.pathname === '/pictures'} onNavigate={go}>
                 {texts.nav.pictures}
