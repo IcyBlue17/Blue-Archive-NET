@@ -35,7 +35,7 @@ import { useAppTexts } from '../../content/texts'
 
 const UNLOCK_ALL_STORAGE_KEY = 'ongeki-collectibles-unlock-all'
 
-const TEXT_ONLY_PREVIEW_FIELDS = new Set(['trophyId'])
+const TEXT_ONLY_PREVIEW_FIELDS = new Set(['trophyId', 'characterVoiceNo'])
 const UNLOCKABLE_FIELDS = new Set(['cardId', 'characterId'])
 
 function numFromUser(u: Record<string, unknown>, field: string): number {
@@ -60,6 +60,8 @@ function resolveName(
   lookups: On9NameLookups | null,
 ): string {
   if (itemId <= 0) return '—'
+  // no asset catalog for this field — it's just the raw slot number
+  if (field === 'characterVoiceNo') return String(itemId)
   const key = ON9_FIELD_ALL_ITEMS_KEY[field as On9AppearanceField]
   const fromAll = key ? allItems[key]?.[String(itemId)]?.name : undefined
   let fromJson: string | undefined
@@ -170,6 +172,12 @@ export function On9CollectiblesPage() {
     const base: On9UserboxSelectRow[] =
       unlockAll && catalogBundle
         ? ON9_APPEARANCE_FIELD_ORDER.map((f) => {
+            // characterVoiceNo has no asset catalog to expand into — it always uses its fixed range
+            if (f === 'characterVoiceNo') {
+              return (
+                lockedRows.find((r) => r.field === f) ?? { field: f, allItemsKey: '', options: [] }
+              )
+            }
             const key = ON9_FIELD_ALL_ITEMS_KEY[f]
             const options = buildOn9CatalogOptions(f, catalogBundle)
             return { field: f, allItemsKey: key, options }

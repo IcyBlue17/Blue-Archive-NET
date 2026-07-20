@@ -7,6 +7,8 @@ import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
 import { Chu3MusicLibrary } from '../../components/game/Chu3MusicLibrary'
 import { Chu3PlaylogExplorer } from '../../components/game/Chu3PlaylogExplorer'
+import { On9MusicLibrary } from '../../components/game/On9MusicLibrary'
+import { On9PlaylogExplorer } from '../../components/game/On9PlaylogExplorer'
 import { GameSummaryPanel } from '../../components/game/GameSummaryPanel'
 import { PlaysHeatmap } from '../../components/game/PlaysHeatmap'
 import { RatingCompositionSection } from '../../components/game/RatingCompositionSection'
@@ -16,7 +18,15 @@ import * as dataApi from '../../api/data'
 import * as gameApi from '../../api/game'
 import { useAuth } from '../../hooks/useAuth'
 import { qk } from '../../lib/query'
-import type { AllMusicMap, Chu3UserMusicDetail, GameName, GamePlayRecord, GenericGameSummary, TrendEntry } from '../../lib/types'
+import type {
+  AllMusicMap,
+  Chu3UserMusicDetail,
+  GameName,
+  GamePlayRecord,
+  GenericGameSummary,
+  OngekiUserMusicDetail,
+  TrendEntry,
+} from '../../lib/types'
 import type { MusicMetaLite } from '../../lib/scoring'
 import { gameTitle } from '../../lib/gameTitles'
 import { useI18n } from '../../lib/i18n'
@@ -25,6 +35,8 @@ import { useAppTexts } from '../../content/texts'
 const GAMES: GameName[] = ['chu3', 'mai2', 'ongeki', 'wacca']
 const CHU3_SECTIONS = ['overview', 'songs', 'plays'] as const
 type GameSection = (typeof CHU3_SECTIONS)[number]
+// Games that have a per-song library / playlog explorer beyond the overview tab.
+const SECTIONED_GAMES: GameName[] = ['chu3', 'ongeki']
 
 function sectionPath(game: GameName, section: GameSection) {
   return section === 'overview' ? `/games/${game}` : `/games/${game}/${section}`
@@ -106,7 +118,7 @@ export function GameDashboardPage() {
   const { user } = useAuth()
   const loc = locale === 'en' ? 'en' : 'zh'
   const game = (GAMES.includes(rawGame as GameName) ? rawGame : 'chu3') as GameName
-  const section = (game === 'chu3' && CHU3_SECTIONS.includes(rawSection as GameSection) ? rawSection : 'overview') as GameSection
+  const section = (SECTIONED_GAMES.includes(game) && CHU3_SECTIONS.includes(rawSection as GameSection) ? rawSection : 'overview') as GameSection
   const username = user?.username ?? ''
 
   const allMusicQuery = useQuery<AllMusicMap>({
@@ -137,22 +149,24 @@ export function GameDashboardPage() {
     },
   })
 
-  const songQuery = useQuery<Chu3UserMusicDetail[]>({
+  const songQuery = useQuery<(Chu3UserMusicDetail | OngekiUserMusicDetail)[]>({
     queryKey: qk.gameLibrary(username, game),
-    enabled: !!username && game === 'chu3' && section === 'songs' && musicIds.length > 0,
+    enabled: !!username && SECTIONED_GAMES.includes(game) && section === 'songs' && musicIds.length > 0,
     placeholderData: (old) => old,
     queryFn: async () => {
       const group = chunk(musicIds, 300)
-      const rows = await Promise.all(group.map((part) => gameApi.userMusicFromList(username, 'chu3', part)))
+      const rows = await Promise.all(
+        group.map((part) => gameApi.userMusicFromList<Chu3UserMusicDetail | OngekiUserMusicDetail>(username, game, part)),
+      )
       return rows.flat()
     },
   })
 
   const playQuery = useQuery<GamePlayRecord[]>({
     queryKey: qk.gamePlaylog(username, game),
-    enabled: !!username && game === 'chu3' && (section === 'plays' || section === 'songs'),
+    enabled: !!username && SECTIONED_GAMES.includes(game) && (section === 'plays' || section === 'songs'),
     placeholderData: (old) => old,
-    queryFn: async () => gameApi.recent(username, 'chu3'),
+    queryFn: async () => gameApi.recent(username, game),
   })
 
   const summary = dashQuery.data?.summary ?? null
@@ -173,10 +187,10 @@ export function GameDashboardPage() {
         variant="underline"
         tabs={GAMES.map((one) => ({ value: one, label: gameTitle(one, loc) }))}
         value={game}
-        onValueChange={(value) => nav(sectionPath(value as GameName, value === 'chu3' ? section : 'overview'))}
+        onValueChange={(value) => nav(sectionPath(value as GameName, SECTIONED_GAMES.includes(value as GameName) ? section : 'overview'))}
       />
 
-      {game === 'chu3' ? (
+      {SECTIONED_GAMES.includes(game) ? (
         <Tabs
           className="mb-6"
           variant="segmented"
@@ -222,7 +236,7 @@ export function GameDashboardPage() {
         </>
       ) : null}
 
-      {game === 'chu3' && section === 'songs' ? (
+      {SECTIONED_GAMES.includes(game) && section === 'songs' ? (
         showSongsLoading ? (
           <GameSectionSkeleton />
         ) : (
@@ -232,10 +246,19 @@ export function GameDashboardPage() {
                 <LayerCard.Secondary>{texts.common.prompt}</LayerCard.Secondary>
                 <p className="text-kumo-subtle mt-2 text-sm">{songErr}</p>
               </LayerCard>
+            ) : game === 'ongeki' ? (
+              <On9MusicLibrary
+                musicById={musicById}
+                detailRows={(songQuery.data ?? []) as OngekiUserMusicDetail[]}
+                records={playQuery.data ?? []}
+                loading={showSongsLoading}
+                error={songErr}
+                locale={loc}
+              />
             ) : (
               <Chu3MusicLibrary
                 musicById={musicById}
-                detailRows={songQuery.data ?? []}
+                detailRows={(songQuery.data ?? []) as Chu3UserMusicDetail[]}
                 records={playQuery.data ?? []}
                 loading={showSongsLoading}
                 error={songErr}
@@ -246,7 +269,7 @@ export function GameDashboardPage() {
         )
       ) : null}
 
-      {game === 'chu3' && section === 'plays' ? (
+      {SECTIONED_GAMES.includes(game) && section === 'plays' ? (
         showPlaysLoading ? (
           <GameSectionSkeleton />
         ) : (
@@ -256,6 +279,14 @@ export function GameDashboardPage() {
                 <LayerCard.Secondary>{texts.common.prompt}</LayerCard.Secondary>
                 <p className="text-kumo-subtle mt-2 text-sm">{playErr}</p>
               </LayerCard>
+            ) : game === 'ongeki' ? (
+              <On9PlaylogExplorer
+                musicById={musicById}
+                records={playQuery.data ?? []}
+                loading={showPlaysLoading}
+                error={playErr}
+                locale={loc}
+              />
             ) : (
               <Chu3PlaylogExplorer
                 musicById={musicById}

@@ -135,6 +135,31 @@ export interface GamePlayRecord extends GenericGamePlaylog {
   machineType?: number
   ticketId?: number
   fullChainKind?: number
+
+  // ONGEKI-specific playlog fields
+  techScore?: number
+  techScoreRank?: number
+  battleScore?: number
+  battleScoreRank?: number
+  platinumScore?: number
+  judgeMiss?: number
+  judgeHit?: number
+  judgeBreak?: number
+  judgeCriticalBreak?: number
+  rateSideTap?: number
+  rateSideHold?: number
+  bellCount?: number
+  totalBellCount?: number
+  damageCount?: number
+  overDamage?: number
+  isFullBell?: boolean
+  isAllBreak?: boolean
+  isTechNewRecord?: boolean
+  isBattleNewRecord?: boolean
+  isOverDamageNewRecord?: boolean
+  clearStatus?: number
+  eventName?: string
+  battlePoint?: number
 }
 
 export interface Chu3UserMusicDetail {
@@ -153,6 +178,27 @@ export interface Chu3UserMusicDetail {
   isLock?: boolean
   theoryCount: number
   ext1: number
+}
+
+export interface OngekiUserMusicDetail {
+  musicId: number
+  level: number
+  playCount: number
+  techScoreMax: number
+  techScoreRank: number
+  battleScoreMax: number
+  battleScoreRank: number
+  platinumScoreMax: number
+  maxComboCount: number
+  maxOverKill: number
+  maxTeamOverKill: number
+  isFullBell?: boolean
+  isFullCombo?: boolean
+  isAllBreake?: boolean
+  isLock?: boolean
+  clearStatus?: number
+  isStoryWatched?: boolean
+  platinumScoreStar?: number
 }
 
 export interface RankCount {

@@ -24,6 +24,7 @@ export const ON9_APPEARANCE_FIELD_ORDER = [
   'characterId',
   'nameplateId',
   'trophyId',
+  'characterVoiceNo',
 ] as const
 
 export type On9AppearanceField = (typeof ON9_APPEARANCE_FIELD_ORDER)[number]
@@ -33,9 +34,15 @@ export const ON9_FIELD_ALL_ITEMS_KEY: Record<On9AppearanceField, string> = {
   characterId: 'chara',
   nameplateId: 'nameplate',
   trophyId: 'trophy',
+  // characterVoiceNo has no asset catalog — it's just a small integer slot number
+  characterVoiceNo: '',
 }
 
+// characterVoiceNo picker always offers this fixed range, plus the equipped value if it's outside it
+const ON9_CHARACTER_VOICE_NO_MAX = 9
+
 function itemName(allItems: On9AllItems, key: string, itemId: number): string {
+  if (!key) return String(itemId)
   const n = allItems[key]?.[String(itemId)]?.name
   return n ?? `(unknown ${itemId})`
 }
@@ -72,6 +79,17 @@ function idListRow(
   }
 }
 
+function characterVoiceNoRow(equippedId: number): On9UserboxSelectRow {
+  const ids = new Set(Array.from({ length: ON9_CHARACTER_VOICE_NO_MAX + 1 }, (_, n) => n))
+  if (equippedId >= 0) ids.add(equippedId)
+  const sorted = [...ids].sort((a, b) => a - b)
+  return {
+    allItemsKey: '',
+    field: 'characterVoiceNo',
+    options: sorted.map((itemId) => ({ itemId, name: String(itemId) })),
+  }
+}
+
 export function buildOn9AppearanceSelectRows(
   userItems: On9UserItem[],
   ownedCardIds: number[],
@@ -97,5 +115,6 @@ export function buildOn9AppearanceSelectRows(
     idListRow('characterId', ownedCharacterIds, num('characterId'), allItems),
     idListRow('nameplateId', itemIdsOfKind(ON9_IKINDS.namePlate), num('nameplateId'), allItems),
     idListRow('trophyId', itemIdsOfKind(ON9_IKINDS.trophy), num('trophyId'), allItems),
+    characterVoiceNoRow(num('characterVoiceNo')),
   ]
 }

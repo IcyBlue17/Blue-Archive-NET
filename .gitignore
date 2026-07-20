@@ -26,3 +26,5 @@ dist-ssr
 # Static public assets are managed outside git
 public/**
 !public/
+.vercel
+.env*

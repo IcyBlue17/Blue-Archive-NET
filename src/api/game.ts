@@ -33,10 +33,8 @@ export async function recent(username: string, game: GameName) {
   return userPost(`/api/v2/game/${game}/recent`, { username }) as Promise<GamePlayRecord[]>
 }
 
-export async function userMusicFromList(username: string, game: GameName, musicList: number[]) {
-  return userPost(`/api/v2/game/${game}/user-music-from-list`, { username }, { json: musicList }) as Promise<
-    Chu3UserMusicDetail[]
-  >
+export async function userMusicFromList<T = Chu3UserMusicDetail>(username: string, game: GameName, musicList: number[]) {
+  return userPost(`/api/v2/game/${game}/user-music-from-list`, { username }, { json: musicList }) as Promise<T[]>
 }
 
 export async function changeName(game: GameName, newName: string) {
