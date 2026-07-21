@@ -47,5 +47,5 @@ export async function deleteRanking(id: number) {
 
 export async function clearRanking(type?: number) {
   const suffix = type !== undefined ? `?type=${type}` : ''
-  return adminJson('DELETE', `${base}/all${suffix}`) as Promise<{ status: string; id?: number }>
+  return adminJson('DELETE', `${base}/clear-all${suffix}`) as Promise<{ status: string; id?: number }>
 }
