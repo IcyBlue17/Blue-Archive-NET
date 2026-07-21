@@ -431,6 +431,7 @@ const TEXTS = {
                 trophyIdSub1: "称号2",
                 trophyIdSub2: "称号3",
                 characterVoiceNo: "角色语音",
+                systemVoiceId: "系统语音",
                 mapIconId: "地图图标",
                 voiceId: "系统语音",
                 stageId: "舞台",
@@ -620,6 +621,7 @@ const TEXTS = {
                 downloadOrder: "DownloadOrder",
                 configReload: "配置热重载",
                 ongekiRanking: "音击排行榜",
+                allnetTitleTls: "标题服务器 TLS",
             },
             checking: "检查管理员权限…",
             overviewTitle: "管理员控制台",
@@ -756,6 +758,17 @@ const TEXTS = {
                     "待机画面固定显示前 10 名，且改动后需完整重启游戏才会重新下载生效。每个曲目必须是框体已安装的曲子。",
                 countWarning: (n: number) =>
                     `当前仅 ${n} 首启用条目（需 ≥ 10 首）。不足 10 首时游戏会忽略整个榜单、回退到客户端内置的默认榜，甚至可能异常。请补满至少 10 首有效曲目，或清空本榜走默认。`,
+            },
+            allnetTitleTls: {
+                title: "标题服务器 TLS",
+                description:
+                    "控制 AllNet PowerOn 下发的标题服务器地址是否使用 https:// 并带上 TLS 端口（443），而不是默认的 http:// 明文端口。按游戏单独控制，默认关闭，关闭时行为与原来完全一致。",
+                warning:
+                    "谨慎开启：部分游戏客户端对标题服务器强制走 TLS，若启用后客户端不信任本服务器证书，会导致该游戏连不上标题服务器。开启前请确认已在非高峰时段测试。",
+                statusEnabled: "已启用（下发 https:// + 443）",
+                statusDisabled: "已关闭（下发默认 http://）",
+                enabledToast: (gameId: string) => `${gameId} 标题服务器 TLS 已启用`,
+                disabledToast: (gameId: string) => `${gameId} 标题服务器 TLS 已关闭`,
             },
         },
         chusanTeamSettings: {
@@ -1580,6 +1593,7 @@ const TEXTS = {
                 trophyIdSub1: "Title 2",
                 trophyIdSub2: "Title 3",
                 characterVoiceNo: "Character Voice",
+                systemVoiceId: "System voice",
                 mapIconId: "Map icon",
                 voiceId: "System voice",
                 stageId: "Stage",
@@ -1771,6 +1785,7 @@ const TEXTS = {
                 downloadOrder: "DownloadOrder",
                 configReload: "Config reload",
                 ongekiRanking: "O.N.G.E.K.I. Ranking",
+                allnetTitleTls: "Title server TLS",
             },
             checking: "Checking admin permissions…",
             overviewTitle: "Admin console",
@@ -1907,6 +1922,17 @@ const TEXTS = {
                     "The attract screen shows the top 10 only, and changes take effect after a full game restart re-downloads the data. Every entry's music must be installed on the cabinet.",
                 countWarning: (n: number) =>
                     `Only ${n} enabled entries (need ≥ 10). Below 10 the game ignores the whole board and falls back to its built-in default list, and may even error. Fill at least 10 valid songs, or clear the board to use the default.`,
+            },
+            allnetTitleTls: {
+                title: "Title server TLS",
+                description:
+                    "Controls whether the title-server address delivered by AllNet PowerOn uses https:// with an explicit TLS port (443) instead of the default plain http:// port. Controlled per game, off by default; when off, behavior is unchanged from before.",
+                warning:
+                    "Enable with care: some game clients force TLS to the title server, and if the client doesn't trust this server's certificate after enabling, that game will fail to reach the title server. Test outside peak hours before enabling.",
+                statusEnabled: "Enabled (delivers https:// + 443)",
+                statusDisabled: "Disabled (delivers default http://)",
+                enabledToast: (gameId: string) => `${gameId} title server TLS enabled`,
+                disabledToast: (gameId: string) => `${gameId} title server TLS disabled`,
             },
         },
         chusanTeamSettings: {
