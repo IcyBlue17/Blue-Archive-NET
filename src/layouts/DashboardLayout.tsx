@@ -136,7 +136,7 @@ function DashboardShell() {
               <NavBtn path="/team" icon={ShieldStar} active={loc.pathname.startsWith('/team')} onNavigate={go}>
                 {texts.nav.team}
               </NavBtn>
-              <NavBtn path="/friends" icon={UsersThree} active={loc.pathname.startsWith('/friends')} onNavigate={go}>
+              <NavBtn path="/friends" icon={UsersThree} active={loc.pathname === '/friends'} onNavigate={go}>
                 {texts.nav.friends}
               </NavBtn>
             </Sidebar.GroupContent>
@@ -159,6 +159,14 @@ function DashboardShell() {
                 onNavigate={go}
               >
                 {texts.nav.on9Story}
+              </NavBtn>
+              <NavBtn
+                path="/friends/ongeki"
+                icon={UsersThree}
+                active={loc.pathname === '/friends/ongeki'}
+                onNavigate={go}
+              >
+                {texts.nav.on9Friends}
               </NavBtn>
             </Sidebar.GroupContent>
           </Sidebar.Group>

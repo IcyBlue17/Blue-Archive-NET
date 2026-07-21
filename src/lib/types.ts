@@ -261,6 +261,20 @@ export interface Chu3RivalEntry {
   addedAt: string
 }
 
+export interface OngekiRivalEntry {
+  rivalExtId: number
+  userName: string
+  playerRating: number
+  highestRating: number
+  level: number
+  battlePoint: number
+  bestBattlePoint: number
+  cardId: number
+  characterId: number
+  nameplateId: number
+  trophyId: number
+}
+
 export interface Chu3TeamSummary {
   teamId: number
   teamName?: string

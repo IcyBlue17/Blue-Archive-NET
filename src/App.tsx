@@ -31,6 +31,7 @@ import { CollectiblesPage } from './pages/dashboard/Collectibles'
 import { On9CollectiblesPage } from './pages/dashboard/On9Collectibles'
 import { On9StoryPage } from './pages/dashboard/On9Story'
 import { Chu3FriendsPage } from './pages/dashboard/Chu3Friends'
+import { On9FriendsPage } from './pages/dashboard/On9Friends'
 import { Chu3TeamPage } from './pages/dashboard/Chu3Team'
 import { AdminOverviewPage } from './pages/admin/Overview'
 import { AdminUserListPage } from './pages/admin/UserList'
@@ -85,6 +86,7 @@ export default function App() {
                       <Route path="/games/:game/:section" element={<GameDashboardPage />} />
                       <Route path="/team" element={<Chu3TeamPage />} />
                       <Route path="/friends" element={<Chu3FriendsPage />} />
+                      <Route path="/friends/ongeki" element={<On9FriendsPage />} />
                       <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />
                       <Route path="/settings/:page" element={<SettingsPage />} />
                       <Route path="/admin" element={<AdminGuard />}>

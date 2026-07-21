@@ -82,6 +82,16 @@ export function UserProfilePage() {
           setSummary((old) => (old ? { ...old, rival: false, rivalExtId: null } : old))
         }
         await qc.invalidateQueries({ queryKey: qk.chu3Rivals })
+      } else if (game === 'ongeki') {
+        if (isAdd) {
+          const row = await gameApi.ongekiRivalAdd(username)
+          setSummary((old) => (old ? { ...old, rival: true, rivalExtId: row.rivalExtId } : old))
+        } else {
+          if (!summary.rivalExtId) throw new Error(texts.userProfile.missingRivalId)
+          await gameApi.ongekiRivalRemove(summary.rivalExtId)
+          setSummary((old) => (old ? { ...old, rival: false, rivalExtId: null } : old))
+        }
+        await qc.invalidateQueries({ queryKey: qk.ongekiRivals })
       } else {
         await gameApi.setRival(game, username, isAdd)
         setSummary((old) => (old ? { ...old, rival: isAdd } : old))
@@ -106,9 +116,12 @@ export function UserProfilePage() {
   if (!username) return <Text>{texts.userProfile.invalidUser}</Text>
 
   const display = publicInfo?.displayName || publicInfo?.username || username
-  const showRivalBtn = isLoggedIn() && typeof summary?.rival === 'boolean' && (game === 'mai2' || game === 'chu3')
+  const showRivalBtn =
+    isLoggedIn() &&
+    typeof summary?.rival === 'boolean' &&
+    (game === 'mai2' || game === 'chu3' || game === 'ongeki')
   const rivalText =
-    game === 'chu3'
+    game === 'chu3' || game === 'ongeki'
       ? summary?.rival
         ? texts.userProfile.removeFriend
         : texts.userProfile.addFriend

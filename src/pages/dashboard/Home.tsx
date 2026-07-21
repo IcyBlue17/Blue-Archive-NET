@@ -302,6 +302,9 @@ export function HomePage() {
           <Link to="/friends">
             <Button variant="secondary">{texts.nav.friends}</Button>
           </Link>
+          <Link to="/friends/ongeki">
+            <Button variant="secondary">{texts.nav.on9Friends}</Button>
+          </Link>
           <Link to="/settings/profile">
             <Button variant="secondary">{texts.nav.settings}</Button>
           </Link>

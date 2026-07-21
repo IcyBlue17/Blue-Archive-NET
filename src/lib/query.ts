@@ -31,6 +31,7 @@ export const qk = {
   homeChu3Box: (username: string) => ['home-chu3-box', username] as const,
   homeOn9Box: (username: string) => ['home-on9-box', username] as const,
   chu3Rivals: ['chu3-rivals'] as const,
+  ongekiRivals: ['ongeki-rivals'] as const,
   chu3Team: ['chu3-team'] as const,
   chu3TeamDetailBase: ['chu3-team-detail'] as const,
   chu3TeamDetail: (teamId: number | 'me' = 'me') => ['chu3-team-detail', teamId] as const,

@@ -1,5 +1,6 @@
 import type {
   Chu3RivalEntry,
+  OngekiRivalEntry,
   Chu3TeamDetail,
   Chu3TeamJoinResult,
   Chu3LxnsImportResult,
@@ -291,6 +292,20 @@ export async function chu3RivalFavoriteAdd(rivalExtId: number) {
 
 export async function chu3RivalFavoriteRemove(rivalExtId: number) {
   return userPost('/api/v2/game/chu3/rival/favorite-remove', {
+    rivalExtId: String(rivalExtId),
+  }) as Promise<void>
+}
+
+export async function ongekiRivalList() {
+  return userPost('/api/v2/game/ongeki/rival/list', {}) as Promise<OngekiRivalEntry[]>
+}
+
+export async function ongekiRivalAdd(username: string) {
+  return userPost('/api/v2/game/ongeki/rival/add', { username }) as Promise<OngekiRivalEntry>
+}
+
+export async function ongekiRivalRemove(rivalExtId: number) {
+  return userPost('/api/v2/game/ongeki/rival/remove', {
     rivalExtId: String(rivalExtId),
   }) as Promise<void>
 }
