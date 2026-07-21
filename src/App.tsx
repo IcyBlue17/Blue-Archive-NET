@@ -42,6 +42,7 @@ import { AdminDownloadOrderPage } from './pages/admin/DownloadOrder'
 import { AdminConfigReloadPage } from './pages/admin/ConfigReload'
 import { AdminOngekiRankingPage } from './pages/admin/OngekiRanking'
 import { AdminAllNetTitleTlsPage } from './pages/admin/AllNetTitleTls'
+import { AdminOngekiEventsPage } from './pages/admin/OngekiEvents'
 import { PageNotFound } from './pages/PageNotFound'
 
 function RootRedirect() {
@@ -101,6 +102,7 @@ export default function App() {
                           <Route path="config-reload" element={<AdminConfigReloadPage />} />
                           <Route path="ongeki-ranking" element={<AdminOngekiRankingPage />} />
                           <Route path="allnet-title-tls" element={<AdminAllNetTitleTlsPage />} />
+                          <Route path="ongeki-events" element={<AdminOngekiEventsPage />} />
                         </Route>
                       </Route>
                     </Route>
