@@ -10,6 +10,7 @@ import {
   Sparkle,
   IdentificationCard,
   List,
+  Scroll,
   UsersThree,
 } from '@phosphor-icons/react'
 import { Sidebar, useSidebar } from '@cloudflare/kumo'
@@ -119,6 +120,14 @@ function DashboardShell() {
                 onNavigate={go}
               >
                 {texts.nav.on9Collectibles}
+              </NavBtn>
+              <NavBtn
+                path="/on9-story"
+                icon={Scroll}
+                active={loc.pathname === '/on9-story'}
+                onNavigate={go}
+              >
+                {texts.nav.on9Story}
               </NavBtn>
               <NavBtn path="/pictures" icon={Images} active={loc.pathname === '/pictures'} onNavigate={go}>
                 {texts.nav.pictures}

@@ -214,6 +214,13 @@ export function On9CollectiblesPage() {
   const [cardPage, setCardPage] = useState(0)
   const [cardActionId, setCardActionId] = useState<number | null>(null)
   const [bulkMaxProgress, setBulkMaxProgress] = useState<{ done: number; total: number } | null>(null)
+  const [cardEditOpen, setCardEditOpen] = useState<Set<number>>(new Set())
+  const [cardEditDraft, setCardEditDraft] = useState<
+    Record<
+      number,
+      { level: string; maxLevel: string; exp: string; digitalStock: string; skillId: number; kaika: boolean; choKaika: boolean }
+    >
+  >({})
   const [deckRows, setDeckRows] = useState<On9DeckRow[]>([])
   const [deckDraft, setDeckDraft] = useState<Record<number, { cardId1: number; cardId2: number; cardId3: number }>>({})
   const [deckSavingId, setDeckSavingId] = useState<number | null>(null)
@@ -814,6 +821,89 @@ export function On9CollectiblesPage() {
     [texts.collectibles, texts.common.saved, toast],
   )
 
+  const toggleCardEdit = useCallback((row: On9CardTrainingRow) => {
+    setCardEditOpen((s) => {
+      const next = new Set(s)
+      if (next.has(row.cardId)) {
+        next.delete(row.cardId)
+      } else {
+        next.add(row.cardId)
+        const state = kaikaState(row)
+        setCardEditDraft((d) => ({
+          ...d,
+          [row.cardId]: {
+            level: String(row.level),
+            maxLevel: String(row.maxLevel),
+            exp: String(row.exp),
+            digitalStock: String(row.digitalStock),
+            skillId: row.skillId,
+            kaika: state >= 1,
+            choKaika: state >= 2,
+          },
+        }))
+      }
+      return next
+    })
+  }, [])
+
+  const saveCardEdit = useCallback(
+    async (row: On9CardTrainingRow) => {
+      const d = cardEditDraft[row.cardId]
+      if (!d) return
+      const level = parseInt(d.level, 10)
+      const maxLevel = parseInt(d.maxLevel, 10)
+      const exp = parseInt(d.exp, 10)
+      const digitalStock = parseInt(d.digitalStock, 10)
+      if (
+        !Number.isFinite(level) ||
+        level < 1 ||
+        level > 100 ||
+        !Number.isFinite(maxLevel) ||
+        maxLevel < 10 ||
+        maxLevel > 100 ||
+        !Number.isFinite(exp) ||
+        exp < 0 ||
+        !Number.isFinite(digitalStock) ||
+        digitalStock < 1 ||
+        digitalStock > 11
+      ) {
+        setErr(texts.collectibles.cardEditInvalidRange)
+        return
+      }
+      setCardActionId(row.cardId)
+      setErr(null)
+      try {
+        const res = await gameApi.setOngekiCardTraining({
+          cardId: row.cardId,
+          level,
+          maxLevel,
+          exp,
+          digitalStock,
+          skillId: d.skillId,
+          kaika: d.kaika ? 1 : 0,
+          choKaika: d.choKaika ? 1 : 0,
+        })
+        setCardRows((rows) => rows.map((r) => (r.cardId === row.cardId ? { ...r, ...res } : r)))
+        setCardEditOpen((s) => {
+          const next = new Set(s)
+          next.delete(row.cardId)
+          return next
+        })
+        setCardEditDraft((m) => {
+          const next = { ...m }
+          delete next[row.cardId]
+          return next
+        })
+        toast.add({ title: texts.common.saved, variant: 'success' })
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : texts.collectibles.cardTrainingSaveFailed)
+      } finally {
+        setCardActionId(null)
+      }
+    },
+    [cardEditDraft, texts.collectibles, texts.common.saved, toast],
+  )
+
   const deckCardOptions = useMemo(() => {
     const seen = new Map<number, string>()
     for (const row of cardRows) {
@@ -1224,9 +1314,145 @@ export function On9CollectiblesPage() {
                       {!meta?.skillId && !meta?.choKaikaSkillId ? (
                         <div className="text-kumo-subtle text-xs">{currentSkillName ?? '—'}</div>
                       ) : null}
-                      <Button size="sm" disabled={busy || maxed} onClick={() => void maxOneCard(row)}>
-                        {maxed ? texts.collectibles.cardAlreadyMaxed : texts.collectibles.maxOneCard}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button size="sm" disabled={busy || maxed} onClick={() => void maxOneCard(row)}>
+                          {maxed ? texts.collectibles.cardAlreadyMaxed : texts.collectibles.maxOneCard}
+                        </Button>
+                        <Button size="sm" variant="secondary" disabled={busy} onClick={() => toggleCardEdit(row)}>
+                          {texts.collectibles.cardEdit}
+                        </Button>
+                      </div>
+                      {cardEditOpen.has(row.cardId)
+                        ? (() => {
+                            const d = cardEditDraft[row.cardId]
+                            if (!d) return null
+                            const levelNum = parseInt(d.level, 10)
+                            const maxLevelNum = parseInt(d.maxLevel, 10)
+                            const expNum = parseInt(d.exp, 10)
+                            const stockNum = parseInt(d.digitalStock, 10)
+                            const valid =
+                              Number.isFinite(levelNum) &&
+                              levelNum >= 1 &&
+                              levelNum <= 100 &&
+                              Number.isFinite(maxLevelNum) &&
+                              maxLevelNum >= 10 &&
+                              maxLevelNum <= 100 &&
+                              Number.isFinite(expNum) &&
+                              expNum >= 0 &&
+                              Number.isFinite(stockNum) &&
+                              stockNum >= 1 &&
+                              stockNum <= 11
+                            const setField = (patch: Partial<typeof d>) =>
+                              setCardEditDraft((m) => ({ ...m, [row.cardId]: { ...d, ...patch } }))
+                            return (
+                              <div className="border-kumo-line mt-1 flex flex-col gap-2 border-t border-dashed pt-2">
+                                <label className="flex items-center gap-2 text-xs">
+                                  <span className="text-kumo-subtle w-24 shrink-0">
+                                    {texts.collectibles.cardEditLevelLabel}
+                                  </span>
+                                  <Input
+                                    className="h-9 flex-1"
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={d.level}
+                                    onChange={(e) => setField({ level: e.target.value })}
+                                  />
+                                </label>
+                                <label className="flex items-center gap-2 text-xs">
+                                  <span className="text-kumo-subtle w-24 shrink-0">
+                                    {texts.collectibles.cardEditMaxLevelLabel}
+                                  </span>
+                                  <Input
+                                    className="h-9 flex-1"
+                                    type="number"
+                                    min={10}
+                                    max={100}
+                                    value={d.maxLevel}
+                                    onChange={(e) => setField({ maxLevel: e.target.value })}
+                                  />
+                                </label>
+                                <label className="flex items-center gap-2 text-xs">
+                                  <span className="text-kumo-subtle w-24 shrink-0">
+                                    {texts.collectibles.cardEditExpLabel}
+                                  </span>
+                                  <Input
+                                    className="h-9 flex-1"
+                                    type="number"
+                                    min={0}
+                                    value={d.exp}
+                                    onChange={(e) => setField({ exp: e.target.value })}
+                                  />
+                                </label>
+                                <label className="flex items-center gap-2 text-xs">
+                                  <span className="text-kumo-subtle w-24 shrink-0">
+                                    {texts.collectibles.cardEditStockLabel}
+                                  </span>
+                                  <Input
+                                    className="h-9 flex-1"
+                                    type="number"
+                                    min={1}
+                                    max={11}
+                                    value={d.digitalStock}
+                                    onChange={(e) => setField({ digitalStock: e.target.value })}
+                                  />
+                                </label>
+                                <label className="flex items-center gap-2 text-xs">
+                                  <span className="text-kumo-subtle w-24 shrink-0">
+                                    {texts.collectibles.currentSkillLabel}
+                                  </span>
+                                  <select
+                                    value={d.skillId}
+                                    onChange={(e) => setField({ skillId: parseInt(e.target.value, 10) || 0 })}
+                                    className="border-kumo-line bg-kumo-base h-9 flex-1 rounded-lg border px-2 text-sm text-kumo-default"
+                                  >
+                                    {meta?.skillId ? (
+                                      <option value={meta.skillId}>
+                                        {(meta.skillName || String(meta.skillId)) +
+                                          texts.collectibles.skillNormalSuffix}
+                                      </option>
+                                    ) : null}
+                                    {meta?.choKaikaSkillId ? (
+                                      <option value={meta.choKaikaSkillId}>
+                                        {(meta.choKaikaSkillName || String(meta.choKaikaSkillId)) +
+                                          texts.collectibles.skillChoKaikaSuffix}
+                                      </option>
+                                    ) : null}
+                                  </select>
+                                </label>
+                                <Switch
+                                  controlFirst={false}
+                                  size="sm"
+                                  label={texts.collectibles.cardEditKaikaLabel}
+                                  checked={d.kaika}
+                                  onCheckedChange={(on) =>
+                                    setField({ kaika: on, choKaika: on ? d.choKaika : false })
+                                  }
+                                />
+                                <Switch
+                                  controlFirst={false}
+                                  size="sm"
+                                  label={texts.collectibles.cardEditChoKaikaLabel}
+                                  checked={d.choKaika}
+                                  onCheckedChange={(on) => setField({ choKaika: on, kaika: on ? true : d.kaika })}
+                                />
+                                {!valid ? (
+                                  <div className="text-kumo-danger text-xs">
+                                    {texts.collectibles.cardEditInvalidRange}
+                                  </div>
+                                ) : null}
+                                <div className="flex gap-2">
+                                  <Button size="sm" disabled={!valid || busy} onClick={() => void saveCardEdit(row)}>
+                                    {texts.common.save}
+                                  </Button>
+                                  <Button size="sm" variant="secondary" disabled={busy} onClick={() => toggleCardEdit(row)}>
+                                    {texts.common.cancel}
+                                  </Button>
+                                </div>
+                              </div>
+                            )
+                          })()
+                        : null}
                     </div>
                   </div>
                 )

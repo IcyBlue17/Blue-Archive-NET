@@ -43,4 +43,5 @@ export const qk = {
   gamePlaylog: (username: string, game: GameName) => ['game-playlog', username, game] as const,
   collectiblesChu3: ['collectibles', 'chu3'] as const,
   collectiblesOngeki: ['collectibles', 'ongeki'] as const,
+  on9Story: ['on9-story'] as const,
 }

@@ -139,6 +139,20 @@ export async function fetchOn9AssetJson<T = On9JsonEntry[]>(jsonFile: string): P
 
 export type On9CharaJsonEntry = On9JsonEntry & { isCommunicationTarget?: boolean }
 
+export type On9ChapterJsonEntry = On9JsonEntry & {
+  type?: string
+  displayNumber?: number
+  storyId?: number
+}
+export type On9StoryJsonEntry = On9JsonEntry & {
+  displayNumber?: number
+  selectableFlag?: boolean
+  eventChapterFlag?: boolean
+}
+export type On9MemoryChapterJsonEntry = On9JsonEntry & {
+  type?: string
+}
+
 export type On9CatalogBundle = {
   card: On9CardJsonEntry[]
   nameplate: On9JsonEntry[]

@@ -175,6 +175,80 @@ export async function setOngekiOutfit(characterId: number, costumeId: number, at
   }) as Promise<{ characterId: number; costumeId: number; attachmentId: number }>
 }
 
+export async function ongekiUserProgress() {
+  return userPost('/api/v2/game/ongeki/user-progress', {}) as Promise<{
+    chapters: Array<{ chapterId: number; jewelCount: number; isStoryWatched: number; isClear: number }>
+    stories: Array<{ storyId: number; lastChapterId: number; jewelCount: number }>
+    memoryChapters: Array<{
+      chapterId: number
+      jewelCount: number
+      isDialogWatched: number
+      isStoryWatched: number
+      isBossWatched: number
+      isClear: number
+      isEndingWatched: number
+      gaugeId: number
+      gaugeNum: number
+    }>
+  }>
+}
+
+export async function setOngekiChapter(params: {
+  chapterId: number
+  jewelCount: number
+  isStoryWatched: 0 | 1
+  isClear: 0 | 1
+}) {
+  return userPost('/api/v2/game/ongeki/user-chapter-set', {
+    chapterId: String(params.chapterId),
+    jewelCount: String(params.jewelCount),
+    isStoryWatched: String(params.isStoryWatched),
+    isClear: String(params.isClear),
+  }) as Promise<{ chapterId: number; jewelCount: number; isStoryWatched: number; isClear: number }>
+}
+
+export async function setOngekiStory(params: { storyId: number; lastChapterId: number; jewelCount: number }) {
+  return userPost('/api/v2/game/ongeki/user-story-set', {
+    storyId: String(params.storyId),
+    lastChapterId: String(params.lastChapterId),
+    jewelCount: String(params.jewelCount),
+  }) as Promise<{ storyId: number; lastChapterId: number; jewelCount: number }>
+}
+
+export async function setOngekiMemoryChapter(params: {
+  chapterId: number
+  jewelCount: number
+  isDialogWatched: 0 | 1
+  isStoryWatched: 0 | 1
+  isBossWatched: 0 | 1
+  isClear: 0 | 1
+  isEndingWatched: 0 | 1
+  gaugeId: number
+  gaugeNum: number
+}) {
+  return userPost('/api/v2/game/ongeki/user-memory-chapter-set', {
+    chapterId: String(params.chapterId),
+    jewelCount: String(params.jewelCount),
+    isDialogWatched: String(params.isDialogWatched),
+    isStoryWatched: String(params.isStoryWatched),
+    isBossWatched: String(params.isBossWatched),
+    isClear: String(params.isClear),
+    isEndingWatched: String(params.isEndingWatched),
+    gaugeId: String(params.gaugeId),
+    gaugeNum: String(params.gaugeNum),
+  }) as Promise<{
+    chapterId: number
+    jewelCount: number
+    isDialogWatched: number
+    isStoryWatched: number
+    isBossWatched: number
+    isClear: number
+    isEndingWatched: number
+    gaugeId: number
+    gaugeNum: number
+  }>
+}
+
 export async function setOngekiDeck(deckId: number, cardId1: number, cardId2: number, cardId3: number) {
   return userPost('/api/v2/game/ongeki/user-deck-set', {
     deckId: String(deckId),
