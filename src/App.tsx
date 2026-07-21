@@ -39,6 +39,7 @@ import { AdminLoginBonusPage } from './pages/admin/LoginBonus'
 import { AdminUnlockChallengePage } from './pages/admin/UnlockChallenge'
 import { AdminDownloadOrderPage } from './pages/admin/DownloadOrder'
 import { AdminConfigReloadPage } from './pages/admin/ConfigReload'
+import { AdminOngekiRankingPage } from './pages/admin/OngekiRanking'
 import { PageNotFound } from './pages/PageNotFound'
 
 function RootRedirect() {
@@ -95,6 +96,7 @@ export default function App() {
                           <Route path="unlock-challenge" element={<AdminUnlockChallengePage />} />
                           <Route path="download-order" element={<AdminDownloadOrderPage />} />
                           <Route path="config-reload" element={<AdminConfigReloadPage />} />
+                          <Route path="ongeki-ranking" element={<AdminOngekiRankingPage />} />
                         </Route>
                       </Route>
                     </Route>

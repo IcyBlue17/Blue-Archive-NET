@@ -44,4 +44,5 @@ export const qk = {
   collectiblesChu3: ['collectibles', 'chu3'] as const,
   collectiblesOngeki: ['collectibles', 'ongeki'] as const,
   on9Story: ['on9-story'] as const,
+  adminOngekiRanking: (type: number) => ['admin-ongeki-ranking', type] as const,
 }
