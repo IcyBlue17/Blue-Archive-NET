@@ -94,6 +94,9 @@ export async function ongekiUserBox() {
     cards?: Array<{
       cardId: number
       level?: number
+      maxLevel?: number
+      exp?: number
+      digitalStock?: number
       kaikaDate?: string
       choKaikaDate?: string
       skillId?: number
@@ -104,6 +107,12 @@ export async function ongekiUserBox() {
       intimateLevel?: number
       costumeId?: number
       attachmentId?: number
+    }>
+    decks?: Array<{
+      deckId: number
+      cardId1: number
+      cardId2: number
+      cardId3: number
     }>
   }>
 }
@@ -125,6 +134,54 @@ export async function setOngekiIntimate(characterId: number, intimateLevel: numb
     characterId: String(characterId),
     intimateLevel: String(intimateLevel),
   }) as Promise<{ characterId: number; intimateLevel: number }>
+}
+
+export async function setOngekiCardTraining(params: {
+  cardId: number
+  level: number
+  maxLevel: number
+  exp: number
+  digitalStock: number
+  skillId: number
+  kaika: 0 | 1
+  choKaika: 0 | 1
+}) {
+  return userPost('/api/v2/game/ongeki/user-card-training-set', {
+    cardId: String(params.cardId),
+    level: String(params.level),
+    maxLevel: String(params.maxLevel),
+    exp: String(params.exp),
+    digitalStock: String(params.digitalStock),
+    skillId: String(params.skillId),
+    kaika: String(params.kaika),
+    choKaika: String(params.choKaika),
+  }) as Promise<{
+    cardId: number
+    level: number
+    maxLevel: number
+    exp: number
+    digitalStock: number
+    skillId: number
+    kaikaDate: string
+    choKaikaDate: string
+  }>
+}
+
+export async function setOngekiOutfit(characterId: number, costumeId: number, attachmentId: number) {
+  return userPost('/api/v2/game/ongeki/user-character-outfit-set', {
+    characterId: String(characterId),
+    costumeId: String(costumeId),
+    attachmentId: String(attachmentId),
+  }) as Promise<{ characterId: number; costumeId: number; attachmentId: number }>
+}
+
+export async function setOngekiDeck(deckId: number, cardId1: number, cardId2: number, cardId3: number) {
+  return userPost('/api/v2/game/ongeki/user-deck-set', {
+    deckId: String(deckId),
+    cardId1: String(cardId1),
+    cardId2: String(cardId2),
+    cardId3: String(cardId3),
+  }) as Promise<{ deckId: number; cardId1: number; cardId2: number; cardId3: number }>
 }
 
 export async function unlockChu3Character(characterId: number, level: number) {

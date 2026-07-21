@@ -14,12 +14,16 @@ import { qk } from '../../lib/query'
 import {
   buildOn9CatalogOptions,
   bundleToOn9Lookups,
+  fetchOn9AssetJson,
   isOn9EquippableChara,
   loadOn9CatalogBundle,
+  on9CardImageUrl,
   on9CollectibleHasImage,
   on9CollectibleImageUrl,
   type On9AllItems,
+  type On9AttachmentJsonEntry,
   type On9CatalogBundle,
+  type On9CostumeJsonEntry,
   type On9NameLookups,
 } from '../../lib/on9Assets'
 import { imgCross } from '../../lib/imgSign'
@@ -111,7 +115,30 @@ function buildPaginationItems(current: number, total: number): (number | 'ellips
   return out
 }
 
-type On9IntimacyRow = { characterId: number; intimateLevel: number }
+type On9IntimacyRow = {
+  characterId: number
+  intimateLevel: number
+  costumeId: number
+  attachmentId: number
+}
+
+type On9CardTrainingRow = {
+  cardId: number
+  level: number
+  maxLevel: number
+  exp: number
+  digitalStock: number
+  skillId: number
+  kaikaDate: string
+  choKaikaDate: string
+}
+
+type On9DeckRow = {
+  deckId: number
+  cardId1: number
+  cardId2: number
+  cardId3: number
+}
 
 type On9CollectibleLoad = {
   lockedRows: On9UserboxSelectRow[]
@@ -123,6 +150,42 @@ type On9CollectibleLoad = {
   ownedCards: number[]
   ownedCharacters: number[]
   characterRows: On9IntimacyRow[]
+  cardRows: On9CardTrainingRow[]
+  deckRows: On9DeckRow[]
+}
+
+// A card counts as fully trained once it hits the rarity-appropriate cap on level, digital
+// stock, and both bloom states — matches the params computeMaxTrainingParams sends.
+function isCardMaxed(row: On9CardTrainingRow, rarity: string): boolean {
+  const targetMax = rarity === 'N' ? 100 : 70
+  const targetStock = rarity === 'N' ? 11 : 5
+  const choKaikaSet = row.choKaikaDate !== '' && !row.choKaikaDate.startsWith('0000')
+  return (
+    row.level >= targetMax &&
+    row.maxLevel >= targetMax &&
+    row.digitalStock >= targetStock &&
+    choKaikaSet
+  )
+}
+
+function kaikaState(row: On9CardTrainingRow): 0 | 1 | 2 {
+  if (row.choKaikaDate && !row.choKaikaDate.startsWith('0000')) return 2
+  if (row.kaikaDate && !row.kaikaDate.startsWith('0000')) return 1
+  return 0
+}
+
+function computeMaxTrainingParams(row: On9CardTrainingRow, rarity: string, choKaikaSkillId: number) {
+  const targetMax = rarity === 'N' ? 100 : 70
+  const targetStock = rarity === 'N' ? 11 : 5
+  return {
+    level: targetMax,
+    maxLevel: targetMax,
+    exp: 0,
+    digitalStock: targetStock,
+    skillId: choKaikaSkillId > 0 ? choKaikaSkillId : row.skillId,
+    kaika: 1 as const,
+    choKaika: 1 as const,
+  }
 }
 
 export function On9CollectiblesPage() {
@@ -140,6 +203,20 @@ export function On9CollectiblesPage() {
   const [characterRows, setCharacterRows] = useState<On9IntimacyRow[]>([])
   const [intimacyDraft, setIntimacyDraft] = useState<Record<number, string>>({})
   const [intimacySavingId, setIntimacySavingId] = useState<number | null>(null)
+  const [outfitDraft, setOutfitDraft] = useState<Record<number, { costumeId: number; attachmentId: number }>>({})
+  const [outfitSavingId, setOutfitSavingId] = useState<number | null>(null)
+  const [costumeList, setCostumeList] = useState<On9CostumeJsonEntry[]>([])
+  const [attachmentList, setAttachmentList] = useState<On9AttachmentJsonEntry[]>([])
+  const [costumeLoadFailed, setCostumeLoadFailed] = useState(false)
+  const [attachmentLoadFailed, setAttachmentLoadFailed] = useState(false)
+  const [cardRows, setCardRows] = useState<On9CardTrainingRow[]>([])
+  const [cardSearch, setCardSearch] = useState('')
+  const [cardPage, setCardPage] = useState(0)
+  const [cardActionId, setCardActionId] = useState<number | null>(null)
+  const [bulkMaxProgress, setBulkMaxProgress] = useState<{ done: number; total: number } | null>(null)
+  const [deckRows, setDeckRows] = useState<On9DeckRow[]>([])
+  const [deckDraft, setDeckDraft] = useState<Record<number, { cardId1: number; cardId2: number; cardId3: number }>>({})
+  const [deckSavingId, setDeckSavingId] = useState<number | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [modalField, setModalField] = useState<string | null>(null)
   const [modalPage, setModalPage] = useState(0)
@@ -211,8 +288,33 @@ export function On9CollectiblesPage() {
         .map((x) => (typeof x === 'number' ? x : parseInt(String(x), 10)))
         .filter((n) => Number.isFinite(n) && n > 0)
       const charRows = (box.characterRows ?? [])
-        .map((r) => ({ characterId: r.characterId, intimateLevel: r.intimateLevel ?? 0 }))
+        .map((r) => ({
+          characterId: r.characterId,
+          intimateLevel: r.intimateLevel ?? 0,
+          costumeId: r.costumeId ?? 0,
+          attachmentId: r.attachmentId ?? 0,
+        }))
         .filter((r) => Number.isFinite(r.characterId) && r.characterId > 0)
+      const cardTrainingRows = (box.cards ?? [])
+        .map((x) => ({
+          cardId: typeof x.cardId === 'number' ? x.cardId : parseInt(String(x.cardId), 10),
+          level: x.level ?? 1,
+          maxLevel: x.maxLevel ?? 20,
+          exp: x.exp ?? 0,
+          digitalStock: x.digitalStock ?? 1,
+          skillId: x.skillId ?? 0,
+          kaikaDate: x.kaikaDate ?? '',
+          choKaikaDate: x.choKaikaDate ?? '',
+        }))
+        .filter((r) => Number.isFinite(r.cardId) && r.cardId > 0)
+      const deckRowsRaw = (box.decks ?? [])
+        .filter((d) => Number.isFinite(d.deckId))
+        .map((d) => ({
+          deckId: d.deckId,
+          cardId1: d.cardId1 ?? 0,
+          cardId2: d.cardId2 ?? 0,
+          cardId3: d.cardId3 ?? 0,
+        }))
       const ai = allRaw as On9AllItems
       return {
         allItems: ai,
@@ -224,9 +326,34 @@ export function On9CollectiblesPage() {
         ownedCards: cardIds,
         ownedCharacters: charIds,
         characterRows: charRows,
+        cardRows: cardTrainingRows,
+        deckRows: deckRowsRaw,
       }
     },
   })
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const list = await fetchOn9AssetJson<On9CostumeJsonEntry[]>('costume.json')
+        if (!cancelled) setCostumeList(list)
+      } catch {
+        if (!cancelled) setCostumeLoadFailed(true)
+      }
+    })()
+    void (async () => {
+      try {
+        const list = await fetchOn9AssetJson<On9AttachmentJsonEntry[]>('attachment.json')
+        if (!cancelled) setAttachmentList(list)
+      } catch {
+        if (!cancelled) setAttachmentLoadFailed(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!loadQuery.data) return
@@ -238,6 +365,10 @@ export function On9CollectiblesPage() {
     setOwnedCharacters(loadQuery.data.ownedCharacters)
     setCharacterRows(loadQuery.data.characterRows)
     setIntimacyDraft({})
+    setOutfitDraft({})
+    setCardRows(loadQuery.data.cardRows)
+    setDeckRows(loadQuery.data.deckRows)
+    setDeckDraft({})
     setLockedRows(loadQuery.data.lockedRows)
     setDraft((oldDraft) => {
       if (!keepDraftRef.current) return loadQuery.data.draft
@@ -281,13 +412,27 @@ export function On9CollectiblesPage() {
 
   const cardMetaMap = useMemo(() => {
     const raw = allItems.card ?? {}
-    const out: Record<number, { charaName: string; rarity: string }> = {}
+    const out: Record<
+      number,
+      {
+        charaName: string
+        rarity: string
+        skillId: number
+        skillName: string
+        choKaikaSkillId: number
+        choKaikaSkillName: string
+      }
+    > = {}
     for (const [id, row] of Object.entries(raw)) {
       const num = parseInt(id, 10)
       if (!Number.isNaN(num)) {
         out[num] = {
           charaName: cleanText(row.charaName),
           rarity: cleanText(row.rarity),
+          skillId: numFromUser(row, 'skillId'),
+          skillName: cleanText(row.skillName),
+          choKaikaSkillId: numFromUser(row, 'choKaikaSkillId'),
+          choKaikaSkillName: cleanText(row.choKaikaSkillName),
         }
       }
     }
@@ -519,6 +664,201 @@ export function On9CollectiblesPage() {
 
   const pageItems = useMemo(() => buildPaginationItems(safePage, totalPages), [safePage, totalPages])
 
+  const costumeByChara = useMemo(() => {
+    const map = new Map<number, On9CostumeJsonEntry[]>()
+    for (const c of costumeList) {
+      if (typeof c.charaId !== 'number') continue
+      const list = map.get(c.charaId) ?? []
+      list.push(c)
+      map.set(c.charaId, list)
+    }
+    return map
+  }, [costumeList])
+
+  const attachmentByChara = useMemo(() => {
+    const map = new Map<number, On9AttachmentJsonEntry[]>()
+    for (const a of attachmentList) {
+      for (const cid of a.attachCharaIds ?? []) {
+        const list = map.get(cid) ?? []
+        list.push(a)
+        map.set(cid, list)
+      }
+    }
+    return map
+  }, [attachmentList])
+
+  const saveOutfit = useCallback(
+    async (characterId: number, currentCostumeId: number, currentAttachmentId: number) => {
+      const draftVal = outfitDraft[characterId]
+      const costumeId = draftVal?.costumeId ?? currentCostumeId
+      const attachmentId = draftVal?.attachmentId ?? currentAttachmentId
+      setOutfitSavingId(characterId)
+      setErr(null)
+      try {
+        await gameApi.setOngekiOutfit(characterId, costumeId, attachmentId)
+        setCharacterRows((rows) =>
+          rows.map((r) => (r.characterId === characterId ? { ...r, costumeId, attachmentId } : r)),
+        )
+        setOutfitDraft((d) => {
+          const next = { ...d }
+          delete next[characterId]
+          return next
+        })
+        toast.add({ title: texts.collectibles.outfitUpdated, variant: 'success' })
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : texts.collectibles.outfitSaveFailed)
+      } finally {
+        setOutfitSavingId(null)
+      }
+    },
+    [outfitDraft, texts.collectibles, toast],
+  )
+
+  const deferredCardSearch = useDeferredValue(cardSearch.trim().toLowerCase())
+
+  const filteredCardRows = useMemo(() => {
+    if (!deferredCardSearch) return cardRows
+    return cardRows.filter((row) => {
+      const name = resolveName('cardId', row.cardId, allItems, lookups).toLowerCase()
+      const charaName = (cardMetaMap[row.cardId]?.charaName ?? '').toLowerCase()
+      return (
+        name.includes(deferredCardSearch) ||
+        String(row.cardId).includes(deferredCardSearch) ||
+        charaName.includes(deferredCardSearch)
+      )
+    })
+  }, [cardRows, deferredCardSearch, allItems, lookups, cardMetaMap])
+
+  const CARD_PAGE_SIZE = 12
+  const cardTotalPages = Math.max(1, Math.ceil(filteredCardRows.length / CARD_PAGE_SIZE))
+  const safeCardPage = Math.min(cardPage, cardTotalPages - 1)
+  const cardPageSlice = filteredCardRows.slice(
+    safeCardPage * CARD_PAGE_SIZE,
+    safeCardPage * CARD_PAGE_SIZE + CARD_PAGE_SIZE,
+  )
+  const cardPageItems = useMemo(
+    () => buildPaginationItems(safeCardPage, cardTotalPages),
+    [safeCardPage, cardTotalPages],
+  )
+
+  useEffect(() => {
+    setCardPage(0)
+  }, [deferredCardSearch])
+
+  const maxOneCard = useCallback(
+    async (row: On9CardTrainingRow) => {
+      const meta = cardMetaMap[row.cardId]
+      const rarity = meta?.rarity ?? ''
+      const params = computeMaxTrainingParams(row, rarity, meta?.choKaikaSkillId ?? 0)
+      setCardActionId(row.cardId)
+      setErr(null)
+      try {
+        const res = await gameApi.setOngekiCardTraining({ cardId: row.cardId, ...params })
+        setCardRows((rows) => rows.map((r) => (r.cardId === row.cardId ? { ...r, ...res } : r)))
+        toast.add({ title: texts.common.saved, variant: 'success' })
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : texts.collectibles.cardTrainingSaveFailed)
+      } finally {
+        setCardActionId(null)
+      }
+    },
+    [cardMetaMap, texts.collectibles, texts.common.saved, toast],
+  )
+
+  const maxAllCards = useCallback(async () => {
+    const targets = cardRows.filter((row) => !isCardMaxed(row, cardMetaMap[row.cardId]?.rarity ?? ''))
+    if (targets.length === 0) return
+    setErr(null)
+    setBulkMaxProgress({ done: 0, total: targets.length })
+    try {
+      for (let i = 0; i < targets.length; i++) {
+        const row = targets[i]!
+        const meta = cardMetaMap[row.cardId]
+        const rarity = meta?.rarity ?? ''
+        const params = computeMaxTrainingParams(row, rarity, meta?.choKaikaSkillId ?? 0)
+        await gameApi.setOngekiCardTraining({ cardId: row.cardId, ...params })
+        setBulkMaxProgress({ done: i + 1, total: targets.length })
+      }
+      await loadQuery.refetch()
+      toast.add({ title: texts.common.saved, variant: 'success' })
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : texts.collectibles.cardTrainingSaveFailed)
+    } finally {
+      setBulkMaxProgress(null)
+    }
+  }, [cardRows, cardMetaMap, loadQuery, texts.collectibles, texts.common.saved, toast])
+
+  const changeCardSkill = useCallback(
+    async (row: On9CardTrainingRow, skillId: number) => {
+      setCardActionId(row.cardId)
+      setErr(null)
+      try {
+        const res = await gameApi.setOngekiCardTraining({
+          cardId: row.cardId,
+          level: row.level,
+          maxLevel: row.maxLevel,
+          exp: row.exp,
+          digitalStock: row.digitalStock,
+          skillId,
+          kaika: row.kaikaDate && !row.kaikaDate.startsWith('0000') ? 1 : 0,
+          choKaika: row.choKaikaDate && !row.choKaikaDate.startsWith('0000') ? 1 : 0,
+        })
+        setCardRows((rows) => rows.map((r) => (r.cardId === row.cardId ? { ...r, ...res } : r)))
+        toast.add({ title: texts.common.saved, variant: 'success' })
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : texts.collectibles.cardTrainingSaveFailed)
+      } finally {
+        setCardActionId(null)
+      }
+    },
+    [texts.collectibles, texts.common.saved, toast],
+  )
+
+  const deckCardOptions = useMemo(() => {
+    const seen = new Map<number, string>()
+    for (const row of cardRows) {
+      if (seen.has(row.cardId)) continue
+      const name = resolveName('cardId', row.cardId, allItems, lookups)
+      const charaName = cardMetaMap[row.cardId]?.charaName ?? ''
+      seen.set(row.cardId, charaName ? `${name} (${charaName})` : name)
+    }
+    return [...seen.entries()]
+      .map(([itemId, label]) => ({ itemId, label }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'ja'))
+  }, [cardRows, allItems, lookups, cardMetaMap])
+
+  const saveDeck = useCallback(
+    async (deck: On9DeckRow) => {
+      const draftVal = deckDraft[deck.deckId]
+      const cardId1 = draftVal?.cardId1 ?? deck.cardId1
+      const cardId2 = draftVal?.cardId2 ?? deck.cardId2
+      const cardId3 = draftVal?.cardId3 ?? deck.cardId3
+      if (cardId1 === cardId2 || cardId1 === cardId3 || cardId2 === cardId3) {
+        setErr(texts.collectibles.deckDuplicateWarning)
+        return
+      }
+      setDeckSavingId(deck.deckId)
+      setErr(null)
+      try {
+        await gameApi.setOngekiDeck(deck.deckId, cardId1, cardId2, cardId3)
+        setDeckRows((rows) =>
+          rows.map((r) => (r.deckId === deck.deckId ? { ...r, cardId1, cardId2, cardId3 } : r)),
+        )
+        setDeckDraft((d) => {
+          const next = { ...d }
+          delete next[deck.deckId]
+          return next
+        })
+        toast.add({ title: texts.collectibles.deckUpdated, variant: 'success' })
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : texts.collectibles.deckSaveFailed)
+      } finally {
+        setDeckSavingId(null)
+      }
+    },
+    [deckDraft, texts.collectibles, toast],
+  )
+
   const loadErr =
     loadQuery.error instanceof Error
       ? loadQuery.error.message
@@ -696,6 +1036,314 @@ export function On9CollectiblesPage() {
                         : texts.collectibles.applyIntimacy}
                     </Button>
                   </div>
+                  {(() => {
+                    const outfitVal = outfitDraft[row.characterId]
+                    const costumeId = outfitVal?.costumeId ?? row.costumeId
+                    const attachmentId = outfitVal?.attachmentId ?? row.attachmentId
+                    const outfitDirty = costumeId !== row.costumeId || attachmentId !== row.attachmentId
+                    const costumeOptions = costumeByChara.get(row.characterId) ?? []
+                    const attachmentOptions = attachmentByChara.get(row.characterId) ?? []
+                    return (
+                      <div className="border-kumo-line flex flex-col gap-2 border-t px-3 py-2.5">
+                        <label className="flex items-center gap-2 text-xs">
+                          <span className="text-kumo-subtle w-16 shrink-0">
+                            {texts.collectibles.costumeLabel}
+                          </span>
+                          <select
+                            value={costumeId}
+                            onChange={(e) =>
+                              setOutfitDraft((d) => ({
+                                ...d,
+                                [row.characterId]: {
+                                  costumeId: parseInt(e.target.value, 10) || 0,
+                                  attachmentId,
+                                },
+                              }))
+                            }
+                            className="border-kumo-line bg-kumo-base h-9 flex-1 rounded-lg border px-2 text-sm text-kumo-default"
+                          >
+                            <option value={0}>{texts.common.empty}</option>
+                            {costumeOptions.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        {costumeLoadFailed && costumeOptions.length === 0 ? (
+                          <div className="text-kumo-subtle text-xs">{texts.collectibles.costumeUnavailable}</div>
+                        ) : null}
+                        <label className="flex items-center gap-2 text-xs">
+                          <span className="text-kumo-subtle w-16 shrink-0">
+                            {texts.collectibles.attachmentLabel}
+                          </span>
+                          <select
+                            value={attachmentId}
+                            onChange={(e) =>
+                              setOutfitDraft((d) => ({
+                                ...d,
+                                [row.characterId]: {
+                                  costumeId,
+                                  attachmentId: parseInt(e.target.value, 10) || 0,
+                                },
+                              }))
+                            }
+                            className="border-kumo-line bg-kumo-base h-9 flex-1 rounded-lg border px-2 text-sm text-kumo-default"
+                          >
+                            <option value={0}>{texts.common.empty}</option>
+                            {attachmentOptions.map((a) => (
+                              <option key={a.id} value={a.id}>
+                                {a.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        {attachmentLoadFailed && attachmentOptions.length === 0 ? (
+                          <div className="text-kumo-subtle text-xs">
+                            {texts.collectibles.attachmentUnavailable}
+                          </div>
+                        ) : null}
+                        {outfitDirty ? (
+                          <Button
+                            size="sm"
+                            disabled={outfitSavingId != null}
+                            onClick={() => void saveOutfit(row.characterId, row.costumeId, row.attachmentId)}
+                          >
+                            {outfitSavingId === row.characterId
+                              ? texts.collectibles.unlocking
+                              : texts.collectibles.saveOutfit}
+                          </Button>
+                        ) : null}
+                      </div>
+                    )
+                  })()}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-kumo-default mb-1 text-lg font-semibold">{texts.collectibles.cardTrainingTitle}</h2>
+        <Text DANGEROUS_className="text-kumo-subtle mb-3 block text-sm">
+          {texts.collectibles.cardTrainingHint}
+        </Text>
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <label className="flex max-w-sm flex-1 flex-col gap-1">
+            <span className="text-kumo-subtle text-xs">{texts.collectibles.searchLabel}</span>
+            <Input
+              className="h-10"
+              value={cardSearch}
+              onChange={(e) => setCardSearch(e.target.value)}
+              placeholder={texts.collectibles.cardTrainingSearchPlaceholder}
+            />
+          </label>
+          <Button
+            variant="secondary"
+            disabled={bulkMaxProgress != null || cardActionId != null || cardRows.length === 0}
+            onClick={() => void maxAllCards()}
+          >
+            {bulkMaxProgress
+              ? texts.collectibles.maxingAllProgress(bulkMaxProgress.done, bulkMaxProgress.total)
+              : texts.collectibles.maxAllCards}
+          </Button>
+        </div>
+        {cardRows.length === 0 ? (
+          <Text DANGEROUS_className="text-kumo-subtle text-sm">{texts.collectibles.noCardsOwned}</Text>
+        ) : (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {cardPageSlice.map((row) => {
+                const meta = cardMetaMap[row.cardId]
+                const rarity = meta?.rarity ?? ''
+                const name = resolveName('cardId', row.cardId, allItems, lookups)
+                const img = on9CardImageUrl(row.cardId, true)
+                const state = kaikaState(row)
+                const stateLabel =
+                  state === 2
+                    ? texts.collectibles.kaikaTwo
+                    : state === 1
+                      ? texts.collectibles.kaikaOne
+                      : texts.collectibles.kaikaNone
+                const maxed = isCardMaxed(row, rarity)
+                const currentSkillName =
+                  row.skillId === meta?.choKaikaSkillId && (meta?.choKaikaSkillId ?? 0) > 0
+                    ? meta?.choKaikaSkillName
+                    : (allItems.skill?.[String(row.skillId)]?.name ?? meta?.skillName)
+                const busy = cardActionId === row.cardId || bulkMaxProgress != null
+                return (
+                  <div
+                    key={row.cardId}
+                    className="border-kumo-line bg-kumo-base flex flex-col overflow-hidden rounded-lg border shadow-sm"
+                  >
+                    <div className="flex items-center gap-3 p-3">
+                      <div className="border-kumo-line bg-kumo-recessed h-16 w-16 shrink-0 overflow-hidden rounded-md border">
+                        {img ? (
+                          <img
+                            src={img}
+                            crossOrigin={imgCross(img)}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-kumo-default truncate text-sm font-medium">{name}</div>
+                        <div className="text-kumo-subtle text-xs">
+                          {texts.collectibles.cardLevelLabel(row.level, row.maxLevel)}
+                        </div>
+                        <div className="text-kumo-subtle text-xs">{stateLabel}</div>
+                      </div>
+                    </div>
+                    <div className="border-kumo-line flex flex-col gap-2 border-t px-3 py-2.5">
+                      <label className="flex items-center gap-2 text-xs">
+                        <span className="text-kumo-subtle w-14 shrink-0">
+                          {texts.collectibles.currentSkillLabel}
+                        </span>
+                        <select
+                          value={row.skillId}
+                          disabled={busy}
+                          onChange={(e) => void changeCardSkill(row, parseInt(e.target.value, 10) || 0)}
+                          className="border-kumo-line bg-kumo-base h-9 flex-1 rounded-lg border px-2 text-sm text-kumo-default"
+                        >
+                          {meta?.skillId ? (
+                            <option value={meta.skillId}>
+                              {(meta.skillName || String(meta.skillId)) + texts.collectibles.skillNormalSuffix}
+                            </option>
+                          ) : null}
+                          {meta?.choKaikaSkillId ? (
+                            <option value={meta.choKaikaSkillId}>
+                              {(meta.choKaikaSkillName || String(meta.choKaikaSkillId)) +
+                                texts.collectibles.skillChoKaikaSuffix}
+                            </option>
+                          ) : null}
+                        </select>
+                      </label>
+                      {!meta?.skillId && !meta?.choKaikaSkillId ? (
+                        <div className="text-kumo-subtle text-xs">{currentSkillName ?? '—'}</div>
+                      ) : null}
+                      <Button size="sm" disabled={busy || maxed} onClick={() => void maxOneCard(row)}>
+                        {maxed ? texts.collectibles.cardAlreadyMaxed : texts.collectibles.maxOneCard}
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            {cardTotalPages > 1 ? (
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-1">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={safeCardPage <= 0}
+                  onClick={() => setCardPage((p) => Math.max(0, p - 1))}
+                >
+                  {texts.common.previousPage}
+                </Button>
+                {cardPageItems.map((item, idx) =>
+                  item === 'ellipsis' ? (
+                    <span key={`ce-${idx}`} className="text-kumo-subtle px-2 text-sm">
+                      …
+                    </span>
+                  ) : (
+                    <Button
+                      key={item}
+                      size="sm"
+                      variant={item === safeCardPage ? 'primary' : 'secondary'}
+                      onClick={() => setCardPage(item)}
+                    >
+                      {item + 1}
+                    </Button>
+                  ),
+                )}
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={safeCardPage >= cardTotalPages - 1}
+                  onClick={() => setCardPage((p) => Math.min(cardTotalPages - 1, p + 1))}
+                >
+                  {texts.common.nextPage}
+                </Button>
+              </div>
+            ) : null}
+          </>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-kumo-default mb-1 text-lg font-semibold">{texts.collectibles.deckTitle}</h2>
+        <Text DANGEROUS_className="text-kumo-subtle mb-3 block text-sm">{texts.collectibles.deckHint}</Text>
+        {deckRows.length === 0 ? (
+          <Text DANGEROUS_className="text-kumo-subtle text-sm">{texts.collectibles.deckEmpty}</Text>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {deckRows.map((deck) => {
+              const draftVal = deckDraft[deck.deckId]
+              const cardId1 = draftVal?.cardId1 ?? deck.cardId1
+              const cardId2 = draftVal?.cardId2 ?? deck.cardId2
+              const cardId3 = draftVal?.cardId3 ?? deck.cardId3
+              const slots: [number, (v: number) => void][] = [
+                [cardId1, (v) => setDeckDraft((d) => ({ ...d, [deck.deckId]: { cardId1: v, cardId2, cardId3 } }))],
+                [cardId2, (v) => setDeckDraft((d) => ({ ...d, [deck.deckId]: { cardId1, cardId2: v, cardId3 } }))],
+                [cardId3, (v) => setDeckDraft((d) => ({ ...d, [deck.deckId]: { cardId1, cardId2, cardId3: v } }))],
+              ]
+              const dirty = cardId1 !== deck.cardId1 || cardId2 !== deck.cardId2 || cardId3 !== deck.cardId3
+              const hasDuplicate = cardId1 === cardId2 || cardId1 === cardId3 || cardId2 === cardId3
+              return (
+                <div
+                  key={deck.deckId}
+                  className="border-kumo-line bg-kumo-base flex flex-col gap-3 overflow-hidden rounded-lg border p-3 shadow-sm"
+                >
+                  <div className="text-kumo-default text-sm font-semibold">
+                    {texts.collectibles.deckName(deck.deckId)}
+                  </div>
+                  {slots.map(([cardId, setSlot], idx) => {
+                    const img = on9CardImageUrl(cardId, true)
+                    return (
+                      <div key={idx} className="flex items-center gap-2">
+                        <div className="border-kumo-line bg-kumo-recessed h-12 w-12 shrink-0 overflow-hidden rounded-md border">
+                          {img ? (
+                            <img
+                              src={img}
+                              crossOrigin={imgCross(img)}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : null}
+                        </div>
+                        <label className="flex min-w-0 flex-1 flex-col gap-1">
+                          <span className="text-kumo-subtle text-xs">{texts.collectibles.deckSlot(idx + 1)}</span>
+                          <select
+                            value={cardId}
+                            onChange={(e) => setSlot(parseInt(e.target.value, 10) || 0)}
+                            className="border-kumo-line bg-kumo-base h-9 rounded-lg border px-2 text-sm text-kumo-default"
+                          >
+                            <option value={0}>{texts.common.empty}</option>
+                            {deckCardOptions.map((o) => (
+                              <option key={o.itemId} value={o.itemId}>
+                                {o.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                    )
+                  })}
+                  {hasDuplicate ? (
+                    <div className="text-kumo-danger text-xs">{texts.collectibles.deckDuplicateWarning}</div>
+                  ) : null}
+                  {dirty ? (
+                    <Button
+                      size="sm"
+                      disabled={hasDuplicate || deckSavingId != null}
+                      onClick={() => void saveDeck(deck)}
+                    >
+                      {deckSavingId === deck.deckId ? texts.collectibles.unlocking : texts.collectibles.saveDeck}
+                    </Button>
+                  ) : null}
                 </div>
               )
             })}

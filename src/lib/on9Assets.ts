@@ -9,11 +9,21 @@ export type On9CardJsonEntry = On9JsonEntry & {
   attribute?: string
   school?: string
   gakunen?: string
+  skillId?: number
   skillName?: string
+  choKaikaSkillId?: number
   choKaikaSkillName?: string
   versionKey?: string
   imageFile?: string
   smallImageFile?: string
+}
+export type On9CostumeJsonEntry = On9JsonEntry & {
+  charaId?: number
+  charaName?: string
+  typeId?: number
+}
+export type On9AttachmentJsonEntry = On9JsonEntry & {
+  attachCharaIds?: number[]
 }
 export type On9AllItemMeta = {
   name?: string
