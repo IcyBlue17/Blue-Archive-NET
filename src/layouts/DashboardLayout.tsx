@@ -77,7 +77,7 @@ function DashboardShell() {
         </Sidebar.Header>
         <Sidebar.Content>
           <Sidebar.Group>
-            <Sidebar.GroupLabel>{texts.nav.dashboard}</Sidebar.GroupLabel>
+            <Sidebar.GroupLabel>{texts.nav.groups.basic}</Sidebar.GroupLabel>
             <Sidebar.GroupContent>
               <NavBtn path="/home" icon={House} active={loc.pathname === '/home'} onNavigate={go}>
                 {texts.nav.home}
@@ -99,12 +99,32 @@ function DashboardShell() {
               <NavBtn path="/games/chu3" icon={Trophy} active={loc.pathname.startsWith('/games')} onNavigate={go}>
                 {texts.layout.games}
               </NavBtn>
-              <NavBtn path="/team" icon={ShieldStar} active={loc.pathname.startsWith('/team')} onNavigate={go}>
-                {texts.nav.team}
+              <NavBtn
+                path="/settings/profile"
+                icon={GearSix}
+                active={loc.pathname.startsWith('/settings')}
+                onNavigate={go}
+              >
+                {texts.nav.settings}
               </NavBtn>
-              <NavBtn path="/friends" icon={UsersThree} active={loc.pathname.startsWith('/friends')} onNavigate={go}>
-                {texts.nav.friends}
+              {isAdmin ? (
+                <NavBtn path="/admin" icon={ShieldStar} active={loc.pathname.startsWith('/admin')} onNavigate={go}>
+                  {texts.nav.admin}
+                </NavBtn>
+              ) : null}
+            </Sidebar.GroupContent>
+          </Sidebar.Group>
+          <Sidebar.Group>
+            <Sidebar.GroupLabel>{texts.nav.groups.maimai}</Sidebar.GroupLabel>
+            <Sidebar.GroupContent>
+              <NavBtn path="/pictures" icon={Images} active={loc.pathname === '/pictures'} onNavigate={go}>
+                {texts.nav.pictures}
               </NavBtn>
+            </Sidebar.GroupContent>
+          </Sidebar.Group>
+          <Sidebar.Group>
+            <Sidebar.GroupLabel>{texts.nav.groups.chunithm}</Sidebar.GroupLabel>
+            <Sidebar.GroupContent>
               <NavBtn
                 path="/collectibles"
                 icon={Sparkle}
@@ -113,6 +133,17 @@ function DashboardShell() {
               >
                 {texts.nav.collectibles}
               </NavBtn>
+              <NavBtn path="/team" icon={ShieldStar} active={loc.pathname.startsWith('/team')} onNavigate={go}>
+                {texts.nav.team}
+              </NavBtn>
+              <NavBtn path="/friends" icon={UsersThree} active={loc.pathname.startsWith('/friends')} onNavigate={go}>
+                {texts.nav.friends}
+              </NavBtn>
+            </Sidebar.GroupContent>
+          </Sidebar.Group>
+          <Sidebar.Group>
+            <Sidebar.GroupLabel>{texts.nav.groups.ongeki}</Sidebar.GroupLabel>
+            <Sidebar.GroupContent>
               <NavBtn
                 path="/collectibles/ongeki"
                 icon={IdentificationCard}
@@ -129,22 +160,6 @@ function DashboardShell() {
               >
                 {texts.nav.on9Story}
               </NavBtn>
-              <NavBtn path="/pictures" icon={Images} active={loc.pathname === '/pictures'} onNavigate={go}>
-                {texts.nav.pictures}
-              </NavBtn>
-              <NavBtn
-                path="/settings/profile"
-                icon={GearSix}
-                active={loc.pathname.startsWith('/settings')}
-                onNavigate={go}
-              >
-                {texts.nav.settings}
-              </NavBtn>
-              {isAdmin ? (
-                <NavBtn path="/admin" icon={ShieldStar} active={loc.pathname.startsWith('/admin')} onNavigate={go}>
-                  {texts.nav.admin}
-                </NavBtn>
-              ) : null}
             </Sidebar.GroupContent>
           </Sidebar.Group>
         </Sidebar.Content>
