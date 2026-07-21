@@ -18,63 +18,34 @@ import { qk } from '../../lib/query'
 // startDate; if all 25 are disabled, no MV plays at all.
 const MOVIE_EVENT_IDS = Array.from({ length: 25 }, (_, i) => 1359910205 + i)
 
-// id -> "year + song title" label table.
+// id -> "year + song title + (movie id)" label table. The 25 events only reuse 8 underlying
+// videos, so the trailing movie id makes it visible when two rows play the identical MV.
 const MOVIE_EVENT_LABELS: Record<number, string> = {
-  1359910205: '2024 STARTLINER',
-  1359910206: '2024 Jump!! Jump!! Jump!! セガフェス版',
-  1359910207: '2024 最強 the サマータイム!!!!!',
-  1359910208: '2024 Splash Dance!!',
-  1359910209: '2024 No Limit RED Force',
-  1359910210: '2024 STARRED HEART Ending Ver',
-  1359910211: '2024 Transcend Lights',
-  1359910212: '2024 フィナーレ曲',
-  1359910213: '2025 STARTLINER',
-  1359910214: '2025 Jump!! Jump!! Jump!! セガフェス版',
-  1359910215: '2025 最強 the サマータイム!!!!!',
-  1359910216: '2025 Splash Dance!!',
-  1359910217: '2025 No Limit RED Force',
-  1359910218: '2025 STARRED HEART Ending Ver',
-  1359910219: '2025 Transcend Lights',
-  1359910220: '2025 フィナーレ曲',
-  1359910221: '2026 STARTLINER',
-  1359910222: '2026 Jump!! Jump!! Jump!! セガフェス版',
-  1359910223: '2026 最強 the サマータイム!!!!!',
-  1359910224: '2026 Splash Dance!!',
-  1359910225: '2026 No Limit RED Force',
-  1359910226: '2026 STARRED HEART Ending Ver',
-  1359910227: '2026 Transcend Lights',
-  1359910228: '2026 フィナーレ曲',
-  1359910229: 'フィナーレ曲(通用)',
-}
-
-// The 25 events only reuse 8 underlying videos (movie id). Two rows with the same movie id
-// play the identical MV, so the UI surfaces the movie id to make that reuse visible.
-const MOVIE_IDS: Record<number, number> = {
-  1359910205: 10002,
-  1359910206: 10504,
-  1359910207: 11001,
-  1359910208: 11504,
-  1359910209: 12001,
-  1359910210: 12502,
-  1359910211: 13001,
-  1359910212: 13505,
-  1359910213: 10002,
-  1359910214: 10504,
-  1359910215: 11001,
-  1359910216: 11504,
-  1359910217: 12001,
-  1359910218: 12502,
-  1359910219: 13001,
-  1359910220: 13505,
-  1359910221: 10002,
-  1359910222: 10504,
-  1359910223: 11001,
-  1359910224: 11504,
-  1359910225: 12001,
-  1359910226: 12502,
-  1359910227: 13001,
-  1359910228: 13505,
-  1359910229: 13505,
+  1359910205: '2024 STARTLINER (10002)',
+  1359910206: '2024 Jump!! Jump!! Jump!! セガフェス版 (10504)',
+  1359910207: '2024 最強 the サマータイム!!!!! (11001)',
+  1359910208: '2024 Splash Dance!! (11504)',
+  1359910209: '2024 No Limit RED Force (12001)',
+  1359910210: '2024 STARRED HEART Ending Ver (12502)',
+  1359910211: '2024 Transcend Lights (13001)',
+  1359910212: '2024 フィナーレ曲 (13505)',
+  1359910213: '2025 STARTLINER (10002)',
+  1359910214: '2025 Jump!! Jump!! Jump!! セガフェス版 (10504)',
+  1359910215: '2025 最強 the サマータイム!!!!! (11001)',
+  1359910216: '2025 Splash Dance!! (11504)',
+  1359910217: '2025 No Limit RED Force (12001)',
+  1359910218: '2025 STARRED HEART Ending Ver (12502)',
+  1359910219: '2025 Transcend Lights (13001)',
+  1359910220: '2025 フィナーレ曲 (13505)',
+  1359910221: '2026 STARTLINER (10002)',
+  1359910222: '2026 Jump!! Jump!! Jump!! セガフェス版 (10504)',
+  1359910223: '2026 最強 the サマータイム!!!!! (11001)',
+  1359910224: '2026 Splash Dance!! (11504)',
+  1359910225: '2026 No Limit RED Force (12001)',
+  1359910226: '2026 STARRED HEART Ending Ver (12502)',
+  1359910227: '2026 Transcend Lights (13001)',
+  1359910228: '2026 フィナーレ曲 (13505)',
+  1359910229: 'フィナーレ曲(通用) (13505)',
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/
@@ -284,7 +255,6 @@ export function AdminOngekiEventsPage() {
             {MOVIE_EVENT_IDS.map((id) => {
               const row = eventsById.get(id)
               const label = MOVIE_EVENT_LABELS[id] ?? `Movie ${id}`
-              const movieId = MOVIE_IDS[id]
               const pending = moviePending === id || moviePending === 'all'
               return (
                 <div
@@ -292,12 +262,7 @@ export function AdminOngekiEventsPage() {
                   className="flex flex-wrap items-center justify-between gap-3 border-b border-kumo-line px-3 py-3 last:border-b-0"
                 >
                   <div className="min-w-0">
-                    <div className="font-medium text-kumo-default">
-                      {label}
-                      {movieId !== undefined ? (
-                        <span className="text-kumo-subtle text-xs"> · movie {movieId}</span>
-                      ) : null}
-                    </div>
+                    <div className="font-medium text-kumo-default">{label}</div>
                     <div className="text-kumo-subtle text-xs">
                       {row ? `${row.startDate} ~ ${row.endDate}` : t.notCreated}
                     </div>
