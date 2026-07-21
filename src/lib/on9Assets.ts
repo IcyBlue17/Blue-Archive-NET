@@ -26,6 +26,19 @@ export type On9AllItemMeta = {
 }
 export type On9AllItems = Record<string, Record<string, On9AllItemMeta>>
 
+// Only navigator charas (IsCommunicationTarget=true in Chara.xml, 1000-1016 as of SDDT 1.51) ship
+// the ANM_Chara_* story model that the game's logout scene instantiates without a null check —
+// equipping any other characterId crashes the game at logout. The flag comes from chara.json /
+// all-items.json; fall back to the known ID range when reading data built before the flag existed.
+export function isOn9EquippableChara(
+  charaId: number,
+  meta?: { isCommunicationTarget?: unknown } | null,
+): boolean {
+  const flag = meta?.isCommunicationTarget
+  if (typeof flag === 'boolean') return flag
+  return charaId >= 1000 && charaId <= 1016
+}
+
 const resolvedCache = new Map<string, unknown>()
 const inflight = new Map<string, Promise<unknown>>()
 
@@ -113,11 +126,13 @@ export async function fetchOn9AssetJson<T = On9JsonEntry[]>(jsonFile: string): P
   return p
 }
 
+export type On9CharaJsonEntry = On9JsonEntry & { isCommunicationTarget?: boolean }
+
 export type On9CatalogBundle = {
   card: On9CardJsonEntry[]
   nameplate: On9JsonEntry[]
   trophy: On9JsonEntry[]
-  chara: On9JsonEntry[]
+  chara: On9CharaJsonEntry[]
 }
 
 export async function loadOn9CatalogBundle(): Promise<On9CatalogBundle> {
@@ -125,7 +140,7 @@ export async function loadOn9CatalogBundle(): Promise<On9CatalogBundle> {
     fetchOn9AssetJson<On9CardJsonEntry[]>('card.json'),
     fetchOn9AssetJson('nameplate.json'),
     fetchOn9AssetJson('trophy.json'),
-    fetchOn9AssetJson('chara.json'),
+    fetchOn9AssetJson<On9CharaJsonEntry[]>('chara.json'),
   ])
   return { card, nameplate, trophy, chara }
 }
@@ -159,7 +174,7 @@ export function buildOn9CatalogOptions(
         : field === 'trophyId'
           ? bundle.trophy
           : field === 'characterId'
-            ? bundle.chara
+            ? bundle.chara.filter((e) => isOn9EquippableChara(e.id, e))
             : []
   return rows.map((e) => ({ itemId: e.id, name: e.name }))
 }

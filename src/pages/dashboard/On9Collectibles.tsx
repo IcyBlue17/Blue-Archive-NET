@@ -14,6 +14,7 @@ import { qk } from '../../lib/query'
 import {
   buildOn9CatalogOptions,
   bundleToOn9Lookups,
+  isOn9EquippableChara,
   loadOn9CatalogBundle,
   on9CollectibleHasImage,
   on9CollectibleImageUrl,
@@ -110,6 +111,8 @@ function buildPaginationItems(current: number, total: number): (number | 'ellips
   return out
 }
 
+type On9IntimacyRow = { characterId: number; intimateLevel: number }
+
 type On9CollectibleLoad = {
   lockedRows: On9UserboxSelectRow[]
   catalogBundle: On9CatalogBundle
@@ -119,6 +122,7 @@ type On9CollectibleLoad = {
   lookups: On9NameLookups
   ownedCards: number[]
   ownedCharacters: number[]
+  characterRows: On9IntimacyRow[]
 }
 
 export function On9CollectiblesPage() {
@@ -133,6 +137,9 @@ export function On9CollectiblesPage() {
   const [lookups, setLookups] = useState<On9NameLookups | null>(null)
   const [ownedCards, setOwnedCards] = useState<number[]>([])
   const [ownedCharacters, setOwnedCharacters] = useState<number[]>([])
+  const [characterRows, setCharacterRows] = useState<On9IntimacyRow[]>([])
+  const [intimacyDraft, setIntimacyDraft] = useState<Record<number, string>>({})
+  const [intimacySavingId, setIntimacySavingId] = useState<number | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [modalField, setModalField] = useState<string | null>(null)
   const [modalPage, setModalPage] = useState(0)
@@ -203,6 +210,9 @@ export function On9CollectiblesPage() {
       const charIds = (box.characters ?? [])
         .map((x) => (typeof x === 'number' ? x : parseInt(String(x), 10)))
         .filter((n) => Number.isFinite(n) && n > 0)
+      const charRows = (box.characterRows ?? [])
+        .map((r) => ({ characterId: r.characterId, intimateLevel: r.intimateLevel ?? 0 }))
+        .filter((r) => Number.isFinite(r.characterId) && r.characterId > 0)
       const ai = allRaw as On9AllItems
       return {
         allItems: ai,
@@ -213,6 +223,7 @@ export function On9CollectiblesPage() {
         draft: draftFromUser(u),
         ownedCards: cardIds,
         ownedCharacters: charIds,
+        characterRows: charRows,
       }
     },
   })
@@ -225,6 +236,8 @@ export function On9CollectiblesPage() {
     setLookups(loadQuery.data.lookups)
     setOwnedCards(loadQuery.data.ownedCards)
     setOwnedCharacters(loadQuery.data.ownedCharacters)
+    setCharacterRows(loadQuery.data.characterRows)
+    setIntimacyDraft({})
     setLockedRows(loadQuery.data.lockedRows)
     setDraft((oldDraft) => {
       if (!keepDraftRef.current) return loadQuery.data.draft
@@ -240,6 +253,15 @@ export function On9CollectiblesPage() {
 
   const ownedCardSet = useMemo(() => new Set(ownedCards), [ownedCards])
   const ownedCharacterSet = useMemo(() => new Set(ownedCharacters), [ownedCharacters])
+
+  // intimacy only applies to navigator charas (the ones the game can equip/communicate with)
+  const intimacyRows = useMemo(
+    () =>
+      characterRows
+        .filter((r) => isOn9EquippableChara(r.characterId, allItems.chara?.[String(r.characterId)]))
+        .sort((a, b) => a.characterId - b.characterId),
+    [characterRows, allItems],
+  )
 
   const isOwned = useCallback(
     (field: string, itemId: number) => {
@@ -422,6 +444,15 @@ export function On9CollectiblesPage() {
       setErr(texts.collectibles.invalidCustomId)
       return
     }
+    // non-navigator charas have no story model and crash the game at logout — refuse them
+    if (
+      modalField === 'characterId' &&
+      customId > 0 &&
+      !isOn9EquippableChara(customId, allItems.chara?.[String(customId)])
+    ) {
+      setErr(texts.collectibles.charaNotEquippable)
+      return
+    }
     setErr(null)
     if (UNLOCKABLE_FIELDS.has(modalField) && customId > 0 && !isOwned(modalField, customId)) {
       await unlockAndSelect(modalField, customId)
@@ -429,7 +460,7 @@ export function On9CollectiblesPage() {
     }
     setDraft((d) => ({ ...d, [modalField]: customId }))
     closeModal()
-  }, [closeModal, customIdInput, isOwned, modalField, texts.collectibles, unlockAndSelect])
+  }, [allItems, closeModal, customIdInput, isOwned, modalField, texts.collectibles, unlockAndSelect])
 
   const saveCollectibles = useCallback(async () => {
     if (!hasDirty) return
@@ -454,6 +485,37 @@ export function On9CollectiblesPage() {
       setSaving(false)
     }
   }, [hasDirty, draft, user, texts.collectibles, texts.common.saved, toast, loadQuery])
+
+  const saveIntimate = useCallback(
+    async (charaId: number, currentLevel: number) => {
+      const raw = intimacyDraft[charaId] ?? String(currentLevel)
+      const lvl = parseInt(raw, 10)
+      if (!Number.isFinite(lvl) || lvl < 0 || lvl > 100) {
+        setErr(texts.collectibles.invalidIntimacy)
+        return
+      }
+      setIntimacySavingId(charaId)
+      setErr(null)
+      try {
+        await gameApi.setOngekiIntimate(charaId, lvl)
+        // update locally instead of refetching so unsaved appearance drafts survive
+        setCharacterRows((rows) =>
+          rows.map((r) => (r.characterId === charaId ? { ...r, intimateLevel: lvl } : r)),
+        )
+        setIntimacyDraft((d) => {
+          const next = { ...d }
+          delete next[charaId]
+          return next
+        })
+        toast.add({ title: texts.collectibles.intimacyUpdated(lvl), variant: 'success' })
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : texts.collectibles.saveFailed)
+      } finally {
+        setIntimacySavingId(null)
+      }
+    },
+    [intimacyDraft, texts.collectibles, toast],
+  )
 
   const pageItems = useMemo(() => buildPaginationItems(safePage, totalPages), [safePage, totalPages])
 
@@ -575,6 +637,70 @@ export function On9CollectiblesPage() {
             )
           })}
         </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-kumo-default mb-1 text-lg font-semibold">{texts.collectibles.intimacyTitle}</h2>
+        <Text DANGEROUS_className="text-kumo-subtle mb-3 block text-sm">{texts.collectibles.intimacyHint}</Text>
+        {intimacyRows.length === 0 ? (
+          <Text DANGEROUS_className="text-kumo-subtle text-sm">{texts.collectibles.noIntimacyCharas}</Text>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {intimacyRows.map((row) => {
+              const img = on9CollectibleImageUrl('characterId', row.characterId, allItems, true)
+              const name = resolveName('characterId', row.characterId, allItems, lookups)
+              const draftVal = intimacyDraft[row.characterId] ?? String(row.intimateLevel)
+              const dirty = parseInt(draftVal, 10) !== row.intimateLevel
+              return (
+                <div
+                  key={row.characterId}
+                  className="border-kumo-line bg-kumo-base flex flex-col overflow-hidden rounded-lg border shadow-sm"
+                >
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="border-kumo-line bg-kumo-recessed h-16 w-12 shrink-0 overflow-hidden rounded-md border">
+                      {img ? (
+                        <img
+                          src={img}
+                          crossOrigin={imgCross(img)}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : null}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-kumo-default truncate text-sm font-medium">{name}</div>
+                      <div className="text-kumo-subtle text-xs">
+                        {texts.collectibles.intimacyCurrent(row.intimateLevel)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-kumo-line flex items-center gap-2 border-t px-3 py-2.5">
+                    <Input
+                      className="h-9 w-24"
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={draftVal}
+                      onChange={(e) =>
+                        setIntimacyDraft((d) => ({ ...d, [row.characterId]: e.target.value }))
+                      }
+                    />
+                    <Button
+                      size="sm"
+                      disabled={!dirty || intimacySavingId != null}
+                      onClick={() => void saveIntimate(row.characterId, row.intimateLevel)}
+                    >
+                      {intimacySavingId === row.characterId
+                        ? texts.collectibles.unlocking
+                        : texts.collectibles.applyIntimacy}
+                    </Button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {modalField && activeRow ? (

@@ -1,4 +1,4 @@
-import type { On9AllItems } from './on9Assets'
+import { isOn9EquippableChara, type On9AllItems } from './on9Assets'
 
 export interface On9UserItem {
   itemKind: number
@@ -120,9 +120,14 @@ export function buildOn9AppearanceSelectRows(
   // cards live in ongeki_user_card; itemKind=1 rows may also exist — union both
   const cardIds = [...ownedCardIds, ...itemIdsOfKind(ON9_IKINDS.card)]
 
+  // only navigator charas are equippable — anything else crashes the game at logout
+  const equippableCharaIds = ownedCharacterIds.filter((id) =>
+    isOn9EquippableChara(id, allItems.chara?.[String(id)]),
+  )
+
   return [
     idListRow('cardId', cardIds, num('cardId'), allItems),
-    idListRow('characterId', ownedCharacterIds, num('characterId'), allItems),
+    idListRow('characterId', equippableCharaIds, num('characterId'), allItems),
     idListRow('nameplateId', itemIdsOfKind(ON9_IKINDS.namePlate), num('nameplateId'), allItems),
     idListRow('trophyId', itemIdsOfKind(ON9_IKINDS.trophy), num('trophyId'), allItems),
     characterVoiceNoRow(num('characterVoiceNo'), num('characterId'), allItems),

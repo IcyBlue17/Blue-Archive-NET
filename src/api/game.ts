@@ -120,6 +120,13 @@ export async function unlockOngekiCharacter(characterId: number) {
   }) as Promise<{ characterId: number; isNewUnlock: boolean }>
 }
 
+export async function setOngekiIntimate(characterId: number, intimateLevel: number) {
+  return userPost('/api/v2/game/ongeki/user-character-intimate-set', {
+    characterId: String(characterId),
+    intimateLevel: String(intimateLevel),
+  }) as Promise<{ characterId: number; intimateLevel: number }>
+}
+
 export async function unlockChu3Character(characterId: number, level: number) {
   return userPost('/api/v2/game/chu3/user-character-unlock', {
     characterId: String(characterId),

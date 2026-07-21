@@ -366,6 +366,14 @@ const TEXTS = {
             invalidCustomId: "请输入大于等于 0 的整数 ID。",
             invalidCharacterId: "角色 ID 需要是大于 0 的整数。",
             characterRegistered: (level: number) => `已登记角色并设置为 Lv.${level}`,
+            charaNotEquippable: "该角色没有剧情模型，装备后游戏会在登出时崩溃，不能选择。",
+            intimacyTitle: "角色亲密度",
+            intimacyHint: "亲密度等级上限 100，保存后立即生效。",
+            intimacyCurrent: (level: number | string) => `当前 Lv.${level}`,
+            applyIntimacy: "保存亲密度",
+            intimacyUpdated: (level: number) => `亲密度已设为 Lv.${level}`,
+            invalidIntimacy: "亲密度需要是 0 到 100 之间的整数。",
+            noIntimacyCharas: "暂无已解锁的导航角色。",
             fieldLabels: {
                 cardId: "卡面",
                 nameplateId: "名牌",
@@ -1374,6 +1382,15 @@ const TEXTS = {
             invalidCharacterId: "Character ID must be an integer greater than 0.",
             characterRegistered: (level: number) =>
                 `Character registered at Lv.${level}`,
+            charaNotEquippable:
+                "This character has no story model — equipping it crashes the game at logout.",
+            intimacyTitle: "Character intimacy",
+            intimacyHint: "Max intimacy level is 100. Saves take effect immediately.",
+            intimacyCurrent: (level: number | string) => `Current Lv.${level}`,
+            applyIntimacy: "Save intimacy",
+            intimacyUpdated: (level: number) => `Intimacy set to Lv.${level}`,
+            invalidIntimacy: "Intimacy must be an integer between 0 and 100.",
+            noIntimacyCharas: "No unlocked navigator characters yet.",
             fieldLabels: {
                 cardId: "Card",
                 nameplateId: "Name plate",
