@@ -22,6 +22,7 @@ export type On9AllItemMeta = {
   graphicCardId?: number | string
   rarity?: string
   charaName?: string
+  isCommunicationTarget?: boolean
   [key: string]: unknown
 }
 export type On9AllItems = Record<string, Record<string, On9AllItemMeta>>
