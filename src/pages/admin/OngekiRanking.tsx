@@ -92,6 +92,13 @@ export function AdminOngekiRankingPage() {
     [rankingQuery.data],
   )
 
+  // The attract-mode board (ADT_Ranking) reads exactly the first 10 enabled entries with no bounds
+  // check: 1-9 entries indexes out of range, and any entry whose musicId the cabinet doesn't have
+  // makes the client discard the whole board and fall back to its built-in default list. So a board
+  // only takes effect at 10+ enabled, valid songs (and only after a full game restart re-downloads).
+  const enabledCount = useMemo(() => rows.filter((r) => r.enable).length, [rows])
+  const countWarning = enabledCount > 0 && enabledCount < 10
+
   const [form, setForm] = useState<RankingForm>(emptyForm)
   const [formSearch, setFormSearch] = useState('')
 
@@ -264,6 +271,14 @@ export function AdminOngekiRankingPage() {
       </AdminSection>
 
       <AdminSection title={type === 1 ? t.currentPeriod : t.previousPeriod} bodyClassName="mt-4">
+        <div className="mb-3 rounded-md border border-kumo-line bg-kumo-recessed px-3 py-2 text-xs text-kumo-subtle">
+          {t.effectHint}
+        </div>
+        {countWarning ? (
+          <div className="mb-3 rounded-md border border-kumo-warning bg-kumo-warning-tint px-3 py-2 text-sm text-kumo-warning">
+            {t.countWarning(enabledCount)}
+          </div>
+        ) : null}
         <div className="mb-3 flex justify-end">
           <Button variant="destructive" size="sm" onClick={() => void clearAll()}>
             {t.clearAll}

@@ -722,6 +722,10 @@ const TEXTS = {
                 updatedTitle: "条目已更新",
                 deletedTitle: "条目已删除",
                 clearedTitle: "榜单已清空",
+                effectHint:
+                    "待机画面固定显示前 10 名，且改动后需完整重启游戏才会重新下载生效。每个曲目必须是框体已安装的曲子。",
+                countWarning: (n: number) =>
+                    `当前仅 ${n} 首启用条目（需 ≥ 10 首）。不足 10 首时游戏会忽略整个榜单、回退到客户端内置的默认榜，甚至可能异常。请补满至少 10 首有效曲目，或清空本榜走默认。`,
             },
         },
         chusanTeamSettings: {
@@ -1839,6 +1843,10 @@ const TEXTS = {
                 updatedTitle: "Entry updated",
                 deletedTitle: "Entry deleted",
                 clearedTitle: "Ranking cleared",
+                effectHint:
+                    "The attract screen shows the top 10 only, and changes take effect after a full game restart re-downloads the data. Every entry's music must be installed on the cabinet.",
+                countWarning: (n: number) =>
+                    `Only ${n} enabled entries (need ≥ 10). Below 10 the game ignores the whole board and falls back to its built-in default list, and may even error. Fill at least 10 valid songs, or clear the board to use the default.`,
             },
         },
         chusanTeamSettings: {
