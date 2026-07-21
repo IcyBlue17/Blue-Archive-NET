@@ -38,14 +38,14 @@ export async function createRanking(body: MusicRankingWrite) {
 }
 
 export async function updateRanking(id: number, body: Partial<MusicRankingWrite>) {
-  return adminJson('PUT', `${base}/${id}`, body) as Promise<MusicRankingEntry>
+  return adminJson('POST', `${base}/${id}`, body) as Promise<MusicRankingEntry>
 }
 
 export async function deleteRanking(id: number) {
-  return adminJson('DELETE', `${base}/${id}`) as Promise<{ status: string; id: number }>
+  return adminJson('POST', `${base}/${id}/delete`) as Promise<{ status: string; id: number }>
 }
 
 export async function clearRanking(type?: number) {
   const suffix = type !== undefined ? `?type=${type}` : ''
-  return adminJson('DELETE', `${base}/clear-all${suffix}`) as Promise<{ status: string; id?: number }>
+  return adminJson('POST', `${base}/clear-all${suffix}`) as Promise<{ status: string; id?: number }>
 }
