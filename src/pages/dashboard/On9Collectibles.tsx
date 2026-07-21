@@ -40,7 +40,7 @@ import { useAppTexts } from '../../content/texts'
 
 const UNLOCK_ALL_STORAGE_KEY = 'ongeki-collectibles-unlock-all'
 
-const TEXT_ONLY_PREVIEW_FIELDS = new Set(['trophyId', 'characterVoiceNo'])
+const TEXT_ONLY_PREVIEW_FIELDS = new Set(['trophyId', 'characterVoiceNo', 'systemVoiceId'])
 const UNLOCKABLE_FIELDS = new Set(['cardId', 'characterId'])
 
 function numFromUser(u: Record<string, unknown>, field: string): number {
@@ -261,8 +261,8 @@ export function On9CollectiblesPage() {
     const base: On9UserboxSelectRow[] =
       unlockAll && catalogBundle
         ? ON9_APPEARANCE_FIELD_ORDER.map((f) => {
-            // characterVoiceNo has no asset catalog to expand into — it always uses its fixed range
-            if (f === 'characterVoiceNo') {
+            // voice fields have no image catalog to expand into — they always use their fixed range
+            if (f === 'characterVoiceNo' || f === 'systemVoiceId') {
               return (
                 lockedRows.find((r) => r.field === f) ?? { field: f, allItemsKey: '', options: [] }
               )

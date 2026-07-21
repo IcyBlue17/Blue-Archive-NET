@@ -25,6 +25,7 @@ export const ON9_APPEARANCE_FIELD_ORDER = [
   'nameplateId',
   'trophyId',
   'characterVoiceNo',
+  'systemVoiceId',
 ] as const
 
 export type On9AppearanceField = (typeof ON9_APPEARANCE_FIELD_ORDER)[number]
@@ -36,6 +37,8 @@ export const ON9_FIELD_ALL_ITEMS_KEY: Record<On9AppearanceField, string> = {
   trophyId: 'trophy',
   // characterVoiceNo stores a ProfileVoice id (charaId*10 + voiceNo), named in the profileVoice catalog
   characterVoiceNo: 'profileVoice',
+  // systemVoiceId stores a SystemVoice id (one per navigator, charaId 1000-1016), named in systemVoice
+  systemVoiceId: 'systemVoice',
 }
 
 function itemName(allItems: On9AllItems, key: string, itemId: number): string {
@@ -100,6 +103,29 @@ function characterVoiceNoRow(
   return { allItemsKey: 'profileVoice', field: 'characterVoiceNo', options: rows }
 }
 
+// The system/UI announcer voice (systemVoiceId). Unlike ProfileVoice it is NOT tied to the equipped
+// navigator — the player may pick any navigator's voice to narrate the UI — so the picker offers the
+// full SystemVoice catalog (one entry per navigator, charaId 1000-1016), plus "—" (none) and the
+// current value if it is not in the catalog.
+function systemVoiceIdRow(
+  equippedVoiceId: number,
+  allItems: On9AllItems,
+): On9UserboxSelectRow {
+  const voices = allItems.systemVoice ?? {}
+  const options = Object.entries(voices)
+    .map(([id, meta]) => ({ itemId: parseInt(id, 10), name: meta?.name ?? id }))
+    .filter((o) => Number.isFinite(o.itemId))
+    .sort((a, b) => a.itemId - b.itemId)
+  const rows = [{ itemId: 0, name: '—' }, ...options]
+  if (equippedVoiceId > 0 && !rows.some((r) => r.itemId === equippedVoiceId)) {
+    rows.push({
+      itemId: equippedVoiceId,
+      name: voices[String(equippedVoiceId)]?.name ?? String(equippedVoiceId),
+    })
+  }
+  return { allItemsKey: 'systemVoice', field: 'systemVoiceId', options: rows }
+}
+
 export function buildOn9AppearanceSelectRows(
   userItems: On9UserItem[],
   ownedCardIds: number[],
@@ -131,5 +157,6 @@ export function buildOn9AppearanceSelectRows(
     idListRow('nameplateId', itemIdsOfKind(ON9_IKINDS.namePlate), num('nameplateId'), allItems),
     idListRow('trophyId', itemIdsOfKind(ON9_IKINDS.trophy), num('trophyId'), allItems),
     characterVoiceNoRow(num('characterVoiceNo'), num('characterId'), allItems),
+    systemVoiceIdRow(num('systemVoiceId'), allItems),
   ]
 }
