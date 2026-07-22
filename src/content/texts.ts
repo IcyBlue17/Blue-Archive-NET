@@ -1034,6 +1034,15 @@ const TEXTS = {
         ongekiExtra: {
             inGameName: "游戏内名称",
             renameAction: "改名",
+            importExport: "导入 / 导出",
+            importHint: "导入会用文件内容替换当前音击存档（服务器会自动备份旧数据）。建议先导出一份 JSON 备份。",
+            importBusy: "导入中…",
+            importSave: "导入音击存档",
+            exportSave: "导出音击存档 (JSON)",
+            lastFile: (name: string) => `最近选择：${name}`,
+            importSuccessTitle: "导入成功",
+            importSuccessDesc: "音击存档已导入。",
+            importFailedTitle: "导入失败",
         },
         chusanExtra: {
             basics: "CHUNITHM 基础",
@@ -2235,6 +2244,15 @@ const TEXTS = {
         ongekiExtra: {
             inGameName: "In-game name",
             renameAction: "Rename",
+            importExport: "Import / Export",
+            importHint: "Importing replaces your current O.N.G.E.K.I. save with the file contents (the server keeps a backup of the old data). Export a JSON backup first if unsure.",
+            importBusy: "Importing…",
+            importSave: "Import O.N.G.E.K.I. save",
+            exportSave: "Export O.N.G.E.K.I. save (JSON)",
+            lastFile: (name: string) => `Last file: ${name}`,
+            importSuccessTitle: "Import completed",
+            importSuccessDesc: "O.N.G.E.K.I. save imported.",
+            importFailedTitle: "Import failed",
         },
         chusanExtra: {
             basics: "CHUNITHM basics",
