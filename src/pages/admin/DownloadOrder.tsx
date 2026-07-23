@@ -211,7 +211,7 @@ export function AdminDownloadOrderPage() {
           {input('GAME_ID', form.gameId, (v) => setIniField('gameId', v.toUpperCase()))}
           {input('optVersion', form.optVersion, (v) => setIniField('optVersion', v))}
           {input('GAME_DESC', form.gameDesc, (v) => setIniField('gameDesc', v))}
-          {input('PART_SIZE', form.partSize, (v) => setIniField('partSize', v))}
+          {input(texts.admin.downloadOrder.partSize, form.partSize, (v) => setIniField('partSize', v))}
           {input('ORDER_TIME', form.orderTime, (v) => setIniField('orderTime', v))}
           {input('RELEASE_TIME', form.releaseTime, (v) => setIniField('releaseTime', v))}
           {input('REPORT', form.reportUrl, (v) => setIniField('reportUrl', v))}
@@ -258,9 +258,28 @@ export function AdminDownloadOrderPage() {
             {input('GAME_ID', editingIni.gameId, (v) => setEditingIni({ ...editingIni, gameId: v.toUpperCase() }))}
             {input('optVersion', editingIni.optVersion, (v) => setEditingIni({ ...editingIni, optVersion: v }))}
             {input('GAME_DESC', editingIni.gameDesc, (v) => setEditingIni({ ...editingIni, gameDesc: v }))}
+            {input(texts.admin.downloadOrder.partSize, editingIni.partSize, (v) => setEditingIni({ ...editingIni, partSize: v }))}
             {input('ORDER_TIME', editingIni.orderTime, (v) => setEditingIni({ ...editingIni, orderTime: v }))}
             {input('RELEASE_TIME', editingIni.releaseTime, (v) => setEditingIni({ ...editingIni, releaseTime: v }))}
             {input('REPORT', editingIni.reportUrl, (v) => setEditingIni({ ...editingIni, reportUrl: v }))}
+            {input(
+              'REPORT_INTERVAL',
+              editingIni.reportInterval,
+              (v) => setEditingIni({ ...editingIni, reportInterval: Number(v) }),
+              'number',
+            )}
+            {input(
+              'RELEASE_TYPE',
+              editingIni.releaseType,
+              (v) => setEditingIni({ ...editingIni, releaseType: Number(v) }),
+              'number',
+            )}
+            {input(
+              'IMMEDIATELY_RELEASE',
+              editingIni.immediatelyRelease,
+              (v) => setEditingIni({ ...editingIni, immediatelyRelease: Number(v) }),
+              'number',
+            )}
           </div>
           <label className="mt-3 flex flex-col gap-1 text-sm">
             INSTALL1
@@ -291,6 +310,7 @@ export function AdminDownloadOrderPage() {
               <Table.Head>ID</Table.Head>
               <Table.Head>{texts.admin.downloadOrder.file}</Table.Head>
               <Table.Head>{texts.admin.downloadOrder.game}</Table.Head>
+              <Table.Head>{texts.admin.downloadOrder.partSize}</Table.Head>
               <Table.Head>{texts.admin.downloadOrder.description}</Table.Head>
               <Table.Head />
             </Table.Row>
@@ -301,6 +321,7 @@ export function AdminDownloadOrderPage() {
                 <Table.Cell>{row.id}</Table.Cell>
                 <Table.Cell>{row.fileName}</Table.Cell>
                 <Table.Cell>{row.gameId}</Table.Cell>
+                <Table.Cell className="font-mono text-xs whitespace-nowrap">{row.partSize}</Table.Cell>
                 <Table.Cell>{row.gameDesc}</Table.Cell>
                 <Table.Cell className="flex flex-wrap gap-1">
                   <Button size="sm" variant="secondary" onClick={() => setEditingIni({ ...row })}>
