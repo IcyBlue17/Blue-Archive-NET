@@ -217,7 +217,7 @@ export function GameDashboardPage() {
           ) : (
             <>
               <GameSummaryPanel game={game} summary={summary} />
-              <RatingCompositionSection game={game} ratingComposition={composition} allMusics={musicById as Record<string, MusicMetaLite>} />
+              <RatingCompositionSection game={game} ratingComposition={composition} allMusics={musicById as Record<string, MusicMetaLite>} lastVersion={summary?.lastVersion} />
               <LayerCard className="mb-6 mt-6 p-4">
                 <LayerCard.Secondary>{texts.gamesPage.ratingTrend}</LayerCard.Secondary>
                 <div className="mt-4">

@@ -3,6 +3,7 @@ import { Text } from '@cloudflare/kumo/components/text'
 import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import type { GameName } from '../../lib/types'
 import { parseComposition, type MusicMetaLite } from '../../lib/scoring'
+import { chu3UsesNew20 } from '../../lib/gameRatingDisplay'
 import { imgCross } from '../../lib/imgSign'
 import { useAppTexts } from '../../content/texts'
 
@@ -68,10 +69,12 @@ export function RatingCompositionSection({
   game,
   ratingComposition,
   allMusics,
+  lastVersion,
 }: {
   game: GameName
   ratingComposition: Record<string, unknown> | undefined | null
   allMusics: Record<string, MusicMetaLite>
+  lastVersion?: string | null
 }) {
   const texts = useAppTexts()
   const blocks = useMemo(() => {
@@ -79,8 +82,12 @@ export function RatingCompositionSection({
     const out: { title: string; key: string; raw: string }[] = []
     if (game === 'chu3') {
       if (c.best30) out.push({ title: texts.gamesPage.best30, key: 'b30', raw: String(c.best30) })
-      if (c.new) out.push({ title: texts.gamesPage.new20, key: 'n20', raw: String(c.new) })
-      else if (c.recent10) out.push({ title: texts.gamesPage.recent10, key: 'r10', raw: String(c.recent10) })
+      // New 20 制的版本即使 New 20 为空也不退回 Recent 10，直接空着
+      if (chu3UsesNew20(lastVersion)) {
+        if (c.new) out.push({ title: texts.gamesPage.new20, key: 'n20', raw: String(c.new) })
+      } else if (c.recent10) {
+        out.push({ title: texts.gamesPage.recent10, key: 'r10', raw: String(c.recent10) })
+      }
     } else if (game === 'mai2') {
       if (c.best35) out.push({ title: texts.gamesPage.best35, key: 'b35', raw: String(c.best35) })
       if (c.best15) out.push({ title: texts.gamesPage.best15, key: 'b15', raw: String(c.best15) })
@@ -90,7 +97,7 @@ export function RatingCompositionSection({
       if (c.recent10) out.push({ title: texts.gamesPage.recent10, key: 'r10', raw: String(c.recent10) })
     }
     return out
-  }, [game, ratingComposition, texts])
+  }, [game, ratingComposition, texts, lastVersion])
 
   if (!blocks.length) return null
 
