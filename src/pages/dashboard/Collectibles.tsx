@@ -30,6 +30,7 @@ import {
   CHU3_FIELD_ALL_ITEMS_KEY,
   withEquippedIfMissing,
   type Chu3UserItem,
+  type Chu3UserMateRow,
   type Chu3UserboxSelectRow,
 } from '../../lib/chu3Userbox'
 import { useAppTexts } from '../../content/texts'
@@ -57,8 +58,16 @@ function buildAllCollectibleRows(
   equippedChar: number,
   allItems: Chu3AllItems,
   u: Record<string, unknown>,
+  mateRows: Chu3UserMateRow[],
 ): Chu3UserboxSelectRow[] {
-  const base = buildChu3AppearanceSelectRows(items, charIds, equippedChar, allItems)
+  const base = buildChu3AppearanceSelectRows(
+    items,
+    charIds,
+    equippedChar,
+    allItems,
+    mateRows,
+    numFromUser(u, 'mateId'),
+  )
   const byField = new Map(base.map((r) => [r.field, r]))
   const out: Chu3UserboxSelectRow[] = []
   for (const f of COLLECTIBLES_FIELD_ORDER) {
@@ -115,6 +124,9 @@ function resolveCollectibleName(
       case 'avatarFront':
       case 'avatarBack':
         fromJson = lookups.avatar.get(itemId)
+        break
+      case 'mateId':
+        fromJson = lookups.mate.get(itemId)
         break
       default:
         break
@@ -206,6 +218,25 @@ type Chu3CollectibleLoad = {
   lookups: Chu3NameLookups
   ownedCharacters: number[]
   ownedCharacterLvs: Record<number, number>
+  mateRows: Chu3UserMateRow[]
+}
+
+type Chu3MateReward = {
+  rewardId?: number | string
+  level?: number | string
+  itemId?: number | string
+  itemName?: string
+}
+
+type Chu3MateMeta = {
+  name?: string
+  charaId?: number | string
+  charaName?: string
+  systemVoiceId?: number | string
+  version?: string
+  netOpenName?: string
+  rewards?: Chu3MateReward[]
+  [key: string]: unknown
 }
 
 type Chu3CharacterMeta = {
@@ -243,6 +274,17 @@ function rewardText(v: unknown): string {
   return s
 }
 
+function buildMateMetaMap(allItems: Chu3AllItems): Record<number, Chu3MateMeta> {
+  const raw = allItems.mate as Record<string, Chu3MateMeta> | undefined
+  const out: Record<number, Chu3MateMeta> = {}
+  if (!raw) return out
+  for (const [id, row] of Object.entries(raw)) {
+    const num = parseInt(id, 10)
+    if (!Number.isNaN(num)) out[num] = row
+  }
+  return out
+}
+
 function buildCharaMetaMap(allItems: Chu3AllItems): Record<number, Chu3CharacterMeta> {
   const raw = allItems.chara as Record<string, Chu3CharacterMeta> | undefined
   const out: Record<number, Chu3CharacterMeta> = {}
@@ -266,6 +308,7 @@ export function CollectiblesPage() {
   const [lookups, setLookups] = useState<Chu3NameLookups | null>(null)
   const [ownedCharacters, setOwnedCharacters] = useState<number[]>([])
   const [ownedCharacterLvs, setOwnedCharacterLvs] = useState<Record<number, number>>({})
+  const [mateRows, setMateRows] = useState<Chu3UserMateRow[]>([])
   const [err, setErr] = useState<string | null>(null)
   const [modalField, setModalField] = useState<string | null>(null)
   const [modalPage, setModalPage] = useState(0)
@@ -347,6 +390,25 @@ export function CollectiblesPage() {
           }
         }
       }
+      const rawMateRows = (box as { mateRows?: unknown }).mateRows
+      const mateRows: Chu3UserMateRow[] = Array.isArray(rawMateRows)
+        ? rawMateRows
+            .map((one) => {
+              const row = one as Record<string, unknown>
+              const num = (v: unknown) => {
+                const n = typeof v === 'number' ? v : parseInt(String(v), 10)
+                return Number.isNaN(n) ? 0 : n
+              }
+              return {
+                mateId: num(row.mateId),
+                friendshipLevel: num(row.friendshipLevel),
+                totalFriendshipExp: num(row.totalFriendshipExp),
+                enterGardenCount: num(row.enterGardenCount),
+                playCount: num(row.playCount),
+              }
+            })
+            .filter((r) => r.mateId > 0)
+        : []
       const equippedChar = numFromUser(u, 'characterId')
       const ai0 = allRaw as Chu3AllItems
       const ai = mergeStageItems(ai0, stageRows)
@@ -355,10 +417,11 @@ export function CollectiblesPage() {
         user: u,
         catalogBundle: bundle,
         lookups: bundleToLookups(bundle),
-        lockedRows: buildAllCollectibleRows(items, charIds, equippedChar, ai, u),
+        lockedRows: buildAllCollectibleRows(items, charIds, equippedChar, ai, u, mateRows),
         draft: draftFromUser(u),
         ownedCharacters: charIds,
         ownedCharacterLvs: charaLvs,
+        mateRows,
       }
     },
   })
@@ -371,6 +434,7 @@ export function CollectiblesPage() {
     setLookups(loadQuery.data.lookups)
     setOwnedCharacters(loadQuery.data.ownedCharacters)
     setOwnedCharacterLvs(loadQuery.data.ownedCharacterLvs)
+    setMateRows(loadQuery.data.mateRows)
     setLockedRows(loadQuery.data.lockedRows)
     setDraft((oldDraft) => {
       if (!keepDraftRef.current) return loadQuery.data.draft
@@ -398,6 +462,12 @@ export function CollectiblesPage() {
 
   const pickerOptionsFull = useMemo(() => activeRow?.options ?? [], [activeRow])
   const charaMetaMap = useMemo(() => buildCharaMetaMap(allItems), [allItems])
+  const mateMetaMap = useMemo(() => buildMateMetaMap(allItems), [allItems])
+  const mateOwnedMap = useMemo(() => {
+    const m: Record<number, Chu3UserMateRow> = {}
+    for (const r of mateRows) m[r.mateId] = r
+    return m
+  }, [mateRows])
   const selectedCharaMeta = pickedCharaId != null ? charaMetaMap[pickedCharaId] ?? null : null
   const validAddImages = useMemo(() => {
     if (!Array.isArray(selectedCharaMeta?.addImageList)) return [] as string[]
@@ -414,6 +484,18 @@ export function CollectiblesPage() {
       }))
       .filter((one) => !!one.reward)
   }, [selectedCharaMeta])
+  // The mate picker equips on click, so the detail panel describes whatever is equipped right now.
+  const selectedMateId = activeRow?.field === 'mateId' ? numFromUser(effectiveUser, 'mateId') : 0
+  const selectedMateMeta = selectedMateId > 0 ? mateMetaMap[selectedMateId] ?? null : null
+  const selectedMateOwned = selectedMateId > 0 ? mateOwnedMap[selectedMateId] ?? null : null
+  const selectedMateName =
+    selectedMateId > 0 ? resolveCollectibleName('mateId', selectedMateId, allItems, lookups) : null
+  const selectedMateRewards = useMemo(() => {
+    if (!Array.isArray(selectedMateMeta?.rewards)) return [] as Array<{ lv: string; reward: string }>
+    return selectedMateMeta.rewards
+      .map((one) => ({ lv: cleanText(one.level), reward: rewardText(one.itemName) }))
+      .filter((one) => !!one.reward)
+  }, [selectedMateMeta])
   const charaWorksList = useMemo(() => {
     if (activeRow?.field !== 'characterId') return [] as string[]
     const set = new Set<string>()
@@ -433,14 +515,16 @@ export function CollectiblesPage() {
       const extra =
         activeRow?.field === 'characterId'
           ? `${cleanText(charaMeta?.worksName)} ${cleanText(charaMeta?.illustratorName)} ${cleanText(charaMeta?.defaultImageName)}`
-          : ''
+          : activeRow?.field === 'mateId'
+            ? cleanText(mateMetaMap[o.itemId]?.charaName)
+            : ''
       return (
         o.name.toLowerCase().includes(deferredSearch) ||
         String(o.itemId).includes(deferredSearch) ||
         extra.toLowerCase().includes(deferredSearch)
       )
     })
-  }, [pickerOptionsFull, deferredSearch, activeRow?.field, charaMetaMap, charaWorksFilter])
+  }, [pickerOptionsFull, deferredSearch, activeRow?.field, charaMetaMap, mateMetaMap, charaWorksFilter])
 
   const pageSize =
     activeRow && chu3CollectibleHasImage(activeRow.field)
@@ -1019,6 +1103,92 @@ export function CollectiblesPage() {
                 </div>
               ) : null}
 
+              {activeRow.field === 'mateId' && selectedMateId > 0 ? (
+                <div className="mb-4 rounded-xl border border-kumo-line bg-kumo-base p-4">
+                  <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
+                    <div className="bg-kumo-recessed mx-auto flex aspect-square w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-kumo-line">
+                      {(() => {
+                        const mateImg = chu3CollectibleImageUrl('mateId', selectedMateId, allItems)
+                        return mateImg ? (
+                          <img
+                            src={mateImg}
+                            crossOrigin={imgCross(mateImg)}
+                            alt=""
+                            className="max-h-full max-w-full object-contain p-1"
+                          />
+                        ) : null
+                      })()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xl font-semibold text-kumo-default">{selectedMateName}</div>
+                      <div className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                        <div>
+                          <span className="text-kumo-subtle">ID: </span>
+                          <span>{selectedMateId}</span>
+                        </div>
+                        <div>
+                          <span className="text-kumo-subtle">{texts.collectibles.mateChara}: </span>
+                          <span>{cleanText(selectedMateMeta?.charaName) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-kumo-subtle">{texts.collectibles.mateSystemVoice}: </span>
+                          <span>{cleanText(selectedMateMeta?.systemVoiceId) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-kumo-subtle">{texts.collectibles.mateVersion}: </span>
+                          <span>{cleanText(selectedMateMeta?.netOpenName) || cleanText(selectedMateMeta?.version) || '—'}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                          {texts.collectibles.mateProgress}
+                        </Text>
+                        {selectedMateOwned ? (
+                          <div className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                            <div>
+                              <span className="text-kumo-subtle">{texts.collectibles.mateFriendshipLevel}: </span>
+                              <span>{selectedMateOwned.friendshipLevel ?? 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-kumo-subtle">{texts.collectibles.mateFriendshipExp}: </span>
+                              <span>{selectedMateOwned.totalFriendshipExp ?? 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-kumo-subtle">{texts.collectibles.mateGardenCount}: </span>
+                              <span>{selectedMateOwned.enterGardenCount ?? 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-kumo-subtle">{texts.collectibles.matePlayCount}: </span>
+                              <span>{selectedMateOwned.playCount ?? 0}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                            {texts.collectibles.mateNotOwned}
+                          </Text>
+                        )}
+                      </div>
+
+                      {selectedMateRewards.length ? (
+                        <div className="mt-4">
+                          <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                            {texts.collectibles.mateRewards}
+                          </Text>
+                          <div className="grid gap-x-4 gap-y-1 text-sm text-kumo-subtle sm:grid-cols-2">
+                            {selectedMateRewards.map((one, idx) => (
+                              <div key={idx}>
+                                {texts.common.level} {one.lv || '?'} · {one.reward}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
               {filteredOptions.length === 0 ? (
                 <Text DANGEROUS_className="text-kumo-subtle text-sm">
                   {texts.collectibles.noMatches}
@@ -1073,6 +1243,26 @@ export function CollectiblesPage() {
                                   ? texts.collectibles.unlocking
                                   : texts.collectibles.lockedClickToUnlock}
                             </span>
+                          </div>
+                        ) : null}
+                        {activeRow.field === 'mateId' ? (
+                          <div className="border-kumo-line flex flex-wrap items-center gap-2 border-b px-3 py-2">
+                            <span
+                              className={`rounded-md px-2 py-1 text-xs ${
+                                mateOwnedMap[o.itemId]
+                                  ? 'bg-kumo-success-tint text-kumo-success'
+                                  : 'bg-kumo-warning-tint text-kumo-warning'
+                              }`}
+                            >
+                              {mateOwnedMap[o.itemId]
+                                ? texts.collectibles.mateFriendshipLv(mateOwnedMap[o.itemId]?.friendshipLevel ?? 0)
+                                : texts.collectibles.mateNotOwned}
+                            </span>
+                            {cleanText(mateMetaMap[o.itemId]?.charaName) ? (
+                              <span className="text-kumo-subtle text-xs">
+                                {cleanText(mateMetaMap[o.itemId]?.charaName)}
+                              </span>
+                            ) : null}
                           </div>
                         ) : null}
                         {textOnly || !hasImg ? (

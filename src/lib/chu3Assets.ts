@@ -61,6 +61,11 @@ export function padChu3Id8(id: number): string {
   return String(Math.max(0, Math.floor(id))).padStart(8, '0')
 }
 
+// Mate art is 6-digit: mate 101 -> CHU_UI_Mate_000101.webp
+export function padChu3Id6(id: number): string {
+  return String(Math.max(0, Math.floor(id))).padStart(6, '0')
+}
+
 export function padChu3CharaImageId(id: number): string {
   return String(Math.max(0, Math.floor(id / 10))).padStart(4, '0')
 }
@@ -109,6 +114,7 @@ const FIELD_IMAGE: Partial<
   mapIconId: { dir: 'mapIcon', prefix: 'CHU_UI_MapIcon_' },
   voiceId: { dir: 'systemVoice', prefix: 'CHU_UI_SystemVoice_' },
   stageId: { dir: 'stage', prefix: 'CHU_UI_Stage_' },
+  mateId: { dir: 'mate', prefix: 'CHU_UI_Mate_', formatId: padChu3Id6 },
   avatarWear: { dir: 'avatar', prefix: 'CHU_UI_Avatar_Icon_' },
   avatarHead: { dir: 'avatar', prefix: 'CHU_UI_Avatar_Icon_' },
   avatarFace: { dir: 'avatar', prefix: 'CHU_UI_Avatar_Icon_' },
@@ -128,8 +134,9 @@ export function chu3CollectibleImageUrl(field: string, itemId: number, allItems?
   if (field === 'characterId') return chu3CharacterImageUrl(itemId, '00')
   const meta = FIELD_IMAGE[field]
   if (!meta) return null
-  if (field === 'frameId') {
-    const row = allItems?.frame?.[String(itemId)]
+  if (field === 'frameId' || field === 'mateId') {
+    const key = field === 'frameId' ? 'frame' : 'mate'
+    const row = allItems?.[key]?.[String(itemId)]
     const fromMeta = assetImageUrl(categoryImagePath(row?.imagePath ?? row?.imageFile, meta.dir))
     if (fromMeta) return fromMeta
   }
@@ -182,6 +189,7 @@ export type Chu3NameLookups = {
   mapIcon: Map<number, string>
   systemVoice: Map<number, string>
   avatar: Map<number, string>
+  mate: Map<number, string>
 }
 
 export type Chu3CatalogBundle = {
@@ -192,10 +200,11 @@ export type Chu3CatalogBundle = {
   mapicon: Chu3JsonEntry[]
   sysvoice: Chu3JsonEntry[]
   avatar_icon: Chu3JsonEntry[]
+  mate: Chu3JsonEntry[]
 }
 
 export async function loadChu3CatalogBundle(): Promise<Chu3CatalogBundle> {
-  const [nameplate, frame, character, trophy, mapicon, sysvoice, avatar_icon] = await Promise.all([
+  const [nameplate, frame, character, trophy, mapicon, sysvoice, avatar_icon, mate] = await Promise.all([
     fetchChu3AssetJson('nameplate.json'),
     fetchChu3AssetJsonOr<Chu3JsonEntry[]>('frame.json', []),
     fetchChu3AssetJson('character.json'),
@@ -203,8 +212,10 @@ export async function loadChu3CatalogBundle(): Promise<Chu3CatalogBundle> {
     fetchChu3AssetJson('mapicon.json'),
     fetchChu3AssetJson('sysvoice.json'),
     fetchChu3AssetJson('avatar_icon.json'),
+    // 2.50 only — asset bundles built before mate support simply don't ship this file.
+    fetchChu3AssetJsonOr<Chu3JsonEntry[]>('mate.json', []),
   ])
-  return { nameplate, frame, character, trophy, mapicon, sysvoice, avatar_icon }
+  return { nameplate, frame, character, trophy, mapicon, sysvoice, avatar_icon, mate }
 }
 
 export function bundleToLookups(bundle: Chu3CatalogBundle): Chu3NameLookups {
@@ -217,6 +228,7 @@ export function bundleToLookups(bundle: Chu3CatalogBundle): Chu3NameLookups {
     mapIcon: toMap(bundle.mapicon),
     systemVoice: toMap(bundle.sysvoice),
     avatar: toMap(bundle.avatar_icon),
+    mate: toMap(bundle.mate),
   }
 }
 
@@ -274,6 +286,10 @@ export function buildChu3CatalogOptions(
         : allItemsKeysToOptions(allItems, 'frame')
     case 'stageId':
       return allItemsKeysToOptions(allItems, 'stage')
+    case 'mateId':
+      return bundle.mate.length
+        ? bundle.mate.map((e) => ({ itemId: e.id, name: e.name }))
+        : allItemsKeysToOptions(allItems, 'mate')
     case 'characterId':
       return bundle.character.map((e) => ({ itemId: e.id, name: e.name }))
     default:

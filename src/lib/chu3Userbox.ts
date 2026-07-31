@@ -13,6 +13,18 @@ export interface Chu3UserboxSelectRow {
   options: { itemId: number; name: string }[]
 }
 
+/**
+ * A Mate the player owns (SDHD 2.50). These come from `chusan_user_mate`, not the item table,
+ * so the userbox returns them as their own list — see `mateRows` in the chu3 user-box endpoint.
+ */
+export interface Chu3UserMateRow {
+  mateId: number
+  friendshipLevel?: number
+  totalFriendshipExp?: number
+  enterGardenCount?: number
+  playCount?: number
+}
+
 const IKINDS: Record<string, number> = {
   namePlate: 1,
   frame: 2,
@@ -44,6 +56,7 @@ export const CHU3_APPEARANCE_FIELD_ORDER = [
   'avatarFront',
   'avatarBack',
   'stageId',
+  'mateId',
 ] as const
 
 export const CHU3_FIELD_ALL_ITEMS_KEY: Record<(typeof CHU3_APPEARANCE_FIELD_ORDER)[number], string> = {
@@ -63,6 +76,7 @@ export const CHU3_FIELD_ALL_ITEMS_KEY: Record<(typeof CHU3_APPEARANCE_FIELD_ORDE
   avatarFront: 'avatarAccessory',
   avatarBack: 'avatarAccessory',
   stageId: 'stage',
+  mateId: 'mate',
 }
 
 function itemName(
@@ -170,16 +184,40 @@ function buildCharacterSelectRow(
   }
 }
 
+function buildMateSelectRow(
+  mateRows: Chu3UserMateRow[],
+  equippedMateId: number,
+  allItems: Record<string, Record<string, { name?: string }>>,
+): Chu3UserboxSelectRow | null {
+  const allItemsKey = 'mate'
+  const ids = [...new Set(mateRows.map((r) => r.mateId).filter((n) => Number.isFinite(n) && n > 0))]
+  if (equippedMateId > 0 && !ids.includes(equippedMateId)) ids.push(equippedMateId)
+  if (!ids.length) return null
+  ids.sort((a, b) => a - b)
+  return {
+    allItemsKey,
+    field: 'mateId',
+    options: ids.map((itemId) => ({
+      itemId,
+      name: itemName(allItems, allItemsKey, itemId),
+    })),
+  }
+}
+
 export function buildChu3AppearanceSelectRows(
   userItems: Chu3UserItem[],
   unlockedCharacterIds: number[],
   equippedCharacterId: number,
   allItems: Record<string, Record<string, { name?: string }>>,
+  mateRows: Chu3UserMateRow[] = [],
+  equippedMateId = 0,
 ): Chu3UserboxSelectRow[] {
   const fromItems = buildChu3UserboxSelectRows(userItems, allItems)
   const byField = new Map(fromItems.map((r) => [r.field, r]))
   const charRow = buildCharacterSelectRow(unlockedCharacterIds, equippedCharacterId, allItems)
   if (charRow) byField.set('characterId', charRow)
+  const mateRow = buildMateSelectRow(mateRows, equippedMateId, allItems)
+  if (mateRow) byField.set('mateId', mateRow)
 
   const out: Chu3UserboxSelectRow[] = []
   for (const f of CHU3_APPEARANCE_FIELD_ORDER) {
