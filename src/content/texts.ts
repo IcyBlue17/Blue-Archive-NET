@@ -432,6 +432,7 @@ const TEXTS = {
             matePlayCount: "游玩次数",
             mateRewards: "好感度奖励",
             mateNotOwned: "未拥有",
+            mateNone: "未选择",
             mateFriendshipLv: (lv: number) => `好感度 Lv.${lv}`,
             fieldLabels: {
                 cardId: "卡面",
@@ -1644,6 +1645,7 @@ const TEXTS = {
             matePlayCount: "Play count",
             mateRewards: "Friendship rewards",
             mateNotOwned: "Not owned",
+            mateNone: "Not selected",
             mateFriendshipLv: (lv: number) => `Friendship Lv.${lv}`,
             fieldLabels: {
                 cardId: "Card",

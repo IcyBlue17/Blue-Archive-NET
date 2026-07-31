@@ -1,3 +1,4 @@
+import { CHU3_MATE_NONE_ID } from './chu3Userbox'
 import { imgUrl } from './imgSign'
 
 export type Chu3JsonEntry = { id: number; name: string; category?: number }
@@ -127,6 +128,8 @@ const FIELD_IMAGE: Partial<
 export function chu3CollectibleImageUrl(field: string, itemId: number, allItems?: Chu3AllItems): string | null {
   if (itemId < 0) return null
   if (itemId === 0 && field !== 'characterId') return null
+  // "no mate equipped" has no art — don't build a URL that 404s
+  if (field === 'mateId' && itemId === CHU3_MATE_NONE_ID) return null
   if (field === 'stageId') {
     const row = allItems?.stage?.[String(itemId)]
     return assetImageUrl(stageImagePath(row?.imagePath ?? row?.imageFile))

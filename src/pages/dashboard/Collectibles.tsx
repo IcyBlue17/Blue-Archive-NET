@@ -28,6 +28,7 @@ import {
   buildChu3AppearanceSelectRows,
   CHU3_APPEARANCE_FIELD_ORDER,
   CHU3_FIELD_ALL_ITEMS_KEY,
+  CHU3_MATE_NONE_ID,
   withEquippedIfMissing,
   type Chu3UserItem,
   type Chu3UserMateRow,
@@ -87,9 +88,11 @@ function resolveCollectibleName(
   itemId: number,
   allItems: Chu3AllItems,
   lookups: Chu3NameLookups | null,
+  mateNoneLabel = '',
 ): string {
   if (itemId < 0) return '—'
   if (itemId === 0 && field !== 'characterId') return '—'
+  if (field === 'mateId' && itemId === CHU3_MATE_NONE_ID) return mateNoneLabel || '—'
   const key = CHU3_FIELD_ALL_ITEMS_KEY[field as keyof typeof CHU3_FIELD_ALL_ITEMS_KEY]
   const fromAll = key ? allItems[key]?.[String(itemId)]?.name : undefined
 
@@ -489,7 +492,9 @@ export function CollectiblesPage() {
   const selectedMateMeta = selectedMateId > 0 ? mateMetaMap[selectedMateId] ?? null : null
   const selectedMateOwned = selectedMateId > 0 ? mateOwnedMap[selectedMateId] ?? null : null
   const selectedMateName =
-    selectedMateId > 0 ? resolveCollectibleName('mateId', selectedMateId, allItems, lookups) : null
+    selectedMateId > 0
+      ? resolveCollectibleName('mateId', selectedMateId, allItems, lookups, texts.collectibles.mateNone)
+      : null
   const selectedMateRewards = useMemo(() => {
     if (!Array.isArray(selectedMateMeta?.rewards)) return [] as Array<{ lv: string; reward: string }>
     return selectedMateMeta.rewards
@@ -826,7 +831,7 @@ export function CollectiblesPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {displayRows.map((row) => {
             const cur = numFromUser(effectiveUser, row.field)
-            const name = resolveCollectibleName(row.field, cur, allItems, lookups)
+            const name = resolveCollectibleName(row.field, cur, allItems, lookups, texts.collectibles.mateNone)
             const img = chu3CollectibleImageUrl(row.field, cur, allItems)
             const hasImg = chu3CollectibleHasImage(row.field)
             const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(row.field)
@@ -1103,7 +1108,7 @@ export function CollectiblesPage() {
                 </div>
               ) : null}
 
-              {activeRow.field === 'mateId' && selectedMateId > 0 ? (
+              {activeRow.field === 'mateId' && selectedMateId > 0 && selectedMateId !== CHU3_MATE_NONE_ID ? (
                 <div className="mb-4 rounded-xl border border-kumo-line bg-kumo-base p-4">
                   <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
                     <div className="bg-kumo-recessed mx-auto flex aspect-square w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-kumo-line">
@@ -1209,7 +1214,13 @@ export function CollectiblesPage() {
                     const isOwnedCharacter = activeRow.field !== 'characterId' || ownedCharacterSet.has(o.itemId)
                     const charaLvNow = activeRow.field === 'characterId' ? (ownedCharacterLvs[o.itemId] ?? 1) : 0
                     const img = chu3CollectibleImageUrl(activeRow.field, o.itemId, allItems)
-                    const displayName = resolveCollectibleName(activeRow.field, o.itemId, allItems, lookups)
+                    const displayName = resolveCollectibleName(
+                      activeRow.field,
+                      o.itemId,
+                      allItems,
+                      lookups,
+                      texts.collectibles.mateNone,
+                    )
                     const hasImg = chu3CollectibleHasImage(activeRow.field)
                     const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(activeRow.field)
                     const isCharacter = activeRow.field === 'characterId'
@@ -1245,7 +1256,7 @@ export function CollectiblesPage() {
                             </span>
                           </div>
                         ) : null}
-                        {activeRow.field === 'mateId' ? (
+                        {activeRow.field === 'mateId' && o.itemId !== CHU3_MATE_NONE_ID ? (
                           <div className="border-kumo-line flex flex-wrap items-center gap-2 border-b px-3 py-2">
                             <span
                               className={`rounded-md px-2 py-1 text-xs ${

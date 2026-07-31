@@ -14,6 +14,12 @@ export interface Chu3UserboxSelectRow {
 }
 
 /**
+ * The "no mate equipped" sentinel the game sends, same convention as stageId 99999.
+ * It shows up as a real row in userMateList, so it stays selectable — just labelled.
+ */
+export const CHU3_MATE_NONE_ID = 99999
+
+/**
  * A Mate the player owns (SDHD 2.50). These come from `chusan_user_mate`, not the item table,
  * so the userbox returns them as their own list — see `mateRows` in the chu3 user-box endpoint.
  */
