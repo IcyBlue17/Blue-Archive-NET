@@ -203,6 +203,33 @@ export async function loadChu3StageCatalog(): Promise<Chu3StageJsonEntry[]> {
   return fetchChu3AssetJson<Chu3StageJsonEntry[]>('stage.json')
 }
 
+/**
+ * 称号 rareType 的稀有度名，取自游戏内标准稀有度。
+ *
+ * 没列出的（4/6/8 等）在数据里是实际存在且常见的档位——4 是 EXPERT ALL JUSTICE、
+ * 6 是 MASTER、8 是 ULTIMA，各有自己的底框，只是没有官方短名，界面直接显示编号。
+ */
+export const TROPHY_RARE_LABEL: Record<number, string> = {
+  0: 'normal',
+  1: 'bronze',
+  2: 'silver',
+  3: 'gold',
+  5: 'platinum',
+  7: 'rainbow',
+  9: 'staff',
+  10: 'ongeki',
+  11: 'maimai',
+  12: 'irodori silver',
+  13: 'irodori gold',
+  14: 'irodori rainbow',
+}
+
+export function trophyRareLabel(rareType: number | null | undefined): string {
+  if (!Number.isFinite(rareType)) return '—'
+  const r = Math.floor(rareType as number)
+  return TROPHY_RARE_LABEL[r] ? `${TROPHY_RARE_LABEL[r]} (${r})` : String(r)
+}
+
 /** 详情分片的 id 跨度，必须和产物侧的 DETAIL_SHARD_SPAN1 一致。 */
 const DETAIL_SHARD_SPAN = 1000
 

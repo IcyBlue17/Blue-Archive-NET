@@ -434,6 +434,9 @@ const TEXTS = {
             mateNotOwned: "未拥有",
             mateNone: "未选择",
             mateFriendshipLv: (lv: number) => `好感度 Lv.${lv}`,
+            trophyRarity: "稀有度",
+            trophyCondition: "达成条件",
+            trophyNoCondition: "没有记录达成条件。",
             fieldLabels: {
                 cardId: "卡面",
                 nameplateId: "名牌",
@@ -1647,6 +1650,9 @@ const TEXTS = {
             mateNotOwned: "Not owned",
             mateNone: "Not selected",
             mateFriendshipLv: (lv: number) => `Friendship Lv.${lv}`,
+            trophyRarity: "Rarity",
+            trophyCondition: "Unlock condition",
+            trophyNoCondition: "No unlock condition recorded.",
             fieldLabels: {
                 cardId: "Card",
                 nameplateId: "Name plate",

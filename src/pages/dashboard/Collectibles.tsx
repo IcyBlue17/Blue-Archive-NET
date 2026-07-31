@@ -25,6 +25,7 @@ import {
   type Chu3CatalogBundle,
   type Chu3MateJsonEntry,
   type Chu3NameLookups,
+  trophyRareLabel,
   type Chu3StageJsonEntry,
 } from '../../lib/chu3Assets'
 import { imgCross } from '../../lib/imgSign'
@@ -246,6 +247,53 @@ type Chu3CollectibleLoad = {
   mateRows: Chu3UserMateRow[]
 }
 
+type Chu3TrophyCondition = {
+  type?: number
+  musicId?: number
+  musicName?: string
+  musicDifId?: number
+  musicDif?: string
+  scoreRankId?: number
+  scoreRank?: string
+  fullCombo?: boolean
+  fullChain?: boolean
+  allJustice?: boolean
+  targetCharaId?: number
+  targetCharaName?: string
+  targetRank?: number
+  releaseTagId?: number
+  releaseTag?: string
+}
+
+/**
+ * 把一条结构化达成条件拍成一行人话。
+ *
+ * 条件是分片里的原始结构，字段大多是「没有就是 -1 / 空串 / Invalid」，
+ * 逐个挑出有意义的拼起来，全空就返回空串让调用方跳过这一条。
+ */
+function trophyConditionText(cond: Chu3TrophyCondition): string {
+  const parts: string[] = []
+  const music = cleanText(cond.musicName)
+  if (music) {
+    const dif = cleanText(cond.musicDif)
+    parts.push(dif ? `${music} / ${dif}` : music)
+  }
+  const rank = cleanText(cond.scoreRank)
+  if (rank) parts.push(rank)
+  if (cond.allJustice) parts.push('ALL JUSTICE')
+  else if (cond.fullChain) parts.push('FULL CHAIN')
+  else if (cond.fullCombo) parts.push('FULL COMBO')
+
+  const chara = cleanText(cond.targetCharaName)
+  if (chara) {
+    const rk = typeof cond.targetRank === 'number' && cond.targetRank > 0 ? ` RANK ${cond.targetRank}` : ''
+    parts.push(`${chara}${rk}`)
+  }
+  const tag = cleanText(cond.releaseTag)
+  if (tag) parts.push(tag)
+  return parts.join(' · ')
+}
+
 type Chu3MateReward = {
   rewardId?: number | string
   level?: number | string
@@ -348,6 +396,7 @@ export function CollectiblesPage() {
   const [ownedCharacterLvs, setOwnedCharacterLvs] = useState<Record<number, number>>({})
   const [mateRows, setMateRows] = useState<Chu3UserMateRow[]>([])
   const [charaDetail, setCharaDetail] = useState<Record<number, Chu3DetailRow>>({})
+  const [trophyDetail, setTrophyDetail] = useState<Record<number, Chu3DetailRow>>({})
   const [err, setErr] = useState<string | null>(null)
   const [modalField, setModalField] = useState<string | null>(null)
   const [modalPage, setModalPage] = useState(0)
@@ -548,6 +597,41 @@ export function CollectiblesPage() {
       }))
       .filter((one) => !!one.reward)
   }, [selectedCharaMeta])
+  // 称号选择器点一下就装备，所以详情面板讲的是当前装备的那个。
+  const selectedTrophyId = TROPHY_FIELDS.has(activeRow?.field ?? '')
+    ? numFromUser(effectiveUser, activeRow?.field ?? '')
+    : 0
+
+  // 达成条件和获得说明不在 trophy.json 里（8093 条条件有 4.5 MB），点开才拉分片。
+  useEffect(() => {
+    const id = selectedTrophyId
+    if (id <= 0) return
+    if (trophyDetail[id] !== undefined) return
+    let alive = true
+    void fetchChu3DetailRow('trophy', id).then((row) => {
+      if (alive) setTrophyDetail((m) => ({ ...m, [id]: row ?? {} }))
+    })
+    return () => {
+      alive = false
+    }
+  }, [selectedTrophyId, trophyDetail])
+
+  const selectedTrophy = useMemo(() => {
+    if (selectedTrophyId <= 0) return null
+    const detail = trophyDetail[selectedTrophyId] as
+      | { conditionList?: Chu3TrophyCondition[]; explainText?: string }
+      | undefined
+    const rows = Array.isArray(detail?.conditionList) ? detail.conditionList : []
+    return {
+      id: selectedTrophyId,
+      name: resolveCollectibleName(activeRow?.field ?? '', selectedTrophyId, allItems, lookups),
+      meta: trophyMetaOf(allItems, selectedTrophyId),
+      explainText: cleanText(detail?.explainText),
+      conditions: rows.map(trophyConditionText).filter((x) => !!x),
+      loading: detail === undefined,
+    }
+  }, [selectedTrophyId, trophyDetail, allItems, lookups, activeRow?.field])
+
   // The mate picker equips on click, so the detail panel describes whatever is equipped right now.
   const selectedMateId = activeRow?.field === 'mateId' ? numFromUser(effectiveUser, 'mateId') : 0
   const selectedMateMeta = selectedMateId > 0 ? mateMetaMap[selectedMateId] ?? null : null
@@ -1171,6 +1255,46 @@ export function CollectiblesPage() {
                         </div>
                       ) : null}
                     </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {selectedTrophy ? (
+                <div className="mb-4 rounded-xl border border-kumo-line bg-kumo-base p-4">
+                  <div className="mx-auto max-w-xl">
+                    <Chu3TrophyBadge name={selectedTrophy.name} {...selectedTrophy.meta} />
+                  </div>
+                  <div className="mt-3 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                    <div>
+                      <span className="text-kumo-subtle">ID: </span>
+                      <span>{selectedTrophy.id}</span>
+                    </div>
+                    <div>
+                      <span className="text-kumo-subtle">{texts.collectibles.trophyRarity}: </span>
+                      <span>{trophyRareLabel(selectedTrophy.meta.rareType)}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+                      {texts.collectibles.trophyCondition}
+                    </Text>
+                    {selectedTrophy.loading ? (
+                      <SkeletonBox className="h-4 w-48 rounded-md" />
+                    ) : selectedTrophy.explainText || selectedTrophy.conditions.length ? (
+                      <div className="space-y-1 text-sm text-kumo-subtle">
+                        {selectedTrophy.explainText ? (
+                          <div className="text-kumo-default">{selectedTrophy.explainText}</div>
+                        ) : null}
+                        {selectedTrophy.conditions.map((one, idx) => (
+                          <div key={idx}>· {one}</div>
+                        ))}
+                      </div>
+                    ) : (
+                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                        {texts.collectibles.trophyNoCondition}
+                      </Text>
+                    )}
                   </div>
                 </div>
               ) : null}
