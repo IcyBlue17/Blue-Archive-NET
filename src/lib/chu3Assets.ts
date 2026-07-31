@@ -1,7 +1,28 @@
-import { CHU3_MATE_NONE_ID } from './chu3Userbox'
 import { imgUrl } from './imgSign'
 
 export type Chu3JsonEntry = { id: number; name: string; category?: number }
+export type Chu3MateReward = {
+  rewardId?: number
+  level?: number
+  itemId?: number
+  itemName?: string
+}
+/**
+ * mate.json rows. Detail comes from here rather than all-items.json: that file is ~14 MB and
+ * gets overwritten in place, so an edge cache can serve a stale copy long after a rebuild —
+ * mate.json is 2 KB and already loaded for the name lookups.
+ */
+export type Chu3MateJsonEntry = Chu3JsonEntry & {
+  imageFile?: string
+  charaId?: number
+  charaName?: string
+  ddsIllustId?: number
+  ddsIllustName?: string
+  systemVoiceId?: number
+  netOpenName?: string
+  version?: string
+  rewards?: Chu3MateReward[]
+}
 export type Chu3StageJsonEntry = {
   stageId?: number
   id?: number
@@ -128,8 +149,6 @@ const FIELD_IMAGE: Partial<
 export function chu3CollectibleImageUrl(field: string, itemId: number, allItems?: Chu3AllItems): string | null {
   if (itemId < 0) return null
   if (itemId === 0 && field !== 'characterId') return null
-  // "no mate equipped" has no art — don't build a URL that 404s
-  if (field === 'mateId' && itemId === CHU3_MATE_NONE_ID) return null
   if (field === 'stageId') {
     const row = allItems?.stage?.[String(itemId)]
     return assetImageUrl(stageImagePath(row?.imagePath ?? row?.imageFile))
@@ -203,7 +222,7 @@ export type Chu3CatalogBundle = {
   mapicon: Chu3JsonEntry[]
   sysvoice: Chu3JsonEntry[]
   avatar_icon: Chu3JsonEntry[]
-  mate: Chu3JsonEntry[]
+  mate: Chu3MateJsonEntry[]
 }
 
 export async function loadChu3CatalogBundle(): Promise<Chu3CatalogBundle> {
@@ -216,7 +235,7 @@ export async function loadChu3CatalogBundle(): Promise<Chu3CatalogBundle> {
     fetchChu3AssetJson('sysvoice.json'),
     fetchChu3AssetJson('avatar_icon.json'),
     // 2.50 only — asset bundles built before mate support simply don't ship this file.
-    fetchChu3AssetJsonOr<Chu3JsonEntry[]>('mate.json', []),
+    fetchChu3AssetJsonOr<Chu3MateJsonEntry[]>('mate.json', []),
   ])
   return { nameplate, frame, character, trophy, mapicon, sysvoice, avatar_icon, mate }
 }

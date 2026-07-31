@@ -20,6 +20,7 @@ import {
   loadChu3CatalogBundle,
   loadChu3StageCatalog,
   type Chu3CatalogBundle,
+  type Chu3MateJsonEntry,
   type Chu3NameLookups,
   type Chu3StageJsonEntry,
 } from '../../lib/chu3Assets'
@@ -277,13 +278,26 @@ function rewardText(v: unknown): string {
   return s
 }
 
-function buildMateMetaMap(allItems: Chu3AllItems): Record<number, Chu3MateMeta> {
-  const raw = allItems.mate as Record<string, Chu3MateMeta> | undefined
+/**
+ * mate.json wins over all-items.json here. all-items.json is ~14 MB and rewritten in place on
+ * every asset build, so a cached edge copy can lag a rebuild by a long time and silently drop
+ * every mate field; mate.json is tiny, newly added, and already fetched for the name lookups.
+ */
+function buildMateMetaMap(
+  allItems: Chu3AllItems,
+  mateRowsJson: Chu3MateJsonEntry[],
+): Record<number, Chu3MateMeta> {
   const out: Record<number, Chu3MateMeta> = {}
-  if (!raw) return out
-  for (const [id, row] of Object.entries(raw)) {
-    const num = parseInt(id, 10)
-    if (!Number.isNaN(num)) out[num] = row
+  const raw = allItems.mate as Record<string, Chu3MateMeta> | undefined
+  if (raw) {
+    for (const [id, row] of Object.entries(raw)) {
+      const num = parseInt(id, 10)
+      if (!Number.isNaN(num)) out[num] = row
+    }
+  }
+  for (const row of mateRowsJson) {
+    if (!Number.isFinite(row.id)) continue
+    out[row.id] = { ...out[row.id], ...row }
   }
   return out
 }
@@ -465,7 +479,10 @@ export function CollectiblesPage() {
 
   const pickerOptionsFull = useMemo(() => activeRow?.options ?? [], [activeRow])
   const charaMetaMap = useMemo(() => buildCharaMetaMap(allItems), [allItems])
-  const mateMetaMap = useMemo(() => buildMateMetaMap(allItems), [allItems])
+  const mateMetaMap = useMemo(
+    () => buildMateMetaMap(allItems, catalogBundle?.mate ?? []),
+    [allItems, catalogBundle],
+  )
   const mateOwnedMap = useMemo(() => {
     const m: Record<number, Chu3UserMateRow> = {}
     for (const r of mateRows) m[r.mateId] = r
