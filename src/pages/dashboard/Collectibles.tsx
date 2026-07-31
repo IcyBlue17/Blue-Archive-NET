@@ -5,6 +5,7 @@ import { Button } from '@cloudflare/kumo/components/button'
 import { Input } from '@cloudflare/kumo/components/input'
 import { Switch } from '@cloudflare/kumo/components/switch'
 import { Text } from '@cloudflare/kumo/components/text'
+import { Chu3TrophyBadge } from '../../components/game/Chu3TrophyBadge'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
 import * as gameApi from '../../api/game'
@@ -43,11 +44,29 @@ const UNLOCK_ALL_STORAGE_KEY = 'chu3-collectibles-unlock-all'
 
 const COLLECTIBLES_FIELD_ORDER = CHU3_APPEARANCE_FIELD_ORDER
 
-const TEXT_ONLY_PREVIEW_FIELDS = new Set([
+// 称号没有统一的贴图，游戏是按 rareType 取底框条再把名字画上去，
+// 所以它既不是「有图」也不是「纯文字」，单独走 Chu3TrophyBadge。
+const TROPHY_FIELDS = new Set([
   'trophyId',
   'trophyIdSub1',
   'trophyIdSub2',
 ])
+
+const TEXT_ONLY_PREVIEW_FIELDS = TROPHY_FIELDS
+
+type Chu3TrophyMeta = { rareType: number; imageFile: string }
+
+function trophyMetaOf(allItems: Chu3AllItems, itemId: number): Chu3TrophyMeta {
+  const row = allItems.trophy?.[String(itemId)] as
+    | { rareType?: number | string; imageFile?: string }
+    | undefined
+  const raw = row?.rareType
+  const rareType = typeof raw === 'number' ? raw : parseInt(String(raw ?? 0), 10)
+  return {
+    rareType: Number.isFinite(rareType) ? rareType : 0,
+    imageFile: (row?.imageFile ?? '').trim(),
+  }
+}
 
 function numFromUser(u: Record<string, unknown>, field: string): number {
   const v = u[field]
@@ -899,7 +918,13 @@ export function CollectiblesPage() {
                     ) : null}
                   </div>
                   {textOnly ? (
-                    <div className="border-kumo-line shrink-0 border-b border-dashed" aria-hidden />
+                    cur > 0 ? (
+                      <div className="flex flex-1 items-center">
+                        <Chu3TrophyBadge name={name} {...trophyMetaOf(allItems, cur)} />
+                      </div>
+                    ) : (
+                      <div className="border-kumo-line shrink-0 border-b border-dashed" aria-hidden />
+                    )
                   ) : (
                     <div
                       className={`border-kumo-line bg-kumo-recessed flex flex-1 items-center justify-center overflow-hidden rounded-lg border ${
@@ -1318,7 +1343,14 @@ export function CollectiblesPage() {
                             ) : null}
                           </div>
                         ) : null}
-                        {textOnly || !hasImg ? (
+                        {textOnly ? (
+                          <div className="px-3 py-2">
+                            <Chu3TrophyBadge
+                              name={displayName}
+                              {...trophyMetaOf(allItems, o.itemId)}
+                            />
+                          </div>
+                        ) : !hasImg ? (
                           <div className="border-kumo-line shrink-0 border-b" aria-hidden />
                         ) : (
                           <div
