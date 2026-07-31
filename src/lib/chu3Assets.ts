@@ -203,6 +203,66 @@ export async function loadChu3StageCatalog(): Promise<Chu3StageJsonEntry[]> {
   return fetchChu3AssetJson<Chu3StageJsonEntry[]>('stage.json')
 }
 
+/** 详情分片的 id 跨度，必须和产物侧的 DETAIL_SHARD_SPAN1 一致。 */
+const DETAIL_SHARD_SPAN = 1000
+
+export type Chu3DetailRow = Record<string, unknown>
+
+/**
+ * 按需取一条详情。列表文件只留渲染列表要的字段，等级奖励、达成条件这些重字段
+ * 按 id 分片放在 detail/ 下，点开才拉——整套 8093 条称号的条件有 4.5 MB，
+ * 首屏不该为它买单。fetchChu3AssetJson 自带按文件名缓存，同片只会拉一次。
+ *
+ * 取不到就返回 null（老版本资源包没有 detail/ 目录），调用方自己回退。
+ */
+export async function fetchChu3DetailRow(
+  kind: 'chara' | 'trophy',
+  itemId: number,
+): Promise<Chu3DetailRow | null> {
+  if (!Number.isFinite(itemId) || itemId < 0) return null
+  const bucket = Math.floor(Math.floor(itemId) / DETAIL_SHARD_SPAN)
+  const rows = await fetchChu3AssetJsonOr<Record<string, Chu3DetailRow>>(
+    `detail/${kind}-${bucket}.json`,
+    {},
+  )
+  return rows[String(Math.floor(itemId))] ?? null
+}
+
+/**
+ * 用已经加载的分类目录拼出 all-items 结构。
+ *
+ * 以前这份数据是单独下 all-items.json 拿的，14 MB，而里面每一类都和分类文件重复——
+ * 收藏品页等于把同一批数据下了两遍。分类文件本来就要加载，就地拼出来即可。
+ */
+export function bundleToAllItems(
+  bundle: Chu3CatalogBundle,
+  stageRows: Chu3StageJsonEntry[] = [],
+): Chu3AllItems {
+  const toObj = (rows: Array<Record<string, unknown>>): Record<string, Chu3AllItemMeta> => {
+    const out: Record<string, Chu3AllItemMeta> = {}
+    for (const row of rows) {
+      const rawId = row.id ?? row.stageId
+      const id = typeof rawId === 'number' ? rawId : parseInt(String(rawId), 10)
+      if (!Number.isFinite(id)) continue
+      const rest: Record<string, unknown> = { ...row }
+      delete rest.id
+      out[String(id)] = rest as Chu3AllItemMeta
+    }
+    return out
+  }
+  return {
+    namePlate: toObj(bundle.nameplate),
+    frame: toObj(bundle.frame),
+    trophy: toObj(bundle.trophy),
+    mapIcon: toObj(bundle.mapicon),
+    systemVoice: toObj(bundle.sysvoice),
+    avatarAccessory: toObj(bundle.avatar_icon),
+    chara: toObj(bundle.character),
+    mate: toObj(bundle.mate),
+    stage: toObj(stageRows as unknown as Array<Record<string, unknown>>),
+  }
+}
+
 export type Chu3NameLookups = {
   namePlate: Map<number, string>
   frame: Map<number, string>

@@ -7,7 +7,6 @@ import { Input } from "@cloudflare/kumo/components/input";
 import { Link } from "@cloudflare/kumo/components/link";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Text } from "@cloudflare/kumo/components/text";
-import * as dataApi from "../../api/data";
 import * as gameApi from "../../api/game";
 import { getAppTexts } from "../../content/texts";
 import { CHU3_MATCHINGS } from "../../lib/config";
@@ -38,9 +37,8 @@ export function ChusanExtraSettings({
   const [linkedVerse, setLinkedVerse] = useState(false);
   const [overlay, setOverlay] = useState(false);
   const [custom, setCustom] = useState(false);
-  const [symbolChat, setSymbolChat] = useState<
-    Record<string, { name: string }>
-  >({});
+  // 资源侧目前不导出 symbol chat 目录，所以候选恒为空，下拉框只有「默认」。
+  const [symbolChat] = useState<Record<string, { name: string }>>({});
   const [symbols, setSymbols] = useState<Record<number, string>>({
     1: "",
     2: "",
@@ -84,12 +82,9 @@ export function ChusanExtraSettings({
       setCustom(false);
   }, [matchingUrl]);
 
-  useEffect(() => {
-    void dataApi.allItems("chu3").then((raw: unknown) => {
-      const o = raw as { symbolChat?: Record<string, { name: string }> };
-      setSymbolChat(o?.symbolChat ?? {});
-    });
-  }, []);
+  // 这里原本拉整个 all-items.json 只为取 symbolChat，但 chu3-assets 从来没产出过
+  // 这个分类，拿到的永远是空对象，下拉框永远只有「默认」一项——纯粹白下一个大文件。
+  // 等哪天资源侧真的导出了 symbol chat，在这里换成拉那个单独的小文件即可。
 
   useEffect(() => {
     const next: Record<number, string> = { 1: "", 2: "", 3: "", 4: "" };

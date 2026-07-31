@@ -7,13 +7,15 @@ import { Switch } from '@cloudflare/kumo/components/switch'
 import { Text } from '@cloudflare/kumo/components/text'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SkeletonBox } from '../../components/common/Skeleton'
-import * as dataApi from '../../api/data'
 import * as gameApi from '../../api/game'
 import { detailSet } from '../../api/settings'
 import { qk } from '../../lib/query'
 import {
   buildChu3CatalogOptions,
+  bundleToAllItems,
   bundleToLookups,
+  type Chu3DetailRow,
+  fetchChu3DetailRow,
   type Chu3AllItems,
   chu3CollectibleHasImage,
   chu3CollectibleImageUrl,
@@ -326,6 +328,7 @@ export function CollectiblesPage() {
   const [ownedCharacters, setOwnedCharacters] = useState<number[]>([])
   const [ownedCharacterLvs, setOwnedCharacterLvs] = useState<Record<number, number>>({})
   const [mateRows, setMateRows] = useState<Chu3UserMateRow[]>([])
+  const [charaDetail, setCharaDetail] = useState<Record<number, Chu3DetailRow>>({})
   const [err, setErr] = useState<string | null>(null)
   const [modalField, setModalField] = useState<string | null>(null)
   const [modalPage, setModalPage] = useState(0)
@@ -381,9 +384,10 @@ export function CollectiblesPage() {
     queryKey: qk.collectiblesChu3,
     placeholderData: (old) => old,
     queryFn: async () => {
-      const [box, allRaw, bundle, stageRows] = await Promise.all([
+      // 不再下 all-items.json：那 14 MB 里每一类都和下面这些分类文件重复，
+      // 同一批数据下了两遍。就地用 bundle 拼出同样的结构即可。
+      const [box, bundle, stageRows] = await Promise.all([
         gameApi.userBox(),
-        dataApi.allItems('chu3'),
         loadChu3CatalogBundle(),
         loadChu3StageCatalog(),
       ])
@@ -427,8 +431,7 @@ export function CollectiblesPage() {
             .filter((r) => r.mateId > 0)
         : []
       const equippedChar = numFromUser(u, 'characterId')
-      const ai0 = allRaw as Chu3AllItems
-      const ai = mergeStageItems(ai0, stageRows)
+      const ai = mergeStageItems(bundleToAllItems(bundle, stageRows), stageRows)
       return {
         allItems: ai,
         user: u,
@@ -488,7 +491,29 @@ export function CollectiblesPage() {
     for (const r of mateRows) m[r.mateId] = r
     return m
   }, [mateRows])
-  const selectedCharaMeta = pickedCharaId != null ? charaMetaMap[pickedCharaId] ?? null : null
+  // 等级奖励等重字段不在 character.json 里，点开某个角色时才拉它所在的分片。
+  useEffect(() => {
+    const id = pickedCharaId
+    if (id == null || !Number.isFinite(id) || id < 0) return
+    if (charaDetail[id] !== undefined) return
+    // 老格式的资源包把 rankRewards 直接放在列表行里，就不用再拉了
+    if (charaMetaMap[id]?.rankRewards !== undefined) return
+    let alive = true
+    void fetchChu3DetailRow('chara', id).then((row) => {
+      if (alive) setCharaDetail((m) => ({ ...m, [id]: row ?? {} }))
+    })
+    return () => {
+      alive = false
+    }
+  }, [pickedCharaId, charaDetail, charaMetaMap])
+
+  const selectedCharaMeta = useMemo((): Chu3CharacterMeta | null => {
+    if (pickedCharaId == null) return null
+    const base = charaMetaMap[pickedCharaId]
+    const extra = charaDetail[pickedCharaId]
+    if (!base && !extra) return null
+    return { ...(base ?? {}), ...(extra ?? {}) }
+  }, [pickedCharaId, charaMetaMap, charaDetail])
   const validAddImages = useMemo(() => {
     if (!Array.isArray(selectedCharaMeta?.addImageList)) return [] as string[]
     return selectedCharaMeta.addImageList
