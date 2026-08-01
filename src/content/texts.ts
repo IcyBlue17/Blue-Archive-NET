@@ -997,6 +997,10 @@ const TEXTS = {
                 name: "解锁全部乐曲",
                 desc: "解锁全部乐曲（含隐藏曲、联动曲）。",
             },
+            chusanUnlockLvUlt: {
+                name: "解锁黑Melo等谱面",
+                desc: "强制解锁 DataErr0r、Parousia、YOUNITHM、Melodiniq 的 ULTIMA 谱面（正常需通关对应 Linked GATE 获得）。须保证设置的 keychip 和配置指南内 keychip 一致；开启后需重进游戏生效。",
+            },
             chusanInfinitePenguins: {
                 name: "无限企鹅像",
                 desc: "将角色等级提示用企鹅像设为 999。",
@@ -2296,6 +2300,10 @@ const TEXTS = {
             chusanUnlockMusic: {
                 name: "Unlock All Music",
                 desc: "Unlock all music (including hidden and collab songs).",
+            },
+            chusanUnlockLvUlt: {
+                name: "Unlock LINKED VERSE ULTIMA Charts",
+                desc: "Force-unlock the ULTIMA charts of DataErr0r / Parousia / YOUNITHM / Melodiniq (normally earned by clearing the matching Linked GATE). Your keychip must match the one in the setup guide; restart the game to apply.",
             },
             chusanInfinitePenguins: {
                 name: "Infinite Penguins",
