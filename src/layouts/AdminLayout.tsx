@@ -12,6 +12,7 @@ const ADMIN_TABS = [
   { path: '/admin/download-order', value: 'download-order', labelKey: 'downloadOrder' },
   { path: '/admin/config-reload', value: 'config-reload', labelKey: 'configReload' },
   { path: '/admin/ongeki-ranking', value: 'ongeki-ranking', labelKey: 'ongekiRanking' },
+  { path: '/admin/chusan-ranking', value: 'chusan-ranking', labelKey: 'chusanRanking' },
   { path: '/admin/allnet-title-tls', value: 'allnet-title-tls', labelKey: 'allnetTitleTls' },
   { path: '/admin/ongeki-events', value: 'ongeki-events', labelKey: 'ongekiEvents' },
 ] as const
@@ -28,6 +29,7 @@ export function AdminLayout() {
     if (loc.pathname.startsWith('/admin/download-order')) return 'download-order'
     if (loc.pathname.startsWith('/admin/config-reload')) return 'config-reload'
     if (loc.pathname.startsWith('/admin/ongeki-ranking')) return 'ongeki-ranking'
+    if (loc.pathname.startsWith('/admin/chusan-ranking')) return 'chusan-ranking'
     if (loc.pathname.startsWith('/admin/allnet-title-tls')) return 'allnet-title-tls'
     if (loc.pathname.startsWith('/admin/ongeki-events')) return 'ongeki-events'
     return 'overview'

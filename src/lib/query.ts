@@ -48,6 +48,7 @@ export const qk = {
   collectiblesOngeki: ['collectibles', 'ongeki'] as const,
   on9Story: ['on9-story'] as const,
   adminOngekiRanking: (type: number) => ['admin-ongeki-ranking', type] as const,
+  adminChusanRanking: (type: number) => ['admin-chusan-ranking', type] as const,
   adminOngekiEvents: ['admin-ongeki-events'] as const,
   adminOngekiEventsUnscheduled: ['admin-ongeki-events-unscheduled'] as const,
 }

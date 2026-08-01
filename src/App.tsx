@@ -42,6 +42,7 @@ import { AdminUnlockChallengePage } from './pages/admin/UnlockChallenge'
 import { AdminDownloadOrderPage } from './pages/admin/DownloadOrder'
 import { AdminConfigReloadPage } from './pages/admin/ConfigReload'
 import { AdminOngekiRankingPage } from './pages/admin/OngekiRanking'
+import { AdminChusanRankingPage } from './pages/admin/ChusanRanking'
 import { AdminAllNetTitleTlsPage } from './pages/admin/AllNetTitleTls'
 import { AdminOngekiEventsPage } from './pages/admin/OngekiEvents'
 import { PageNotFound } from './pages/PageNotFound'
@@ -103,6 +104,7 @@ export default function App() {
                           <Route path="download-order" element={<AdminDownloadOrderPage />} />
                           <Route path="config-reload" element={<AdminConfigReloadPage />} />
                           <Route path="ongeki-ranking" element={<AdminOngekiRankingPage />} />
+                          <Route path="chusan-ranking" element={<AdminChusanRankingPage />} />
                           <Route path="allnet-title-tls" element={<AdminAllNetTitleTlsPage />} />
                           <Route path="ongeki-events" element={<AdminOngekiEventsPage />} />
                         </Route>
