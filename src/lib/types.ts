@@ -234,6 +234,16 @@ export interface GenericGameSummary {
   stageId?: number
 }
 
+/** 中二的「喜爱」清单。乐曲存在玩家 misc 里，角色是 chusan_user_favorite 的行。 */
+export interface Chu3FavoriteBox {
+  music: number[]
+  musicMax: number
+  character: number[]
+  characterMax: number
+}
+
+export type Chu3FavoriteKind = 1 | 3
+
 export interface Chu3RivalEntry {
   rivalExtId: number
   userName: string

@@ -263,6 +263,7 @@ export function GameDashboardPage() {
                 loading={showSongsLoading}
                 error={songErr}
                 locale={loc}
+                canFavorite={!!username}
               />
             )}
           </>

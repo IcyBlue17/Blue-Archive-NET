@@ -29,6 +29,7 @@ import {
   type Chu3StageJsonEntry,
 } from '../../lib/chu3Assets'
 import { imgCross } from '../../lib/imgSign'
+import { CHU3_FAV_CHARACTER, useChu3Favorites } from '../../hooks/useChu3Favorites'
 import {
   buildChu3AppearanceSelectRows,
   CHU3_APPEARANCE_FIELD_ORDER,
@@ -534,6 +535,31 @@ export function CollectiblesPage() {
     })
     pendingCharaIdRef.current = null
   }, [loadQuery.data])
+
+  const favorites = useChu3Favorites()
+
+  // 角色喜爱是 chusan_user_favorite 里 kind=3 的行，和「当前选择」无关：
+  // 可以同时喜爱多个，游戏在喜爱角色列表里读它。
+  const toggleCharaFavorite = useCallback(
+    async (characterId: number, name: string) => {
+      try {
+        const isAdd = await favorites.toggle(CHU3_FAV_CHARACTER, characterId)
+        if (isAdd == null) return
+        toast.add({
+          title: isAdd ? texts.collectibles.favoriteAdded : texts.collectibles.favoriteRemoved,
+          description: texts.collectibles.favoriteDesc(name, isAdd),
+          variant: 'success',
+        })
+      } catch (e) {
+        toast.add({
+          title: texts.collectibles.favoriteFailed,
+          description: e instanceof Error ? e.message : texts.collectibles.favoriteFailed,
+          variant: 'error',
+        })
+      }
+    },
+    [favorites, texts.collectibles, toast],
+  )
 
   const ownedCharacterSet = useMemo(() => new Set(ownedCharacters), [ownedCharacters])
   const pickedCharaLv = pickedCharaId != null ? (ownedCharacterLvs[pickedCharaId] ?? 1) : 1
@@ -1215,12 +1241,34 @@ export function CollectiblesPage() {
                               ? texts.collectibles.applyLevelAndSelect
                               : texts.collectibles.unlockAndSelect}
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="h-11 px-4"
+                            // 后端要求先解锁：喜爱一个没拥有的角色，游戏那边会读到一条解析不出的条目。
+                            disabled={favorites.busy || !pickedCharaOwned}
+                            onClick={() =>
+                              void toggleCharaFavorite(pickedCharaId, pickedCharaName ?? String(pickedCharaId))
+                            }
+                          >
+                            {favorites.isBusy(CHU3_FAV_CHARACTER, pickedCharaId)
+                              ? texts.collectibles.favoriteWorking
+                              : favorites.charaSet.has(pickedCharaId)
+                                ? texts.collectibles.unfavorite
+                                : texts.collectibles.favorite}
+                          </Button>
                           <Text size="sm" DANGEROUS_className="self-center text-kumo-subtle">
                             {pickedCharaOwned
                               ? texts.collectibles.ownedLevel(pickedCharaLv)
                               : texts.collectibles.locked}
                           </Text>
                         </div>
+                        <Text size="sm" DANGEROUS_className="text-kumo-subtle sm:col-span-2">
+                          {texts.collectibles.favoriteCount(
+                            favorites.box.character.length,
+                            favorites.box.characterMax,
+                          )}
+                        </Text>
                       </div>
 
                       {validAddImages.length || validRankRewards.length ? (
@@ -1431,7 +1479,7 @@ export function CollectiblesPage() {
                           {displayName}
                         </div>
                         {activeRow.field === 'characterId' ? (
-                          <div className="border-kumo-line border-b px-3 py-2">
+                          <div className="border-kumo-line flex flex-wrap items-center gap-2 border-b px-3 py-2">
                             <span
                               className={`rounded-md px-2 py-1 text-xs ${
                                 isOwnedCharacter
@@ -1445,6 +1493,11 @@ export function CollectiblesPage() {
                                   ? texts.collectibles.unlocking
                                   : texts.collectibles.lockedClickToUnlock}
                             </span>
+                            {favorites.charaSet.has(o.itemId) ? (
+                              <span className="rounded-md bg-amber-500/15 px-2 py-1 text-xs text-amber-700 dark:text-amber-300">
+                                ★ {texts.collectibles.favoriteBadge}
+                              </span>
+                            ) : null}
                           </div>
                         ) : null}
                         {activeRow.field === 'mateId' && o.itemId !== CHU3_MATE_NONE_ID ? (

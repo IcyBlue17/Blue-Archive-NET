@@ -1,4 +1,6 @@
 import type {
+  Chu3FavoriteBox,
+  Chu3FavoriteKind,
   Chu3RivalEntry,
   OngekiRivalEntry,
   Chu3TeamDetail,
@@ -294,6 +296,24 @@ export async function chu3RivalFavoriteRemove(rivalExtId: number) {
   return userPost('/api/v2/game/chu3/rival/favorite-remove', {
     rivalExtId: String(rivalExtId),
   }) as Promise<void>
+}
+
+export async function chu3FavoriteList() {
+  return userPost('/api/v2/game/chu3/favorite/list', {}) as Promise<Chu3FavoriteBox>
+}
+
+export async function chu3FavoriteAdd(kind: Chu3FavoriteKind, id: number) {
+  return userPost('/api/v2/game/chu3/favorite/add', {
+    kind: String(kind),
+    id: String(id),
+  }) as Promise<Chu3FavoriteBox>
+}
+
+export async function chu3FavoriteRemove(kind: Chu3FavoriteKind, id: number) {
+  return userPost('/api/v2/game/chu3/favorite/remove', {
+    kind: String(kind),
+    id: String(id),
+  }) as Promise<Chu3FavoriteBox>
 }
 
 export async function ongekiRivalList() {

@@ -1,10 +1,12 @@
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useKumoToastManager } from "@cloudflare/kumo";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Input } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Text } from "@cloudflare/kumo/components/text";
+import { CHU3_FAV_MUSIC, useChu3Favorites } from "../../hooks/useChu3Favorites";
 import {
   chartRating,
   diffLabelByIdx,
@@ -91,6 +93,7 @@ export function Chu3MusicLibrary({
   loading = false,
   error = null,
   locale = "zh",
+  canFavorite = true,
 }: {
   musicById: Record<number, MusicMetaLite>;
   detailRows: Chu3UserMusicDetail[];
@@ -98,14 +101,40 @@ export function Chu3MusicLibrary({
   loading?: boolean;
   error?: string | null;
   locale?: "zh" | "en";
+  canFavorite?: boolean;
 }) {
   const texts = getAppTexts(locale);
+  const toast = useKumoToastManager();
   const [key, setKey] = useState("");
   const [onlyPlayed, setOnlyPlayed] = useState(false);
+  const [onlyFavorite, setOnlyFavorite] = useState(false);
   const [genre, setGenre] = useState("");
   const [page, setPage] = useState(1);
   const [pickMusicId, setPickMusicId] = useState<number | null>(null);
   const keySlow = useDeferredValue(key.trim().toLowerCase());
+  const favorites = useChu3Favorites(canFavorite);
+
+  const toggleFavorite = useCallback(
+    async (musicId: number, name: string) => {
+      try {
+        const isAdd = await favorites.toggle(CHU3_FAV_MUSIC, musicId);
+        if (isAdd == null) return;
+        toast.add({
+          title: isAdd
+            ? texts.musicLibrary.favoriteAdded
+            : texts.musicLibrary.favoriteRemoved,
+          description: texts.musicLibrary.favoriteDesc(name, isAdd),
+        });
+      } catch (e) {
+        toast.add({
+          title: texts.musicLibrary.favoriteFailed,
+          description: e instanceof Error ? e.message : texts.musicLibrary.favoriteFailed,
+          variant: "error",
+        });
+      }
+    },
+    [favorites, texts, toast],
+  );
 
   const rows = useMemo(() => {
     const bestBySong = new Map<number, Map<number, Chu3UserMusicDetail>>();
@@ -170,13 +199,15 @@ export function Chu3MusicLibrary({
   const filtered = useMemo(() => {
     return rows.filter((row) => {
       if (onlyPlayed && row.playCount <= 0) return false;
+      if (onlyFavorite && !favorites.musicSet.has(row.musicId)) return false;
       if (genre && firstGenre(row.meta) !== genre) return false;
       if (!keySlow) return true;
       return row.search.includes(keySlow);
     });
-  }, [genre, keySlow, onlyPlayed, rows]);
+  }, [favorites.musicSet, genre, keySlow, onlyFavorite, onlyPlayed, rows]);
 
-  const genreList = useMemo(() => orderedGenres(rows, texts.musicLibrary.genreOrder), [rows, texts.musicLibrary.genreOrder]);
+  const genreOrder = texts.musicLibrary.genreOrder;
+  const genreList = useMemo(() => orderedGenres(rows, genreOrder), [genreOrder, rows]);
 
   const totalPage = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const list = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -198,7 +229,7 @@ export function Chu3MusicLibrary({
 
   useEffect(() => {
     setPage(1);
-  }, [genre, keySlow, onlyPlayed]);
+  }, [genre, keySlow, onlyFavorite, onlyPlayed]);
 
   useEffect(() => {
     if (page > totalPage) setPage(totalPage);
@@ -248,8 +279,25 @@ export function Chu3MusicLibrary({
                 onCheckedChange={setOnlyPlayed}
                 label={texts.musicLibrary.onlyPlayed}
               />
+              {canFavorite ? (
+                <Checkbox
+                  controlFirst
+                  checked={onlyFavorite}
+                  onCheckedChange={setOnlyFavorite}
+                  label={texts.musicLibrary.onlyFavorite}
+                />
+              ) : null}
             </div>
           </div>
+
+          {canFavorite ? (
+            <Text DANGEROUS_className="text-kumo-subtle text-sm">
+              {texts.musicLibrary.favoriteCount(
+                favorites.box.music.length,
+                favorites.box.musicMax,
+              )}
+            </Text>
+          ) : null}
 
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -295,12 +343,23 @@ export function Chu3MusicLibrary({
           ) : list.length ? (
             list.map((row) => {
               const cover = musicJacketUrl("chu3", row.musicId);
+              const rowName = row.meta.name ?? texts.common.musicWithId(row.musicId);
+              const isFav = favorites.musicSet.has(row.musicId);
+              const favBusy = favorites.isBusy(CHU3_FAV_MUSIC, row.musicId);
               return (
-                <button
+                // 卡片里还嵌着一个「喜爱」按钮，所以外层不能再是 button——用 role 补回键盘可达性。
+                <div
                   key={row.musicId}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setPickMusicId(row.musicId)}
-                  className={`border-kumo-line rounded-xl border p-3 text-left transition-colors ${
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setPickMusicId(row.musicId);
+                    }
+                  }}
+                  className={`border-kumo-line cursor-pointer rounded-xl border p-3 text-left transition-colors ${
                     row.musicId === picked?.musicId
                       ? "bg-kumo-fill"
                       : "bg-kumo-recessed hover:bg-kumo-tint"
@@ -327,9 +386,37 @@ export function Chu3MusicLibrary({
                             {texts.musicLibrary.playCount(row.playCount)}
                           </span>
                         ) : null}
+                        {canFavorite ? (
+                          <button
+                            type="button"
+                            aria-pressed={isFav}
+                            aria-label={
+                              isFav
+                                ? texts.musicLibrary.unfavorite
+                                : texts.musicLibrary.favorite
+                            }
+                            title={
+                              isFav
+                                ? texts.musicLibrary.unfavorite
+                                : texts.musicLibrary.favorite
+                            }
+                            disabled={favorites.busy}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void toggleFavorite(row.musicId, rowName);
+                            }}
+                            className={`ml-auto rounded-full px-1.5 text-lg leading-none transition-colors disabled:opacity-50 ${
+                              isFav
+                                ? "text-amber-500"
+                                : "text-kumo-subtle hover:text-amber-500"
+                            }`}
+                          >
+                            {favBusy ? "…" : isFav ? "★" : "☆"}
+                          </button>
+                        ) : null}
                       </div>
                       <div className="mt-1 truncate text-base font-semibold">
-                        {row.meta.name ?? texts.common.musicWithId(row.musicId)}
+                        {rowName}
                       </div>
                       <div className="text-kumo-subtle mt-1 truncate text-sm">
                         {row.meta.composer || texts.musicLibrary.unknownComposer}
@@ -355,7 +442,7 @@ export function Chu3MusicLibrary({
                       </div>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })
           ) : (
@@ -393,11 +480,39 @@ export function Chu3MusicLibrary({
                     <span>{firstGenre(picked.meta)}</span>
                   ) : null}
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                   <span className="rounded-full bg-kumo-fill px-2 py-1">
                     {texts.musicLibrary.totalPlays(picked.playCount)}
                   </span>
+                  {canFavorite && favorites.musicSet.has(picked.musicId) ? (
+                    <span className="rounded-full bg-amber-500/15 px-2 py-1 text-amber-700 dark:text-amber-300">
+                      ★ {texts.musicLibrary.favoriteBadge}
+                    </span>
+                  ) : null}
                 </div>
+                {canFavorite ? (
+                  <div className="mt-3">
+                    <Button
+                      size="sm"
+                      variant={
+                        favorites.musicSet.has(picked.musicId) ? "secondary" : "primary"
+                      }
+                      disabled={favorites.busy}
+                      onClick={() =>
+                        void toggleFavorite(
+                          picked.musicId,
+                          picked.meta.name ?? texts.common.musicWithId(picked.musicId),
+                        )
+                      }
+                    >
+                      {favorites.isBusy(CHU3_FAV_MUSIC, picked.musicId)
+                        ? texts.musicLibrary.favoriteWorking
+                        : favorites.musicSet.has(picked.musicId)
+                          ? texts.musicLibrary.unfavorite
+                          : texts.musicLibrary.favorite}
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             </div>
 

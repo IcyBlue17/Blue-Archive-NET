@@ -30,6 +30,7 @@ import { MaiPhotoPage } from './pages/games/MaiPhoto'
 import { CollectiblesPage } from './pages/dashboard/Collectibles'
 import { On9CollectiblesPage } from './pages/dashboard/On9Collectibles'
 import { On9StoryPage } from './pages/dashboard/On9Story'
+import { Chu3FavoritesPage } from './pages/dashboard/Chu3Favorites'
 import { Chu3FriendsPage } from './pages/dashboard/Chu3Friends'
 import { On9FriendsPage } from './pages/dashboard/On9Friends'
 import { Chu3TeamPage } from './pages/dashboard/Chu3Team'
@@ -87,6 +88,7 @@ export default function App() {
                       <Route path="/games/:game" element={<GameDashboardPage />} />
                       <Route path="/games/:game/:section" element={<GameDashboardPage />} />
                       <Route path="/team" element={<Chu3TeamPage />} />
+                      <Route path="/favorites" element={<Chu3FavoritesPage />} />
                       <Route path="/friends" element={<Chu3FriendsPage />} />
                       <Route path="/friends/ongeki" element={<On9FriendsPage />} />
                       <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />

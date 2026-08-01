@@ -6,6 +6,7 @@ import {
   Trophy,
   Images,
   BookOpen,
+  Heart,
   ShieldStar,
   Sparkle,
   IdentificationCard,
@@ -132,6 +133,9 @@ function DashboardShell() {
                 onNavigate={go}
               >
                 {texts.nav.collectibles}
+              </NavBtn>
+              <NavBtn path="/favorites" icon={Heart} active={loc.pathname === '/favorites'} onNavigate={go}>
+                {texts.nav.chu3Favorites}
               </NavBtn>
               <NavBtn path="/team" icon={ShieldStar} active={loc.pathname.startsWith('/team')} onNavigate={go}>
                 {texts.nav.team}
