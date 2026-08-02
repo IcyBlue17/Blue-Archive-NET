@@ -14,7 +14,6 @@ import {
   type Chu3AllItems,
   chu3CollectibleHasImage,
   chu3CollectibleImageUrl,
-  CHU3_TROPHY_FIELDS,
   loadChu3CatalogBundle,
   loadChu3StageCatalog,
   type Chu3CatalogBundle,
@@ -716,40 +715,6 @@ export function CollectiblesPage() {
   const safePage = Math.min(modalPage, totalPages - 1)
   const pageSlice = filteredOptions.slice(safePage * pageSize, safePage * pageSize + pageSize)
 
-  /**
-   * 需要达成条件的称号 id：当前佩戴的三个 + 弹窗当前页可见的那些。
-   * 分片按 id/1000 切且已按文件名缓存，同页 id 连续，实际只会下一两个分片。
-   */
-  const wantedTrophyIds = useMemo(() => {
-    const ids = new Set<number>()
-    for (const f of CHU3_TROPHY_FIELDS) {
-      const id = numFromUser(effectiveUser, f)
-      if (id > 0) ids.add(id)
-    }
-    if (activeRow && TEXT_ONLY_PREVIEW_FIELDS.has(activeRow.field)) {
-      for (const o of pageSlice) if (o.itemId > 0) ids.add(o.itemId)
-    }
-    return [...ids]
-  }, [effectiveUser, activeRow, pageSlice])
-
-  useEffect(() => {
-    const missing = wantedTrophyIds.filter((id) => trophyDetail[id] === undefined)
-    if (!missing.length) return
-    let alive = true
-    void Promise.all(
-      missing.map(async (id) => [id, (await fetchChu3DetailRow('trophy', id)) ?? {}] as const),
-    ).then((rows) => {
-      if (alive) setTrophyDetail((m) => ({ ...m, ...Object.fromEntries(rows) }))
-    })
-    return () => {
-      alive = false
-    }
-  }, [wantedTrophyIds, trophyDetail])
-
-  const trophyConditionOf = useCallback(
-    (itemId: number): string => cleanText(trophyDetail[itemId]?.explainText),
-    [trophyDetail],
-  )
   const equippedId = modalField ? numFromUser(effectiveUser, modalField) : 0
 
   useEffect(() => {
@@ -1075,17 +1040,7 @@ export function CollectiblesPage() {
                     }`}
                   >
                     {textOnly ? (
-                      <div className="flex w-full flex-col gap-2">
-                        <TrophyPlate itemId={cur} name={name} allItems={allItems} />
-                        {trophyConditionOf(cur) ? (
-                          <div className="text-app-subtle text-xs leading-snug">
-                            <span className="text-app-default font-medium">
-                              {texts.collectibles.trophyCondition}
-                            </span>
-                            ：{trophyConditionOf(cur)}
-                          </div>
-                        ) : null}
-                      </div>
+                      <TrophyPlate itemId={cur} name={name} allItems={allItems} />
                     ) : img ? (
                       <img
                         src={img}
@@ -1552,16 +1507,8 @@ export function CollectiblesPage() {
                           </div>
                         ) : null}
                         {textOnly ? (
-                          <div className="flex flex-col gap-2 px-3 py-3">
+                          <div className="flex items-center justify-center px-3 py-3">
                             <TrophyPlate itemId={o.itemId} name={displayName} allItems={allItems} />
-                            {trophyConditionOf(o.itemId) ? (
-                              <div className="text-app-subtle text-xs leading-snug whitespace-normal">
-                                <span className="text-app-default font-medium">
-                                  {texts.collectibles.trophyCondition}
-                                </span>
-                                ：{trophyConditionOf(o.itemId)}
-                              </div>
-                            ) : null}
                           </div>
                         ) : !hasImg ? null : (
                           <div
