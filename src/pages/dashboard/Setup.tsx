@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useAppTexts } from '@/content/texts'
-import { AQUA_CONNECTION } from '@/lib/config'
+import { AQUA_CONNECTION, AQUA_CONNECTION_ACCEL } from '@/lib/config'
 import * as userApi from '@/api/user'
-import { Button } from 'antd'
+import { Button, Tag } from 'antd'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { useToast } from '@/components/ui/toast'
 import { ClipboardField } from '@/components/ui/ClipboardField'
 import { Text } from '@/components/ui/Text'
+import { LabeledSwitch } from '@/components/ui/LabeledSwitch'
 
 function formatKeychip(raw: string) {
   const normalized = raw.replace(/[^0-9A-Z]/gi, '').toUpperCase()
@@ -16,10 +17,18 @@ function formatKeychip(raw: string) {
   return `${normalized.slice(0, 4)}-${normalized.slice(4, 15)}`
 }
 
-function buildSampleIni(dns: string, keychipId: string) {
+function stripScheme(url: string) {
+  return url.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').replace(/\/+$/, '')
+}
+
+/** 旧版 segatools 没有 replaceHost，只能靠 startup 把流量指到加速入口。 */
+function buildSampleIni(dns: string, accel: string, keychipId: string, legacy: boolean) {
   const idLine = formatKeychip(keychipId) || 'A39E-01R94432534'
+  const host = stripScheme(dns) || 'your-aquadx-host.example'
+  const accelHost = stripScheme(accel) || host
   return `[dns]
-default=${dns || 'https://your-aquadx-host.example'}
+default=${host}
+${legacy ? `startup=${accelHost}` : 'replaceHost=1'}
 
 [keychip]
 enable=1
@@ -32,6 +41,7 @@ export function SetupPage() {
   const toast = useToast()
   const [keychip, setKeychip] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const [legacySegatools, setLegacySegatools] = useState(false)
 
   useEffect(() => {
     void userApi
@@ -41,8 +51,14 @@ export function SetupPage() {
   }, [])
 
   const iniText = useMemo(
-    () => buildSampleIni(AQUA_CONNECTION || copy.setup.dnsPlaceholder, keychip ?? ''),
-    [copy.setup.dnsPlaceholder, keychip],
+    () =>
+      buildSampleIni(
+        AQUA_CONNECTION || copy.setup.dnsPlaceholder,
+        AQUA_CONNECTION_ACCEL,
+        keychip ?? '',
+        legacySegatools,
+      ),
+    [copy.setup.dnsPlaceholder, keychip, legacySegatools],
   )
 
   async function allocate() {
@@ -66,14 +82,34 @@ export function SetupPage() {
     <div>
       <PageHeader title={copy.nav.setup} crumbs={[{ label: copy.nav.home, href: '/home' }]} />
       <SectionCard title={<>{copy.setup.connectionAddress}</>} className="mb-6">
-        <Text className="mt-2">
-          {AQUA_CONNECTION || copy.setup.connectionEnvHint}
-        </Text>
+        {AQUA_CONNECTION ? (
+          <div className="mt-2 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Text>{AQUA_CONNECTION}</Text>
+              <Tag color="processing">{copy.setup.connectionPrimary}</Tag>
+            </div>
+            {AQUA_CONNECTION_ACCEL ? (
+              <div className="flex items-center gap-2">
+                <Text>{AQUA_CONNECTION_ACCEL}</Text>
+                <Tag>{copy.setup.connectionAccel}</Tag>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <Text className="mt-2">{copy.setup.connectionEnvHint}</Text>
+        )}
       </SectionCard>
       <SectionCard title={<>{copy.setup.iniExample}</>} className="mb-6">
         <blockquote className="border-app-line text-app-subtle mt-3 border-l-2 pl-3 text-sm">
           {copy.setup.iniHint}
         </blockquote>
+        <div className="mt-4">
+          <LabeledSwitch
+            label={copy.setup.legacySegatools}
+            checked={legacySegatools}
+            onChange={(on) => setLegacySegatools(Boolean(on))}
+          />
+        </div>
         <pre className="bg-app-recessed border-app-line mt-4 max-h-80 overflow-auto rounded-lg border p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap">
           {iniText}
         </pre>

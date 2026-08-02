@@ -1250,6 +1250,9 @@ const TEXTS = {
             allocateSuccessDesc: "已分配新的 keychip。",
             allocateFailedTitle: "分配失败",
             dnsPlaceholder: "https://你的服务器地址",
+            legacySegatools: "用的是旧版 segatools？",
+            connectionPrimary: "主要",
+            connectionAccel: "海外加速",
         },
         transfer: {
             serverParams: "目标服务器参数",
@@ -2603,6 +2606,9 @@ const TEXTS = {
                 "A new keychip is ready. The old one has been revoked; copy the segatools example below.",
             allocateFailedTitle: "Allocation failed",
             dnsPlaceholder: "https://your-server-address",
+            legacySegatools: "Using an older segatools?",
+            connectionPrimary: "Primary",
+            connectionAccel: "Overseas accelerator",
         },
         transfer: {
             serverParams: "Source / target server settings",

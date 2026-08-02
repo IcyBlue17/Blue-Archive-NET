@@ -35,6 +35,9 @@ export function dataUrl(path: string): URL {
   return new URL(p, base)
 }
 export const AQUA_CONNECTION = (import.meta.env.VITE_AQUA_CONNECTION as string) || ''
+/** 海外加速入口，旧版 segatools 的 startup 指到这里。 */
+export const AQUA_CONNECTION_ACCEL =
+  (import.meta.env.VITE_AQUA_CONNECTION_ACCEL as string) || ''
 export const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string) || ''
 export const DISCORD_INVITE = (import.meta.env.VITE_DISCORD_INVITE as string) || ''
 export const TELEGRAM_INVITE = (import.meta.env.VITE_TELEGRAM_INVITE as string) || ''
