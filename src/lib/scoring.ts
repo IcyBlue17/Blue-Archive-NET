@@ -36,6 +36,7 @@ const multTable: Record<GameName, (number | string)[][]> = {
     [50.0, 0, 'C'],
     [0.0, 0, 'D'],
   ],
+  // オンゲキ のランクは A の下がいきなり B——BBB/BB は存在しない。
   ongeki: [
     [100.75, 0, 'SSS+'],
     [100.0, 0, 'SSS'],
@@ -44,9 +45,7 @@ const multTable: Record<GameName, (number | string)[][]> = {
     [94.0, 0, 'AAA'],
     [90.0, 0, 'AA'],
     [85.0, 0, 'A'],
-    [80.0, 0, 'BBB'],
-    [75.0, 0, 'BB'],
-    [70.0, 0, 'B'],
+    [80.0, 0, 'B'],
     [50.0, 0, 'C'],
     [0.0, 0, 'D'],
   ],
@@ -96,6 +95,65 @@ export function chusanRating(lv: number, score: number) {
   if (score >= 900000) return lv - 500 + ((score - 900000) * 4) / 500
   if (score >= 800000) return (lv - 500) / 2 + ((score - 800000) * ((lv - 500) / 2)) / 100000
   return 0
+}
+
+/**
+ * オンゲキ Re:Fresh の単曲レーティング。CHUNITHM の式とは別物なので使い回せない
+ * （chusanRating は内部で lv を 100 倍して返すが、こちらは素の値を返す）。
+ *
+ * テクニカルスコアの区切りと加算値は線形補間：
+ * 1,010,000 → +2.00 / 1,007,500 → +1.75 / 1,000,000 → +1.25 /
+ * 990,000 → +0.75 / 970,000 → ±0 / 900,000 → -4.00 / 800,000 → -6.00。
+ * 500,000〜800,000 は (定数-6) を頭打ちにした比例、500,000 以下は 0。
+ */
+const ON9_TS_CURVE: [score: number, bonus: number][] = [
+  [1010000, 2.0],
+  [1007500, 1.75],
+  [1000000, 1.25],
+  [990000, 0.75],
+  [970000, 0],
+  [900000, -4.0],
+  [800000, -6.0],
+]
+
+export interface OngekiRatingFlags {
+  /** オールブレイク。AB+ は判定材料が playlog に無いので AB 扱い。 */
+  allBreak?: boolean
+  /** MISS 0（フルコンボ）。 */
+  fullCombo?: boolean
+  fullBell?: boolean
+}
+
+function on9TechBonus(techScore: number): number {
+  const top = ON9_TS_CURVE[0]
+  if (techScore >= top[0]) return top[1]
+  for (let i = 1; i < ON9_TS_CURVE.length; i++) {
+    const [lo, loBonus] = ON9_TS_CURVE[i]
+    if (techScore >= lo) {
+      const [hi, hiBonus] = ON9_TS_CURVE[i - 1]
+      return loBonus + ((techScore - lo) * (hiBonus - loBonus)) / (hi - lo)
+    }
+  }
+  return ON9_TS_CURVE[ON9_TS_CURVE.length - 1][1]
+}
+
+export function ongekiRating(lv: number, techScore: number, flags: OngekiRatingFlags = {}): number {
+  if (!Number.isFinite(lv) || lv <= 0 || !Number.isFinite(techScore)) return 0
+  if (techScore <= 500000) return 0
+  if (techScore <= 800000) {
+    return Math.max(0, ((lv - 6) * (techScore - 500000)) / 300000)
+  }
+
+  let rating = lv + on9TechBonus(techScore)
+  if (techScore >= 1007500) rating += 0.3
+  else if (techScore >= 1000000) rating += 0.2
+  else if (techScore >= 990000) rating += 0.1
+
+  if (flags.allBreak) rating += 0.3
+  else if (flags.fullCombo) rating += 0.1
+  if (flags.fullBell) rating += 0.05
+
+  return Math.max(0, rating)
 }
 
 export interface MusicMetaLite {
@@ -148,8 +206,8 @@ export function parseComposition(
     if (diff === undefined || diff === null) return undefined
     if (game === 'mai2')
       return Math.floor(diff * mult * (Math.min(100.5, score / 10000) / 100)).toFixed(0)
-    if (game === 'chu3' || game === 'ongeki')
-      return (Math.floor(chusanRating(diff, score)) / 100).toFixed(2)
+    if (game === 'chu3') return (Math.floor(chusanRating(diff, score)) / 100).toFixed(2)
+    if (game === 'ongeki') return (Math.floor(ongekiRating(diff, score) * 100) / 100).toFixed(2)
     return undefined
   }
 
