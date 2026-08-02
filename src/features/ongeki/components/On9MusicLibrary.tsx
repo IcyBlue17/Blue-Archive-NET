@@ -18,6 +18,7 @@ import type { GamePlayRecord, OngekiUserMusicDetail } from "@/lib/types";
 import { Button, Checkbox, Input, Select, Typography } from 'antd'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { Text } from '@/components/ui/Text'
+import { DifficultyBadge, RankText } from '@/components/ui/ScoreLabels'
 
 const PAGE_SIZE = 12;
 const DIFF_IDS = [0, 1, 2, 3, 4] as const;
@@ -331,16 +332,13 @@ export function On9MusicLibrary({
                         {DIFF_IDS.filter(
                           (idx) => chartExists(row.meta, idx) || row.bestMap.has(idx),
                         ).map((idx) => (
-                          <span
+                          <DifficultyBadge
                             key={`${row.musicId}-${idx}`}
-                            className={`rounded-full px-2 py-1 text-xs ${
-                              idx === 4
-                                ? "bg-rose-500/15 text-rose-700 dark:text-rose-300"
-                                : "bg-app-base"
-                            }`}
+                            level={idx}
+                            game="ongeki"
                           >
                             {diffLabel(idx)} {formatLv(row.meta, idx)}
-                          </span>
+                          </DifficultyBadge>
                         ))}
                       </div>
                     </div>
@@ -405,8 +403,10 @@ export function On9MusicLibrary({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <div className="font-medium">{diffLabel(idx)}</div>
-                        <div className="text-app-subtle text-xs">
+                        <DifficultyBadge level={idx} game="ongeki">
+                          {diffLabel(idx)}
+                        </DifficultyBadge>
+                        <div className="text-app-subtle mt-1 text-xs">
                           Lv {formatLv(picked.meta, idx)}
                         </div>
                       </div>
@@ -436,7 +436,7 @@ export function On9MusicLibrary({
                           <div className="grid grid-cols-[84px_1fr] gap-2 text-sm sm:grid-cols-[96px_1fr]">
                             <div className="text-app-subtle">{texts.on9MusicLibrary.bestScore}</div>
                             <div className="font-semibold">
-                              {fmtScore(scoreNow)} · {rank(scoreNow)}
+                              {fmtScore(scoreNow)} · <RankText rank={rank(scoreNow)} />
                             </div>
                             <div className="text-app-subtle">{texts.on9MusicLibrary.chartRating}</div>
                             <div className="font-semibold">{chartRt}</div>

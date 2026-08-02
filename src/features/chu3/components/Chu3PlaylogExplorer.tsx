@@ -9,6 +9,7 @@ import type { GamePlayRecord } from '@/lib/types'
 import { Button, Input, Typography } from 'antd'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { Text } from '@/components/ui/Text'
+import { DifficultyBadge, RankText } from '@/components/ui/ScoreLabels'
 
 const PAGE_SIZE = 12
 
@@ -112,7 +113,7 @@ export function Chu3PlaylogExplorer({
   const infoRows = row
     ? [
         { label: texts.playlogExplorer.score, value: fmtScore(scoreNow) },
-        { label: texts.playlogExplorer.rank, value: rankNow },
+        { label: texts.playlogExplorer.rank, value: <RankText rank={rankNow} /> },
         { label: texts.playlogExplorer.chartRating, value: chartRt },
         { label: texts.playlogExplorer.ratingDelta, value: delta },
         { label: texts.playlogExplorer.time, value: fmtTime(playTime(row), locale) },
@@ -166,11 +167,11 @@ export function Chu3PlaylogExplorer({
                     <img src={cover} crossOrigin={imgCross(cover)} alt="" width={56} height={56} loading="lazy" decoding="async" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-semibold">{meta.name ?? texts.common.musicWithId(row.musicId)}</div>
-                      <div className="text-app-subtle mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                        <span>{diffLabel(row.level, meta)}</span>
+                      <div className="text-app-subtle mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                        <DifficultyBadge level={row.level}>{diffLabel(row.level, meta)}</DifficultyBadge>
                         <span>Lv {formatLv(meta, row.level)}</span>
                         <span>{fmtScore(scoreNow)}</span>
-                        <span>{rank(scoreNow)}</span>
+                        <RankText rank={rank(scoreNow)} />
                       </div>
                       <div className="text-app-subtle mt-1 text-xs">{fmtTime(playTime(row), locale)}</div>
                     </div>
@@ -195,8 +196,8 @@ export function Chu3PlaylogExplorer({
                   {meta?.name ?? texts.common.musicWithId(row.musicId)}
                 </Typography.Title>
                 <Text className="text-app-subtle mt-1 text-sm">{meta?.composer || texts.playlogExplorer.unknownComposer}</Text>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-full bg-app-fill px-2 py-1">{diffLabel(row.level, meta)}</span>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <DifficultyBadge level={row.level}>{diffLabel(row.level, meta)}</DifficultyBadge>
                   <span className="rounded-full bg-app-fill px-2 py-1">Lv {formatLv(meta, row.level)}</span>
                   <span className="rounded-full bg-app-fill px-2 py-1">{fmtTime(playTime(row), locale)}</span>
                 </div>

@@ -19,6 +19,7 @@ import { Button, Checkbox, Input, Select, Typography } from 'antd'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { Text } from '@/components/ui/Text'
 import { useToast } from '@/components/ui/toast'
+import { DifficultyBadge, RankText } from '@/components/ui/ScoreLabels'
 
 const PAGE_SIZE = 12;
 const DIFF_IDS = [0, 1, 2, 3, 4, 10] as const;
@@ -420,13 +421,9 @@ export function Chu3MusicLibrary({
                         {DIFF_IDS.filter((diffId) =>
                           showDiff(row.meta, row.bestMap, diffId),
                         ).map((idx) => (
-                          <span
-                            key={`${row.musicId}-${idx}`}
-                            className="rounded-full bg-app-base px-2 py-1 text-xs"
-                          >
-                            {diffLabelByIdx(idx, row.meta)}{" "}
-                            {formatLv(row.meta, idx)}
-                          </span>
+                          <DifficultyBadge key={`${row.musicId}-${idx}`} level={idx}>
+                            {diffLabelByIdx(idx, row.meta)} {formatLv(row.meta, idx)}
+                          </DifficultyBadge>
                         ))}
                       </div>
                     </div>
@@ -518,10 +515,10 @@ export function Chu3MusicLibrary({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <div className="font-medium">
+                        <DifficultyBadge level={idx}>
                           {diffLabelByIdx(idx, picked.meta)}
-                        </div>
-                        <div className="text-app-subtle text-xs">
+                        </DifficultyBadge>
+                        <div className="text-app-subtle mt-1 text-xs">
                           Lv {formatLv(picked.meta, idx)}
                         </div>
                       </div>
@@ -548,7 +545,7 @@ export function Chu3MusicLibrary({
                               {texts.musicLibrary.bestScore}
                             </div>
                             <div className="font-semibold">
-                              {fmtScore(scoreNow)} · {rank(scoreNow)}
+                              {fmtScore(scoreNow)} · <RankText rank={rank(scoreNow)} />
                             </div>
                             <div className="text-app-subtle">
                               {texts.musicLibrary.chartRating}
