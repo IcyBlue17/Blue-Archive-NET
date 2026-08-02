@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button } from '@cloudflare/kumo/components/button'
-import { Checkbox } from '@cloudflare/kumo/components/checkbox'
-import { Input } from '@cloudflare/kumo/components/input'
-import { Select } from '@cloudflare/kumo/components/select'
-import { Text } from '@cloudflare/kumo/components/text'
-import { getAppTexts } from '../../content/texts'
-import type { GameOption } from '../../lib/types'
-import { settingFieldLabel, type SettingFieldLocale } from '../../lib/settingsFieldLabels'
+import { getAppTexts } from '@/content/texts'
+import type { GameOption } from '@/lib/types'
+import { settingFieldLabel, type SettingFieldLocale } from '@/lib/settingsFieldLabels'
+import { Button, Checkbox, Input, Select } from 'antd'
+import { Text } from '@/components/ui/Text'
 
 function typeBool(t: string) {
   return t.toLowerCase() === 'boolean'
@@ -59,32 +56,22 @@ export function GameOptionFields({
 
   if (!fields.length) {
     return (
-      <Text DANGEROUS_className="text-kumo-subtle text-sm">{copy.gameOptionFields.empty}</Text>
+      <Text className="text-app-subtle text-sm">{copy.gameOptionFields.empty}</Text>
     )
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {error ? <Text DANGEROUS_className="text-kumo-danger text-sm">{error}</Text> : null}
+      {error ? <Text className="text-app-danger text-sm">{error}</Text> : null}
       {fields.map((field) => {
         const { name, desc } = settingFieldLabel(field.key, locale)
         if (typeBool(field.type)) {
           const checked = Boolean(field.value)
           return (
-            <Checkbox
-              key={field.key}
-              controlFirst
-              className="items-start"
-              label={
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-kumo-default text-sm font-medium">{name}</span>
-                  {desc ? <span className="text-kumo-subtle text-xs">{desc}</span> : null}
-                </span>
-              }
-              checked={checked}
-              disabled={!!saving}
-              onCheckedChange={(c) => void toggleBool(field, c)}
-            />
+            <Checkbox key={field.key} className="items-start" checked={checked} disabled={!!saving} onChange={(e) => ((c) => void toggleBool(field, c))(e.target.checked)}><span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="text-app-default text-sm font-medium">{name}</span>
+                  {desc ? <span className="text-app-subtle text-xs">{desc}</span> : null}
+                </span></Checkbox>
           )
         }
         if (typeNumeric(field.type)) {
@@ -93,14 +80,14 @@ export function GameOptionFields({
             return (
               <div key={field.key} className="flex max-w-xs flex-col gap-2">
                 <label className="flex flex-col gap-0.5">
-                  <span className="text-kumo-default text-sm font-medium">{name}</span>
-                  {desc ? <span className="text-kumo-subtle text-xs">{desc}</span> : null}
+                  <span className="text-app-default text-sm font-medium">{name}</span>
+                  {desc ? <span className="text-app-subtle text-xs">{desc}</span> : null}
                 </label>
                 <Select
                   aria-label={name}
                   value={val || '0'}
                   disabled={saving === field.key}
-                  onValueChange={(v) => void saveKey(field.key, String(v ?? '0'))}
+                  onChange={(v) => void saveKey(field.key, String(v ?? '0'))}
                 >
                   {[0, 1, 2].map((one) => (
                     <Select.Option key={one} value={one}>
@@ -114,8 +101,8 @@ export function GameOptionFields({
           return (
             <div key={field.key} className="flex flex-col gap-2">
               <label className="flex flex-col gap-0.5">
-                <span className="text-kumo-default text-sm font-medium">{name}</span>
-                {desc ? <span className="text-kumo-subtle text-xs">{desc}</span> : null}
+                <span className="text-app-default text-sm font-medium">{name}</span>
+                {desc ? <span className="text-app-subtle text-xs">{desc}</span> : null}
               </label>
               <div className="flex flex-wrap items-center gap-2">
                 <Input
@@ -125,8 +112,7 @@ export function GameOptionFields({
                   onChange={(e) => setDraft((d) => ({ ...d, [field.key]: e.target.value }))}
                 />
                 <Button
-                  size="sm"
-                  variant="secondary"
+                  size="small"
                   disabled={saving === field.key}
                   onClick={() => void saveKey(field.key, val)}
                 >
@@ -140,8 +126,8 @@ export function GameOptionFields({
         return (
           <div key={field.key} className="flex flex-col gap-2">
             <label className="flex flex-col gap-0.5">
-              <span className="text-kumo-default text-sm font-medium">{name}</span>
-              {desc ? <span className="text-kumo-subtle text-xs">{desc}</span> : null}
+              <span className="text-app-default text-sm font-medium">{name}</span>
+              {desc ? <span className="text-app-subtle text-xs">{desc}</span> : null}
             </label>
             <div className="flex flex-wrap items-center gap-2">
               <Input
@@ -150,8 +136,7 @@ export function GameOptionFields({
                 onChange={(e) => setDraft((d) => ({ ...d, [field.key]: e.target.value }))}
               />
               <Button
-                size="sm"
-                variant="secondary"
+                size="small"
                 disabled={saving === field.key}
                 onClick={() => void saveKey(field.key, val)}
               >

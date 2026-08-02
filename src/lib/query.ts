@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import type { GameName } from './types'
+import type { GameName } from '@/lib/types'
 
 const MINUTE = 60 * 1000
 

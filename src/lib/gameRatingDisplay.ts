@@ -1,4 +1,4 @@
-import type { CardSummary, GameName } from './types'
+import type { CardSummary, GameName } from '@/lib/types'
 
 export function cardSummaryKeyToGame(key: keyof CardSummary): GameName | null {
   if (key === 'chu3' || key === 'mai2' || key === 'ongeki' || key === 'wacca') return key

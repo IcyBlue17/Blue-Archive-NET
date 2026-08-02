@@ -1,5 +1,5 @@
-import type { Card, CardSummary } from '../lib/types'
-import { userPost } from './client'
+import type { Card, CardSummary } from '@/lib/types'
+import { userPost } from '@/api/client'
 
 export async function summary(cardId: string) {
   return userPost('/api/v2/card/summary', { cardId }) as Promise<{

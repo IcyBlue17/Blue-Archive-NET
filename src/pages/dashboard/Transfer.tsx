@@ -1,13 +1,11 @@
 import { useState } from 'react'
-import { Button } from '@cloudflare/kumo/components/button'
-import { Input } from '@cloudflare/kumo/components/input'
-import { Textarea } from '@cloudflare/kumo/components/input'
-import { Text } from '@cloudflare/kumo/components/text'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import { PageHeader } from '../../components/common/PageHeader'
-import { useAppTexts } from '../../content/texts'
-import * as transferApi from '../../api/transfer'
-import type { AllNetClient, TrStreamMessage } from '../../lib/types'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { useAppTexts } from '@/content/texts'
+import * as transferApi from '@/api/transfer'
+import type { AllNetClient, TrStreamMessage } from '@/lib/types'
+import { Button, Input } from 'antd'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { Text } from '@/components/ui/Text'
 
 export function TransferPage() {
   const copy = useAppTexts()
@@ -73,59 +71,56 @@ export function TransferPage() {
   return (
     <div>
       <PageHeader title={copy.nav.transfer} crumbs={[{ label: copy.nav.home, href: '/home' }]} />
-      <LayerCard className="mb-6 p-4">
-        <LayerCard.Secondary>{copy.transfer.serverParams}</LayerCard.Secondary>
-        <Text DANGEROUS_className="text-kumo-subtle mt-2 text-sm">
+      <SectionCard title={<>{copy.transfer.serverParams}</>} className="mb-6">
+        <Text className="text-app-subtle mt-2 text-sm">
           {copy.transfer.serverParamsHint}
         </Text>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <Text size="sm">{copy.transfer.dns}</Text>
+            <Text className="text-sm">{copy.transfer.dns}</Text>
             <Input value={dns} onChange={(e) => setDns(e.target.value)} placeholder="https://..." />
           </label>
           <label className="flex flex-col gap-1">
-            <Text size="sm">{copy.transfer.card}</Text>
+            <Text className="text-sm">{copy.transfer.card}</Text>
             <Input value={card} onChange={(e) => setCard(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1">
-            <Text size="sm">{copy.transfer.keychip}</Text>
+            <Text className="text-sm">{copy.transfer.keychip}</Text>
             <Input value={keychip} onChange={(e) => setKeychip(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1">
-            <Text size="sm">{copy.transfer.gameCode}</Text>
+            <Text className="text-sm">{copy.transfer.gameCode}</Text>
             <Input value={game} onChange={(e) => setGame(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1 md:col-span-2">
-            <Text size="sm">{copy.transfer.version}</Text>
+            <Text className="text-sm">{copy.transfer.version}</Text>
             <Input value={version} onChange={(e) => setVersion(e.target.value)} />
           </label>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={test} disabled={pending}>
+          <Button onClick={test} disabled={pending}>
             {copy.transfer.testConnection}
           </Button>
           <Button onClick={pull} disabled={pending}>
             {copy.transfer.pullExport}
           </Button>
-          <Button variant="primary" onClick={push} disabled={pending}>
+          <Button type="primary" onClick={push} disabled={pending}>
             {copy.transfer.pushJson}
           </Button>
         </div>
-        {err ? <Text DANGEROUS_className="text-kumo-danger mt-2">{err}</Text> : null}
-      </LayerCard>
-      <LayerCard className="mb-6 p-4">
-        <LayerCard.Secondary>{copy.transfer.logs}</LayerCard.Secondary>
-        <pre className="text-kumo-subtle mt-2 max-h-40 overflow-auto text-xs">{log.join('\n') || copy.common.empty}</pre>
-      </LayerCard>
-      <LayerCard className="p-4">
-        <LayerCard.Secondary>{copy.transfer.exportData}</LayerCard.Secondary>
-        <Textarea
+        {err ? <Text className="text-app-danger mt-2">{err}</Text> : null}
+      </SectionCard>
+      <SectionCard title={<>{copy.transfer.logs}</>} className="mb-6">
+        <pre className="text-app-subtle mt-2 max-h-40 overflow-auto text-xs">{log.join('\n') || copy.common.empty}</pre>
+      </SectionCard>
+      <SectionCard title={<>{copy.transfer.exportData}</>}>
+        <Input.TextArea
           className="mt-2 min-h-32 font-mono text-xs"
           value={pushJson || exported}
           onChange={(e) => setPushJson(e.target.value)}
           placeholder={copy.transfer.exportPlaceholder}
         />
-      </LayerCard>
+      </SectionCard>
     </div>
   )
 }

@@ -1,10 +1,10 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import type { AquaNetUser } from '../../lib/types'
-import { clearToken, isLoggedIn, syncImageJwtCookie } from '../../api/client'
-import { qk } from '../../lib/query'
-import * as userApi from '../../api/user'
+import type { AquaNetUser } from '@/lib/types'
+import { clearToken, isLoggedIn, syncImageJwtCookie } from '@/api/client'
+import { qk } from '@/lib/query'
+import * as userApi from '@/api/user'
 
 type AuthCtx = {
   user: AquaNetUser | null

@@ -1,15 +1,12 @@
 import { useMemo } from 'react'
-import { Text } from '@cloudflare/kumo/components/text'
-import type { GameName, TrendEntry } from '../../lib/types'
-import { useAppTexts } from '../../content/texts'
+import type { GameName, TrendEntry } from '@/lib/types'
+import { useAppTexts } from '@/content/texts'
+import { Text } from '@/components/ui/Text'
+import { daysAgoDate } from '@/lib/datetime'
 
 const TREND_DAYS = 60
 
-function minDateStr() {
-  const d = new Date()
-  d.setDate(d.getDate() - TREND_DAYS)
-  return d.toISOString().slice(0, 10)
-}
+const minDateStr = () => daysAgoDate(TREND_DAYS)
 
 function pickTrendPoints(trend: TrendEntry[]) {
   const min = minDateStr()
@@ -88,7 +85,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
 
   if (!layout) {
     return (
-      <Text DANGEROUS_className="text-kumo-subtle">
+      <Text className="text-app-subtle">
         {texts.trendChart.insufficient(TREND_DAYS)}
       </Text>
     )
@@ -99,13 +96,13 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
   return (
     <div className="w-full">
       <svg
-        className="text-kumo-default w-full max-w-full"
+        className="text-app-default w-full max-w-full"
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={texts.trendChart.ariaLabel}
       >
-        <g className="text-kumo-line" opacity={0.35}>
+        <g className="text-app-line" opacity={0.35}>
           {horizontal.map((g, i) => (
             <line
               key={`h-${i}`}
@@ -124,7 +121,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
           x2={padL}
           y2={H - padB}
           stroke="currentColor"
-          className="text-kumo-line"
+          className="text-app-line"
           strokeOpacity={0.55}
           vectorEffect="non-scaling-stroke"
         />
@@ -134,7 +131,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
           x2={W - padR}
           y2={H - padB}
           stroke="currentColor"
-          className="text-kumo-line"
+          className="text-app-line"
           strokeOpacity={0.55}
           vectorEffect="non-scaling-stroke"
         />
@@ -145,7 +142,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
             y={g.y}
             dominantBaseline="middle"
             textAnchor="end"
-            className="fill-kumo-subtle"
+            className="fill-app-subtle"
             style={{ fontSize: 11 }}
           >
             {g.label}
@@ -157,7 +154,7 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
             x={x.x}
             y={H - 14}
             textAnchor="middle"
-            className="fill-kumo-subtle"
+            className="fill-app-subtle"
             style={{ fontSize: 11 }}
           >
             {x.label}
@@ -167,12 +164,12 @@ export function TrendLineChart({ data, game }: { data: TrendEntry[]; game: GameN
           d={pathD}
           fill="none"
           stroke="currentColor"
-          className="text-kumo-brand"
+          className="text-app-brand"
           strokeWidth={2}
           vectorEffect="non-scaling-stroke"
         />
       </svg>
-      <div className="text-kumo-subtle mt-1 flex justify-between gap-4 text-xs">
+      <div className="text-app-subtle mt-1 flex justify-between gap-4 text-xs">
         <span>{texts.trendChart.yAxis}</span>
         <span>{texts.trendChart.xAxis}</span>
       </div>

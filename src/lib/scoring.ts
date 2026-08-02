@@ -1,5 +1,5 @@
-import { musicJacketUrl } from './musicCover'
-import type { GameName } from './types'
+import { musicJacketUrl } from '@/lib/musicCover'
+import type { GameName } from '@/lib/types'
 
 const multTable: Record<GameName, (number | string)[][]> = {
   mai2: [

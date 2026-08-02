@@ -1,8 +1,8 @@
-import type { AllMusicMap } from '../lib/types'
-import { dataUrl } from '../lib/config'
-import { chu3AssetUrl } from '../lib/chu3Assets'
-import type { GameName } from '../lib/types'
-import { publicFetchJson } from './client'
+import type { AllMusicMap } from '@/lib/types'
+import { dataUrl } from '@/lib/config'
+import { chu3AssetUrl } from '@/lib/chu3Assets'
+import type { GameName } from '@/lib/types'
+import { publicFetchJson } from '@/api/client'
 
 export async function allMusic(game: GameName) {
   if (game === 'chu3') return publicFetchJson(chu3AssetUrl('d/chu3/00/all-music.json')) as Promise<AllMusicMap>

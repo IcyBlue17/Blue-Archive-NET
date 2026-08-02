@@ -1,4 +1,5 @@
-import { useI18n } from "../lib/i18n";
+import { useI18n } from "@/lib/i18n";
+import { formatDateTime } from "@/lib/datetime";
 
 type TextLocale = "zh" | "en";
 
@@ -77,6 +78,7 @@ const TEXTS = {
             games: "Games",
             darkMode: "深色模式",
             openMenu: "打开菜单",
+            collapseMenu: "收起侧栏",
         },
         support: {
             community: "社区与支持",
@@ -369,6 +371,7 @@ const TEXTS = {
             unlockAll: "可选择全部收藏品",
             save: "保存",
             equipped: "当前选择",
+            trophyCondition: "达成条件",
             nothingUnlocked: "暂无已解锁收藏品",
             change: "更改",
             close: "关闭",
@@ -481,7 +484,6 @@ const TEXTS = {
             mateNone: "未选择",
             mateFriendshipLv: (lv: number) => `好感度 Lv.${lv}`,
             trophyRarity: "稀有度",
-            trophyCondition: "达成条件",
             trophyNoCondition: "没有记录达成条件。",
             fieldLabels: {
                 cardId: "卡面",
@@ -932,7 +934,7 @@ const TEXTS = {
                 botBindCodeReadyTitle: "绑定码已生成",
                 botBindCodeReadyDesc: "请把这组 6 位数字发送给机器人完成绑定。",
                 botBindCodeFailedTitle: "生成绑定码失败",
-                botBindCodeExpires: (ts: number) => `过期时间：${new Date(ts).toLocaleString('zh-CN')}`,
+                botBindCodeExpires: (ts: number) => `过期时间：${formatDateTime(ts, 'zh')}`,
                 botUnboundHint: "当前 Aqua 账号尚未绑定机器人。",
                 oauthSection: "已关联的第三方账号",
                 oauthEmpty: "尚未关联任何账号。",
@@ -1360,6 +1362,7 @@ const TEXTS = {
             games: "Games",
             darkMode: "Dark mode",
             openMenu: "Open menu",
+            collapseMenu: "Collapse",
         },
         support: {
             community: "Community & support",
@@ -1655,6 +1658,7 @@ const TEXTS = {
         },
         collectibles: {
             unlockAll: "Unlock all collectibles",
+            trophyCondition: "Condition",
             save: "Save",
             equipped: "Equipped",
             nothingUnlocked: "Nothing unlocked",
@@ -1774,7 +1778,6 @@ const TEXTS = {
             mateNone: "Not selected",
             mateFriendshipLv: (lv: number) => `Friendship Lv.${lv}`,
             trophyRarity: "Rarity",
-            trophyCondition: "Unlock condition",
             trophyNoCondition: "No unlock condition recorded.",
             fieldLabels: {
                 cardId: "Card",
@@ -2227,7 +2230,7 @@ const TEXTS = {
                 botBindCodeReadyTitle: "Bind code generated",
                 botBindCodeReadyDesc: "Send the 6-digit code to the bot to complete binding.",
                 botBindCodeFailedTitle: "Failed to generate bind code",
-                botBindCodeExpires: (ts: number) => `Expires at: ${new Date(ts).toLocaleString('en-US')}`,
+                botBindCodeExpires: (ts: number) => `Expires at: ${formatDateTime(ts, 'en')}`,
                 botUnboundHint: "No bot is currently bound to this Aqua account.",
                 oauthSection: "Linked accounts",
                 oauthEmpty: "No linked accounts yet.",

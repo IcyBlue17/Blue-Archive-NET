@@ -1,41 +1,95 @@
-@source "../../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
-@import "@cloudflare/kumo/styles/tailwind";
+/*
+ * 层级顺序必须先于 tailwind 的 import 声明（官方 Tailwind v4 推荐写法）。
+ * antd 的样式经 <StyleProvider layer> 收进 @layer antd，夹在 base 与 components 之间：
+ * 既盖得住 Tailwind 的 preflight 重置，又盖不过组件上的工具类。
+ * Emotion 不进任何 layer，天然优先级最高，留作深度覆盖的出口。
+ */
+@layer theme, base, antd, components, utilities;
+
 @import "tailwindcss";
 
 @custom-variant dark (&:where([data-mode='dark'], [data-mode='dark'] *));
 
+/*
+ * 语义色板。真实值由 <ThemeTokenBridge>（lib/theme.tsx）从 antd 的 design token
+ * 实时写进 :root —— antd 是唯一颜色来源，改 seed token 这里自动跟着变。
+ * 下面这份静态定义是首帧回退，值等同 antd 默认算法的产物，避免 JS 挂载前闪一下无色文本。
+ */
+:root {
+  --app-default: rgba(0, 0, 0, 0.88);
+  --app-subtle: rgba(0, 0, 0, 0.65);
+  --app-strong: rgba(0, 0, 0, 0.88);
+  --app-brand: #1677ff;
+  --app-danger: #ff4d4f;
+  --app-success: #52c41a;
+  --app-warning: #faad14;
+  --app-line: #f0f0f0;
+  --app-border: #d9d9d9;
+  --app-base: #ffffff;
+  --app-surface: #f5f5f5;
+  --app-elevated: #ffffff;
+  --app-recessed: rgba(0, 0, 0, 0.02);
+  --app-fill: rgba(0, 0, 0, 0.06);
+  --app-fill-hover: rgba(0, 0, 0, 0.15);
+  --app-tint: #e6f4ff;
+  --app-warning-tint: #fffbe6;
+  --app-success-tint: #f6ffed;
+  --app-danger-tint: #fff2f0;
+}
+
+[data-mode='dark'] {
+  --app-default: rgba(255, 255, 255, 0.85);
+  --app-subtle: rgba(255, 255, 255, 0.65);
+  --app-strong: rgba(255, 255, 255, 0.85);
+  --app-brand: #1668dc;
+  --app-danger: #dc4446;
+  --app-success: #49aa19;
+  --app-warning: #d89614;
+  --app-line: #303030;
+  --app-border: #424242;
+  --app-base: #141414;
+  --app-surface: #000000;
+  --app-elevated: #1f1f1f;
+  --app-recessed: rgba(255, 255, 255, 0.04);
+  --app-fill: rgba(255, 255, 255, 0.12);
+  --app-fill-hover: rgba(255, 255, 255, 0.18);
+  --app-tint: #15325b;
+  --app-warning-tint: #2b2111;
+  --app-success-tint: #162312;
+  --app-danger-tint: #2c1618;
+}
+
+/* inline：把值直接编进工具类，而不是再套一层 --color-* 间接引用。 */
+@theme inline {
+  --color-app-default: var(--app-default);
+  --color-app-subtle: var(--app-subtle);
+  --color-app-strong: var(--app-strong);
+  --color-app-brand: var(--app-brand);
+  --color-app-danger: var(--app-danger);
+  --color-app-success: var(--app-success);
+  --color-app-warning: var(--app-warning);
+  --color-app-line: var(--app-line);
+  --color-app-border: var(--app-border);
+  --color-app-base: var(--app-base);
+  --color-app-surface: var(--app-surface);
+  --color-app-elevated: var(--app-elevated);
+  --color-app-recessed: var(--app-recessed);
+  --color-app-fill: var(--app-fill);
+  --color-app-fill-hover: var(--app-fill-hover);
+  --color-app-tint: var(--app-tint);
+  --color-app-warning-tint: var(--app-warning-tint);
+  --color-app-success-tint: var(--app-success-tint);
+  --color-app-danger-tint: var(--app-danger-tint);
+}
+
 html,
 body,
-#root {
+#react-root {
   min-height: 100%;
 }
 
 body {
   margin: 0;
-}
-
-.aq-skeleton {
-  position: relative;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--kumo-fill, #d8dce2) 78%, transparent);
-}
-
-.aq-skeleton::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in srgb, white 42%, transparent) 48%,
-    transparent 100%
-  );
-  animation: aq-shimmer 1.45s ease-in-out infinite;
-}
-
-@keyframes aq-shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+  background: var(--app-surface);
+  color: var(--app-default);
 }

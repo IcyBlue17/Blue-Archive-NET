@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { useKumoToastManager } from '@cloudflare/kumo'
-import { Button } from '@cloudflare/kumo/components/button'
-import { Text } from '@cloudflare/kumo/components/text'
-import * as gameApi from '../../api/game'
-import { detailSet } from '../../api/settings'
-import { getAppTexts } from '../../content/texts'
-import { downloadJsonFile } from '../../lib/download'
-import { fmtNameErr } from '../../lib/censor'
-import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
-import type { GameOption } from '../../lib/types'
-import { GameOptionFields } from './GameOptionFields'
-import { SegaUsernameEditor, normalizeSegaUsername } from './SegaUsernameEditor'
+import * as gameApi from '@/api/game'
+import { detailSet } from '@/api/settings'
+import { getAppTexts } from '@/content/texts'
+import { downloadJsonFile } from '@/lib/download'
+import { fmtNameErr } from '@/lib/censor'
+import type { SettingFieldLocale } from '@/lib/settingsFieldLabels'
+import type { GameOption } from '@/lib/types'
+import { GameOptionFields } from '@/components/settings/GameOptionFields'
+import { SegaUsernameEditor, normalizeSegaUsername } from '@/components/settings/SegaUsernameEditor'
+import { Button } from 'antd'
+import { useToast } from '@/components/ui/toast'
+import { Text } from '@/components/ui/Text'
 
 type ArcadeGame = 'mai2' | 'ongeki'
 
@@ -87,7 +87,7 @@ export function ArcadeExtraSettings({
   err: string | null
 }) {
   const copy = getAppTexts(locale)
-  const toast = useKumoToastManager()
+  const toast = useToast()
   const config = ARCADE_CONFIG[game]
   const ioCopy = config.importExport?.(copy)
   const [inGameName, setInGameName] = useState('')
@@ -168,9 +168,9 @@ export function ArcadeExtraSettings({
 
   return (
     <div className="flex flex-col gap-6">
-      {err ? <Text DANGEROUS_className="text-kumo-danger text-sm">{err}</Text> : null}
-      {nameErr ? <Text DANGEROUS_className="text-kumo-danger text-sm">{nameErr}</Text> : null}
-      {nameMsg ? <Text DANGEROUS_className="text-kumo-success text-sm">{nameMsg}</Text> : null}
+      {err ? <Text className="text-app-danger text-sm">{err}</Text> : null}
+      {nameErr ? <Text className="text-app-danger text-sm">{nameErr}</Text> : null}
+      {nameMsg ? <Text className="text-app-success text-sm">{nameMsg}</Text> : null}
 
       <div className="flex max-w-xl flex-col gap-2">
         <SegaUsernameEditor
@@ -192,17 +192,17 @@ export function ArcadeExtraSettings({
       />
 
       {config.exportLabel && config.exportSave && !ioCopy ? (
-        <Button variant="secondary" disabled={exporting} onClick={() => void exportSave()}>
+        <Button disabled={exporting} onClick={() => void exportSave()}>
           {config.exportLabel(copy)}
         </Button>
       ) : null}
 
       {ioCopy ? (
         <section>
-          <h3 className="text-kumo-default mb-2 text-base font-semibold">
+          <h3 className="text-app-default mb-2 text-base font-semibold">
             {ioCopy.importExport}
           </h3>
-          <Text DANGEROUS_className="text-kumo-subtle mb-3 block text-sm">
+          <Text className="text-app-subtle mb-3 block text-sm">
             {ioCopy.importHint}
           </Text>
           <input
@@ -218,20 +218,19 @@ export function ArcadeExtraSettings({
           />
           <div className="flex flex-wrap items-center gap-3">
             <Button
-              variant="secondary"
               disabled={importing}
               onClick={() => fileRef.current?.click()}
             >
               {importing ? ioCopy.importBusy : ioCopy.importSave}
             </Button>
             {config.exportSave ? (
-              <Button variant="secondary" disabled={exporting} onClick={() => void exportSave()}>
+              <Button disabled={exporting} onClick={() => void exportSave()}>
                 {ioCopy.exportSave}
               </Button>
             ) : null}
           </div>
           {lastFile ? (
-            <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-sm">
+            <Text className="text-app-subtle mt-2 block text-sm">
               {ioCopy.lastFile(lastFile)}
             </Text>
           ) : null}

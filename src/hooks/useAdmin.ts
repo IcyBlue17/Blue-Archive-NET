@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getAdminStatus } from '../api/admin/status'
-import { isLoggedIn } from '../api/client'
-import { qk } from '../lib/query'
+import { getAdminStatus } from '@/features/admin/api/status'
+import { isLoggedIn } from '@/api/client'
+import { qk } from '@/lib/query'
 
 export function useAdmin() {
   const qc = useQueryClient()

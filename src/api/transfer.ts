@@ -1,5 +1,5 @@
-import type { AllNetClient, TrCheckGood, TrStreamMessage } from '../lib/types'
-import { userPost, userPostStream } from './client'
+import type { AllNetClient, TrCheckGood, TrStreamMessage } from '@/lib/types'
+import { userPost, userPostStream } from '@/api/client'
 
 export async function check(client: AllNetClient) {
   return userPost('/api/v2/transfer/check', {}, { json: client }) as Promise<TrCheckGood>

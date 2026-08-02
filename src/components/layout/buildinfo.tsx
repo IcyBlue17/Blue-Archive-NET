@@ -8,7 +8,7 @@ export function BuildInfoFooter({ className = '' }: BuildInfoFooterProps) {
   const hasCommit = buildInfo.commit.length > 0 && buildInfo.commit !== 'unknown'
   return (
     <footer
-      className={`text-kumo-subtle flex flex-col items-center gap-1 text-center text-xs leading-5 ${className}`}
+      className={`text-app-subtle flex flex-col items-center gap-1 text-center text-xs leading-5 ${className}`}
     >
       <div>
         {hasCommit ? (

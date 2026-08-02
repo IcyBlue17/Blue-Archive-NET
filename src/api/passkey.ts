@@ -4,7 +4,7 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
   RegistrationResponseJSON,
 } from '@simplewebauthn/browser'
-import { userPost } from './client'
+import { userPost } from '@/api/client'
 
 function unwrapCreationOptions(data: unknown): PublicKeyCredentialCreationOptionsJSON {
   if (data && typeof data === 'object' && 'optionsJSON' in data) {

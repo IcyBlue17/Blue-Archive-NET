@@ -1,5 +1,5 @@
-import type { GameName } from './types'
-import type { MusicMetaLite } from './scoring'
+import type { GameName } from '@/lib/types'
+import type { MusicMetaLite } from '@/lib/scoring'
 
 const CHU3_CHART_CONSTANT: Record<number, string> = {
   0: '1.5',

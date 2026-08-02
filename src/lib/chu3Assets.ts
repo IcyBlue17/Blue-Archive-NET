@@ -1,4 +1,4 @@
-import { imgUrl } from './imgSign'
+import { imgUrl } from '@/lib/imgSign'
 
 export type Chu3JsonEntry = { id: number; name: string; category?: number }
 export type Chu3MateReward = {
@@ -32,7 +32,13 @@ export type Chu3StageJsonEntry = {
   isEnabled?: boolean
   defaultHave?: boolean
 }
-export type Chu3AllItemMeta = { name?: string; imagePath?: string | null; imageFile?: string | null }
+export type Chu3AllItemMeta = {
+  name?: string
+  imagePath?: string | null
+  imageFile?: string | null
+  /** 称号专有：稀有度，决定文字牌的配色（trophy.json 里没有图，只有这个）。 */
+  rareType?: number
+}
 export type Chu3AllItems = Record<string, Record<string, Chu3AllItemMeta>>
 
 const resolvedCache = new Map<string, unknown>()
@@ -169,6 +175,26 @@ export function chu3CollectibleImageUrl(field: string, itemId: number, allItems?
 
 export function chu3CollectibleHasImage(field: string): boolean {
   return FIELD_IMAGE[field] != null
+}
+
+export const CHU3_TROPHY_FIELDS = ['trophyId', 'trophyIdSub1', 'trophyIdSub2'] as const
+
+/**
+ * 称号底图。trophyFrame/ 下按 rareType 命名（0–14，592×62 的横幅）。
+ * rareType 最高到 17 但只出到 14，超出的夹到 14。
+ */
+export function chu3TrophyFrameUrl(rareType: number | undefined): string {
+  const n = Math.min(Math.max(Math.floor(rareType ?? 0), 0), 14)
+  return chu3AssetUrl(`trophyFrame/${n}.png`)
+}
+
+/**
+ * 少数称号（KING of Performai 之类，rareType 18–22，共 75 个）自带整张立绘，
+ * trophy.json 里的 imageFile 就是文件名；其余 8000 多个只有文字，靠底图 + 文本合成。
+ */
+export function chu3TrophyArtUrl(itemId: number, allItems?: Chu3AllItems): string | null {
+  const file = String(allItems?.trophy?.[String(itemId)]?.imageFile ?? '').trim()
+  return file ? chu3AssetUrl(`trophy/${file}`) : null
 }
 
 export async function fetchChu3AssetJson<T = Chu3JsonEntry[]>(jsonFile: string): Promise<T> {

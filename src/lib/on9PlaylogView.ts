@@ -1,6 +1,6 @@
-import { chusanRating, getMult, type MusicMetaLite } from './scoring'
-import type { GamePlayRecord } from './types'
-import { fmtRate, fmtScore, fmtTime, playTime, recordKey } from './chu3PlaylogView'
+import { chusanRating, getMult, type MusicMetaLite } from '@/lib/scoring'
+import type { GamePlayRecord } from '@/lib/types'
+import { fmtRate, fmtScore, fmtTime, playTime, recordKey } from '@/lib/chu3PlaylogView'
 
 export { fmtRate, fmtScore, fmtTime, playTime, recordKey }
 

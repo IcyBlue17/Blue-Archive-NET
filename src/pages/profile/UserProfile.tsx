@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useKumoToastManager } from '@cloudflare/kumo'
 import { Link, useParams } from 'react-router-dom'
-import { Text } from '@cloudflare/kumo/components/text'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import { Tabs } from '@cloudflare/kumo/components/tabs'
-import { Button } from '@cloudflare/kumo/components/button'
-import { GameSummaryPanel } from '../../components/game/GameSummaryPanel'
-import { BuildInfoFooter } from '../../components/layout/buildinfo'
-import * as userApi from '../../api/user'
-import * as gameApi from '../../api/game'
-import { qk } from '../../lib/query'
-import type { AquaNetUser, GameName, GenericGameSummary } from '../../lib/types'
-import { isLoggedIn } from '../../api/client'
-import { gameTitle } from '../../lib/gameTitles'
-import { useI18n } from '../../lib/i18n'
-import { useAppTexts } from '../../content/texts'
+import { GameSummaryPanel } from '@/components/game/GameSummaryPanel'
+import { BuildInfoFooter } from '@/components/layout/buildinfo'
+import * as userApi from '@/api/user'
+import * as gameApi from '@/api/game'
+import { qk } from '@/lib/query'
+import type { AquaNetUser, GameName, GenericGameSummary } from '@/lib/types'
+import { isLoggedIn } from '@/api/client'
+import { gameTitle } from '@/lib/gameTitles'
+import { useI18n } from '@/lib/i18n'
+import { useAppTexts } from '@/content/texts'
+import { Button, Tabs } from 'antd'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { useToast } from '@/components/ui/toast'
+import { Text } from '@/components/ui/Text'
 
 const GAMES: GameName[] = ['chu3', 'mai2', 'ongeki', 'wacca']
 
@@ -28,7 +27,7 @@ export function UserProfilePage() {
   const { username, game: gameParam } = useParams<{ username: string; game?: string }>()
   const { locale } = useI18n()
   const texts = useAppTexts()
-  const toast = useKumoToastManager()
+  const toast = useToast()
   const qc = useQueryClient()
   const loc = locale === 'en' ? 'en' : 'zh'
   const [game, setGame] = useState<GameName>((gameParam as GameName) || 'chu3')
@@ -130,32 +129,30 @@ export function UserProfilePage() {
         : texts.userProfile.addRival
 
   return (
-    <div className="bg-kumo-surface flex min-h-screen flex-col">
+    <div className="bg-app-surface flex min-h-screen flex-col">
       <main className="flex-1 p-6">
         <div className="mx-auto max-w-3xl">
           <Link to="/home">
-            <Text DANGEROUS_className="text-kumo-brand mb-4 inline-block">{texts.nav.home}</Text>
+            <Text className="text-app-brand mb-4 inline-block">{texts.nav.home}</Text>
           </Link>
-          <LayerCard className="p-6">
-            <LayerCard.Primary>{display}</LayerCard.Primary>
-            <Text DANGEROUS_className="text-kumo-subtle mt-1">@{username}</Text>
+          <SectionCard title={<>{display}</>}>
+            <Text className="text-app-subtle mt-1">@{username}</Text>
             {publicInfo?.profileBio ? (
-              <Text DANGEROUS_className="text-kumo-default mt-3 block text-sm">{publicInfo.profileBio}</Text>
+              <Text className="text-app-default mt-3 block text-sm">{publicInfo.profileBio}</Text>
             ) : null}
             {publicInfo?.country ? (
-              <Text DANGEROUS_className="text-kumo-subtle mt-2 block text-xs">
+              <Text className="text-app-subtle mt-2 block text-xs">
                 {publicInfo.country}
                 {publicInfo.region ? ` · ${publicInfo.region}` : ''}
               </Text>
             ) : null}
-            {err ? <Text DANGEROUS_className="text-kumo-danger mt-2">{err}</Text> : null}
-          </LayerCard>
+            {err ? <Text className="text-app-danger mt-2">{err}</Text> : null}
+          </SectionCard>
           <div className="mt-6">
             <Tabs
-              variant="underline"
-              tabs={GAMES.map((g) => ({ value: g, label: gameTitle(g, loc) }))}
-              value={game}
-              onValueChange={(v) => setGame(v as GameName)}
+              items={GAMES.map((g) => ({ key: g, label: gameTitle(g, loc) }))}
+              activeKey={game}
+              onChange={(v) => setGame(v as GameName)}
             />
           </div>
           <div className="mt-4">
@@ -163,7 +160,7 @@ export function UserProfilePage() {
           </div>
           <div className="mt-4">
             {showRivalBtn ? (
-              <Button variant="secondary" size="sm" onClick={toggleRival} disabled={rivalBusy}>
+              <Button size="small" onClick={toggleRival} disabled={rivalBusy}>
                 {rivalBusy ? texts.common.working : rivalText}
               </Button>
             ) : null}

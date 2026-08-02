@@ -1,4 +1,4 @@
-import { isOn9EquippableChara, type On9AllItems } from './on9Assets'
+import { isOn9EquippableChara, type On9AllItems } from '@/lib/on9Assets'
 
 export interface On9UserItem {
   itemKind: number

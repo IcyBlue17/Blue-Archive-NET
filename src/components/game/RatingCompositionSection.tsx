@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
-import { Text } from '@cloudflare/kumo/components/text'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import type { GameName } from '../../lib/types'
-import { parseComposition, type MusicMetaLite } from '../../lib/scoring'
-import { chu3UsesNew20 } from '../../lib/gameRatingDisplay'
-import { imgCross } from '../../lib/imgSign'
-import { useAppTexts } from '../../content/texts'
+import type { GameName } from '@/lib/types'
+import { parseComposition, type MusicMetaLite } from '@/lib/scoring'
+import { chu3UsesNew20 } from '@/lib/gameRatingDisplay'
+import { imgCross } from '@/lib/imgSign'
+import { useAppTexts } from '@/content/texts'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { Text } from '@/components/ui/Text'
 
 function CompGrid({
   title,
@@ -30,14 +30,14 @@ function CompGrid({
 
   return (
     <div className="mt-6">
-      <Text DANGEROUS_className="mb-3 font-semibold" size="sm">
+      <Text className="text-sm mb-3 font-semibold">
         {title}
       </Text>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((p, i) => (
           <div
             key={`${p.musicId}-${p.diffId}-${i}`}
-            className="bg-kumo-recessed border-kumo-line flex gap-3 rounded-lg border p-3"
+            className="bg-app-recessed border-app-line flex gap-3 rounded-lg border p-3"
           >
             <img
               src={p.img}
@@ -51,9 +51,9 @@ function CompGrid({
             />
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{p.name ?? `#${p.musicId}`}</div>
-              <div className="text-kumo-subtle mt-1 flex flex-wrap gap-2 text-xs">
+              <div className="text-app-subtle mt-1 flex flex-wrap gap-2 text-xs">
                 <span>Lv {p.difficulty ?? '—'}</span>
-                <span className="text-kumo-brand">{p.rank}</span>
+                <span className="text-app-brand">{p.rank}</span>
                 <span>{(p.score / 10000).toFixed(4)}%</span>
                 {p.ratingChange != null ? <span>Δ {p.ratingChange}</span> : null}
               </div>
@@ -102,16 +102,15 @@ export function RatingCompositionSection({
   if (!blocks.length) return null
 
   return (
-    <LayerCard className="mt-6 p-4">
-      <LayerCard.Secondary>{texts.gamesPage.ratingComposition}</LayerCard.Secondary>
+    <SectionCard title={<>{texts.gamesPage.ratingComposition}</>} className="mt-6">
       {blocks.map((b) => (
         <CompGrid key={b.key} title={b.title} comp={b.raw} allMusics={allMusics} game={game} />
       ))}
       {game === 'chu3' ? (
-        <Text DANGEROUS_className="mt-4 text-kumo-subtle" size="sm">
+        <Text className="text-sm mt-4 text-app-subtle">
           {texts.gamesPage.chu3RatingNotice}
         </Text>
       ) : null}
-    </LayerCard>
+    </SectionCard>
   )
 }

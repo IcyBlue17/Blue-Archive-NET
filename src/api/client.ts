@@ -1,5 +1,5 @@
-import { apiUrl } from '../lib/config'
-import { syncImgJwtCookie } from '../lib/imgSign'
+import { apiUrl } from '@/lib/config'
+import { syncImgJwtCookie } from '@/lib/imgSign'
 
 export const TOKEN_KEY = 'token'
 

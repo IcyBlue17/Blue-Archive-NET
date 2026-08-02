@@ -1,6 +1,6 @@
-import type { GameName } from '../lib/types'
-import type { GameOption } from '../lib/types'
-import { userPost } from './client'
+import type { GameName } from '@/lib/types'
+import type { GameOption } from '@/lib/types'
+import { userPost } from '@/api/client'
 
 export async function getSettings(): Promise<GameOption[]> {
   return userPost('/api/v2/settings/get', {}) as Promise<GameOption[]>

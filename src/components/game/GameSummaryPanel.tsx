@@ -1,9 +1,9 @@
-import { Text } from '@cloudflare/kumo/components/text'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import type { GameName, GenericGameSummary } from '../../lib/types'
-import { formatDisplayRating } from '../../lib/gameRatingDisplay'
-import { RankDetailsTable } from './RankDetailsTable'
-import { useAppTexts } from '../../content/texts'
+import type { GameName, GenericGameSummary } from '@/lib/types'
+import { formatDisplayRating } from '@/lib/gameRatingDisplay'
+import { RankDetailsTable } from '@/components/game/RankDetailsTable'
+import { useAppTexts } from '@/content/texts'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { Text } from '@/components/ui/Text'
 
 function fmtInt(n: number) {
   if (!Number.isFinite(n)) return '—'
@@ -22,10 +22,9 @@ export function GameSummaryPanel({
   const texts = useAppTexts()
   if (!summary) {
     return (
-      <LayerCard className="p-4">
-        <LayerCard.Secondary>{title ?? texts.gamesPage.summary}</LayerCard.Secondary>
-        <Text DANGEROUS_className="text-kumo-subtle mt-2">—</Text>
-      </LayerCard>
+      <SectionCard title={<>{title ?? texts.gamesPage.summary}</>}>
+        <Text className="text-app-subtle mt-2">—</Text>
+      </SectionCard>
     )
   }
 
@@ -43,26 +42,25 @@ export function GameSummaryPanel({
   ]
 
   return (
-    <LayerCard className="p-4">
-      <LayerCard.Secondary>{title ?? texts.gamesPage.statsTitle(summary.name)}</LayerCard.Secondary>
+    <SectionCard title={<>{title ?? texts.gamesPage.statsTitle(summary.name)}</>}>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
-          <div key={s.label} className="border-kumo-line rounded-md border px-3 py-2">
-            <div className="text-kumo-subtle text-xs">{s.label}</div>
-            <div className="text-kumo-default mt-0.5 font-medium">{s.value}</div>
+          <div key={s.label} className="border-app-line rounded-md border px-3 py-2">
+            <div className="text-app-subtle text-xs">{s.label}</div>
+            <div className="text-app-default mt-0.5 font-medium">{s.value}</div>
           </div>
         ))}
       </div>
       {summary.ranks?.length ? (
         <div className="mt-6">
-          <Text DANGEROUS_className="mb-2" size="sm">
+          <Text className="text-sm mb-2">
             {texts.gamesPage.rankDistribution}
           </Text>
           <div className="flex flex-wrap gap-2">
             {summary.ranks.map((rk) => (
               <span
                 key={rk.name}
-                className="bg-kumo-recessed text-kumo-subtle rounded px-2 py-1 text-xs"
+                className="bg-app-recessed text-app-subtle rounded px-2 py-1 text-xs"
               >
                 {rk.name}: {rk.count}
               </span>
@@ -75,6 +73,6 @@ export function GameSummaryPanel({
           <RankDetailsTable summary={summary} />
         </div>
       ) : null}
-    </LayerCard>
+    </SectionCard>
   )
 }

@@ -1,8 +1,7 @@
 
-import { Button } from '@cloudflare/kumo/components/button'
-import { Input } from '@cloudflare/kumo/components/input'
-import { Text } from '@cloudflare/kumo/components/text'
-import { getAppTexts } from '../../content/texts'
+import { getAppTexts } from '@/content/texts'
+import { Button, Input } from 'antd'
+import { Text } from '@/components/ui/Text'
 
 const MAX_SEGA_USERNAME_LENGTH = 8
 
@@ -59,13 +58,13 @@ export function SegaUsernameEditor({
             onChange={(e) => onChange(normalizeSegaUsername(e.target.value))}
             placeholder={copy.segaUsernameEditor.placeholder}
           />
-          <Button size="sm" variant="secondary" disabled={saving || saveDisabled} onClick={onSave}>
+          <Button size="small" disabled={saving || saveDisabled} onClick={onSave}>
             {copy.segaUsernameEditor.save}
           </Button>
         </div>
       </label>
 
-      <Text DANGEROUS_className="text-kumo-subtle text-sm">
+      <Text className="text-app-subtle text-sm">
         {copy.segaUsernameEditor.helper(length, MAX_SEGA_USERNAME_LENGTH)}
       </Text>
 
@@ -74,7 +73,7 @@ export function SegaUsernameEditor({
           <button
             key={symbol}
             type="button"
-            className="border-kumo-line bg-kumo-base hover:bg-kumo-recessed text-kumo-default rounded-md border px-3 py-2 text-lg leading-none"
+            className="border-app-line bg-app-base hover:bg-app-recessed text-app-default rounded-md border px-3 py-2 text-lg leading-none"
             onClick={() => appendSymbol(symbol)}
           >
             {symbol}

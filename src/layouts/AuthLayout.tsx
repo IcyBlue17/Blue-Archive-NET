@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom'
-import { BrandImage } from '../components/common/BrandImage'
-import { BuildInfoFooter } from '../components/layout/buildinfo'
+import { BrandImage } from '@/components/common/BrandImage'
+import { BuildInfoFooter } from '@/components/layout/buildinfo'
 
 export function AuthLayout() {
   return (
-    <div className="bg-kumo-surface flex min-h-dvh flex-col">
+    <div className="bg-app-surface flex min-h-dvh flex-col">
       <main className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="mb-8 flex justify-center text-zinc-900 dark:text-zinc-200">

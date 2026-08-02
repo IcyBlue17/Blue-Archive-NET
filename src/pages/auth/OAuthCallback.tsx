@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import { Text } from '@cloudflare/kumo/components/text'
-import { setToken } from '../../api/client'
-import { useAuth } from '../../hooks/useAuth'
-import { useAppTexts } from '../../content/texts'
+import { setToken } from '@/api/client'
+import { useAuth } from '@/hooks/useAuth'
+import { useAppTexts } from '@/content/texts'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { Text } from '@/components/ui/Text'
 
 function isValidJwtFormat(token: string): boolean {
   if (!token || typeof token !== 'string') return false
@@ -76,8 +76,8 @@ export function OAuthCallbackPage() {
   ])
 
   return (
-    <LayerCard className="p-6">
-      <Text size="sm">{note ?? texts.authPages.oauthCallbackWorking}</Text>
-    </LayerCard>
+    <SectionCard>
+      <Text className="text-sm">{note ?? texts.authPages.oauthCallbackWorking}</Text>
+    </SectionCard>
   )
 }

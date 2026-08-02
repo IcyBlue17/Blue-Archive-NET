@@ -1,18 +1,18 @@
 import { Link } from 'react-router-dom'
-import { Text } from '@cloudflare/kumo/components/text'
-import { Button } from '@cloudflare/kumo/components/button'
-import { useAppTexts } from '../content/texts'
-import { BuildInfoFooter } from '../components/layout/buildinfo'
+import { useAppTexts } from '@/content/texts'
+import { BuildInfoFooter } from '@/components/layout/buildinfo'
+import { Button, Typography } from 'antd'
+import { Text } from '@/components/ui/Text'
 
 export function PageNotFound() {
   const texts = useAppTexts()
   return (
     <div className="flex min-h-screen flex-col">
       <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
-        <Text variant="heading1">404</Text>
-        <Text variant="secondary">{texts.notFound.title}</Text>
+        <Typography.Title level={2} style={{ margin: 0 }}>404</Typography.Title>
+        <Text type="secondary">{texts.notFound.title}</Text>
         <Link to="/home">
-          <Button variant="secondary">{texts.notFound.backHome}</Button>
+          <Button>{texts.notFound.backHome}</Button>
         </Link>
       </main>
       <BuildInfoFooter className="px-6 pb-6" />

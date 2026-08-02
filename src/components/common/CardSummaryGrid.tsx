@@ -1,8 +1,8 @@
-import type { CardSummary, CardSummaryGame, GameName } from '../../lib/types'
-import { cardSummaryKeyToGame, formatDisplayRating } from '../../lib/gameRatingDisplay'
-import { gameTitle } from '../../lib/gameTitles'
-import type { AppTexts } from '../../content/texts'
-import { formatDateTimeMaybe } from '../../lib/format'
+import type { CardSummary, CardSummaryGame, GameName } from '@/lib/types'
+import { cardSummaryKeyToGame, formatDisplayRating } from '@/lib/gameRatingDisplay'
+import { gameTitle } from '@/lib/gameTitles'
+import type { AppTexts } from '@/content/texts'
+import { formatDateTimeMaybe } from '@/lib/format'
 
 const SUMMARY_KEYS: (keyof CardSummary)[] = ['chu3', 'mai2', 'ongeki', 'wacca', 'diva']
 
@@ -10,9 +10,9 @@ export function CardSummaryGrid({
   summary,
   locale,
   texts,
-  itemClassName = 'border-kumo-line rounded-lg border px-4 py-3',
-  nameClassName = 'text-kumo-subtle mt-2 text-sm',
-  detailClassName = 'text-kumo-subtle mt-1 text-xs',
+  itemClassName = 'border-app-line rounded-lg border px-4 py-3',
+  nameClassName = 'text-app-subtle mt-2 text-sm',
+  detailClassName = 'text-app-subtle mt-1 text-xs',
   ratingLabel,
   lastLoginLabel,
 }: {
@@ -40,7 +40,7 @@ export function CardSummaryGrid({
               : '—'
         return (
           <div key={String(key)} className={itemClassName}>
-            <div className="text-kumo-default font-semibold">{title}</div>
+            <div className="text-app-default font-semibold">{title}</div>
             <div className={nameClassName}>
               {texts.homePage.inGameName}: {row.name || '—'}
             </div>

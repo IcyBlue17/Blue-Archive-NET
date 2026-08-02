@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { Text } from '@cloudflare/kumo/components/text'
-import type { TrendEntry } from '../../lib/types'
-import { paintChu3CalHeatmap } from '../../lib/chu3CalHeatmap'
-import { useAppTexts } from '../../content/texts'
+import type { TrendEntry } from '@/lib/types'
+import { paintChu3CalHeatmap } from '@/lib/chu3CalHeatmap'
+import { useAppTexts } from '@/content/texts'
+import { Text } from '@/components/ui/Text'
 
 type CalInstance = { destroy: () => Promise<unknown> }
 
@@ -36,15 +36,15 @@ export function PlaysHeatmap({ trend }: { trend: TrendEntry[] }) {
   }, [trend])
 
   if (!trend.length) {
-    return <Text DANGEROUS_className="text-kumo-subtle">{texts.gamesPage.noCalendar}</Text>
+    return <Text className="text-app-subtle">{texts.gamesPage.noCalendar}</Text>
   }
 
   return (
     <div className="overflow-x-auto pb-2">
-      <div className="border-kumo-line bg-emerald-500/[0.07] dark:bg-emerald-400/[0.09] rounded-lg border p-3">
+      <div className="border-app-line bg-emerald-500/[0.07] dark:bg-emerald-400/[0.09] rounded-lg border p-3">
         <div ref={hostRef} className="cal-host min-h-[140px]" />
       </div>
-      <div className="text-kumo-subtle mt-2 text-xs">{texts.gamesPage.calendarHint}</div>
+      <div className="text-app-subtle mt-2 text-xs">{texts.gamesPage.calendarHint}</div>
     </div>
   )
 }

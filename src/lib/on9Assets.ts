@@ -1,4 +1,4 @@
-import { imgUrl } from './imgSign'
+import { imgUrl } from '@/lib/imgSign'
 
 export type On9JsonEntry = { id: number; name: string }
 export type On9CardJsonEntry = On9JsonEntry & {

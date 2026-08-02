@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import Icons from 'unplugin-icons/vite'
 import tailwindcss from '@tailwindcss/vite'
 import { execSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
 function commandOutput(command: string) {
   try {
@@ -41,11 +42,17 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    resolve: {
+      // 目录按功能分组后相对路径会越写越长，统一用 @/ 指向 src
+      alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    },
     define: {
       __BUILD_INFO__: JSON.stringify(buildInfo),
     },
     plugins: [
-      react(),
+      // plugin-react v6 用 oxc 而非 babel，没有 babel 选项；
+      // Emotion 的 css prop 靠 jsx runtime 即可，无需额外插件。
+      react({ jsxImportSource: '@emotion/react' }),
       Icons({
         autoInstall: false,
         compiler: 'jsx',

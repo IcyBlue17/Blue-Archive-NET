@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import { Text } from '@cloudflare/kumo/components/text'
-import { Loader } from '@cloudflare/kumo/components/loader'
-import * as userApi from '../../api/user'
-import { useAppTexts } from '../../content/texts'
+import * as userApi from '@/api/user'
+import { useAppTexts } from '@/content/texts'
+import { Spin } from 'antd'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { Text } from '@/components/ui/Text'
 
 export function VerifyEmailPage() {
   const texts = useAppTexts()
@@ -37,17 +37,16 @@ export function VerifyEmailPage() {
   ])
 
   return (
-    <LayerCard className="p-6">
-      <LayerCard.Secondary>{texts.authPages.verifyEmail}</LayerCard.Secondary>
+    <SectionCard title={<>{texts.authPages.verifyEmail}</>}>
       <div className="mt-4 flex items-center gap-3">
-        {status === 'loading' ? <Loader /> : null}
+        {status === 'loading' ? <Spin /> : null}
         <Text>{msg}</Text>
       </div>
       <Link to="/login" className="mt-4 inline-block">
-        <Text size="sm" DANGEROUS_className="text-kumo-brand">
+        <Text className="text-sm text-app-brand">
           {texts.authPages.login}
         </Text>
       </Link>
-    </LayerCard>
+    </SectionCard>
   )
 }

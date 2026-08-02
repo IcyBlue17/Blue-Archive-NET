@@ -15,8 +15,8 @@ import type {
   GenericGameSummary,
   GenericRankingPlayer,
   TrendEntry,
-} from '../lib/types'
-import { userPost } from './client'
+} from '@/lib/types'
+import { userPost } from '@/api/client'
 
 export async function trend(username: string, game: GameName) {
   return userPost(`/api/v2/game/${game}/trend`, { username }) as Promise<TrendEntry[]>

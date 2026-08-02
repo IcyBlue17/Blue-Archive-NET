@@ -1,23 +1,23 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Button } from '@cloudflare/kumo/components/button'
-import { Text } from '@cloudflare/kumo/components/text'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import { CardSummaryGrid } from '../../components/common/CardSummaryGrid'
-import { PageHeader } from '../../components/common/PageHeader'
-import { SkeletonBox } from '../../components/common/Skeleton'
-import * as gameApi from '../../api/game'
-import { useAuth } from '../../hooks/useAuth'
-import { chu3CharacterImageUrl } from '../../lib/chu3Assets'
-import { fetchOn9AssetJson, on9CardImageUrl, type On9CardJsonEntry } from '../../lib/on9Assets'
-import { imgCross } from '../../lib/imgSign'
-import { qk } from '../../lib/query'
-import * as cardApi from '../../api/card'
-import type { CardSummary } from '../../lib/types'
-import { formatDisplayRating } from '../../lib/gameRatingDisplay'
-import { coerceInt, formatDateMaybe, formatRatioPercent } from '../../lib/format'
-import { useI18n } from '../../lib/i18n'
-import { useAppTexts } from '../../content/texts'
+import { CardSummaryGrid } from '@/components/common/CardSummaryGrid'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { SkeletonBox } from '@/components/ui/Skeleton'
+import * as gameApi from '@/api/game'
+import { useAuth } from '@/hooks/useAuth'
+import { chu3CharacterImageUrl } from '@/lib/chu3Assets'
+import { fetchOn9AssetJson, on9CardImageUrl, type On9CardJsonEntry } from '@/lib/on9Assets'
+import { imgCross } from '@/lib/imgSign'
+import { qk } from '@/lib/query'
+import * as cardApi from '@/api/card'
+import type { CardSummary } from '@/lib/types'
+import { formatDisplayRating } from '@/lib/gameRatingDisplay'
+import { coerceInt, formatDateMaybe, formatRatioPercent } from '@/lib/format'
+import { useI18n } from '@/lib/i18n'
+import { useAppTexts } from '@/content/texts'
+import { Button } from 'antd'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { Text } from '@/components/ui/Text'
 
 const SUMMARY_KEYS: (keyof CardSummary)[] = ['chu3', 'mai2', 'ongeki', 'wacca', 'diva']
 const CHU3_COMPLETE_MAX = 50000
@@ -53,7 +53,7 @@ type On9HomeBox = {
 
 function SummaryCardSkeleton() {
   return (
-    <div className="border-kumo-line rounded-lg border px-4 py-3">
+    <div className="border-app-line rounded-lg border px-4 py-3">
       <SkeletonBox className="h-5 w-24 rounded-md" />
       <SkeletonBox className="mt-3 h-4 w-32 rounded-md" />
       <SkeletonBox className="mt-2 h-4 w-24 rounded-md" />
@@ -64,8 +64,8 @@ function SummaryCardSkeleton() {
 
 function Chu3ProfileCardSkeleton() {
   return (
-    <LayerCard className="mt-6 overflow-hidden p-0">
-      <div className="border-kumo-line border-b px-5 py-5">
+    <SectionCard className="mt-6 overflow-hidden">
+      <div className="border-app-line border-b px-5 py-5">
         <SkeletonBox className="h-9 w-52 rounded-lg" />
       </div>
       <div className="grid gap-5 px-4 py-4 md:grid-cols-[112px_minmax(0,1fr)] md:items-center">
@@ -77,17 +77,17 @@ function Chu3ProfileCardSkeleton() {
           <SkeletonBox className="h-5 w-36 rounded-md" />
         </div>
       </div>
-      <div className="border-kumo-line border-t px-4 py-3">
+      <div className="border-app-line border-t px-4 py-3">
         <SkeletonBox className="ml-auto h-5 w-40 rounded-md" />
       </div>
-    </LayerCard>
+    </SectionCard>
   )
 }
 
 function On9ProfileCardSkeleton() {
   return (
-    <LayerCard className="mt-6 overflow-hidden p-0">
-      <div className="border-kumo-line border-b px-5 py-5">
+    <SectionCard className="mt-6 overflow-hidden">
+      <div className="border-app-line border-b px-5 py-5">
         <SkeletonBox className="h-9 w-52 rounded-lg" />
       </div>
       <div className="grid gap-5 px-4 py-4 md:grid-cols-[112px_minmax(0,1fr)] md:items-center">
@@ -99,10 +99,10 @@ function On9ProfileCardSkeleton() {
           <SkeletonBox className="h-5 w-36 rounded-md" />
         </div>
       </div>
-      <div className="border-kumo-line border-t px-4 py-3">
+      <div className="border-app-line border-t px-4 py-3">
         <SkeletonBox className="ml-auto h-5 w-40 rounded-md" />
       </div>
-    </LayerCard>
+    </SectionCard>
   )
 }
 
@@ -182,14 +182,14 @@ export function HomePage() {
       {showChu3CardSkeleton ? (
         <Chu3ProfileCardSkeleton />
       ) : showChu3Card ? (
-        <LayerCard className="mt-6 overflow-hidden p-0">
-          <div className="border-kumo-line border-b px-5 py-5">
-            <div className="text-kumo-default truncate text-[clamp(1.5rem,4vw,2.35rem)] font-black tracking-[0.32em]">
+        <SectionCard className="mt-6 overflow-hidden">
+          <div className="border-app-line border-b px-5 py-5">
+            <div className="text-app-default truncate text-[clamp(1.5rem,4vw,2.35rem)] font-black tracking-[0.32em]">
               {chu3Name}
             </div>
           </div>
           <div className="grid gap-5 px-4 py-4 md:grid-cols-[116px_minmax(0,1fr)] md:items-center">
-            <div className="border-kumo-line bg-kumo-recessed mx-auto flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
+            <div className="border-app-line bg-app-recessed mx-auto flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
               {chu3Avatar ? (
                 <img
                   src={chu3Avatar}
@@ -199,38 +199,38 @@ export function HomePage() {
                   loading="lazy"
                 />
               ) : (
-                <div className="text-kumo-subtle text-xs">{texts.homePage.noAvatar}</div>
+                <div className="text-app-subtle text-xs">{texts.homePage.noAvatar}</div>
               )}
             </div>
             <dl className="grid min-w-0 grid-cols-[max-content_1fr] gap-x-5 gap-y-2 text-sm sm:text-base">
-              <dt className="font-semibold text-kumo-default">{texts.homePage.id}</dt>
-              <dd className="truncate text-kumo-default">{accessCardId}</dd>
-              <dt className="font-semibold text-kumo-default">{texts.homePage.level}</dt>
-              <dd className="text-kumo-default">{chu3Level || '—'}</dd>
-              <dt className="font-semibold text-kumo-default">{texts.homePage.rating}</dt>
-              <dd className="text-kumo-default">{chu3Rating}</dd>
-              <dt className="font-semibold text-kumo-default">{texts.homePage.completion}</dt>
-              <dd className="text-kumo-default">{chu3Complete}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.id}</dt>
+              <dd className="truncate text-app-default">{accessCardId}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.level}</dt>
+              <dd className="text-app-default">{chu3Level || '—'}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.rating}</dt>
+              <dd className="text-app-default">{chu3Rating}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.completion}</dt>
+              <dd className="text-app-default">{chu3Complete}</dd>
             </dl>
           </div>
-          <div className="border-kumo-line bg-kumo-recessed flex justify-end border-t px-4 py-3">
-            <Text DANGEROUS_className="text-right text-sm font-medium">
+          <div className="border-app-line bg-app-recessed flex justify-end border-t px-4 py-3">
+            <Text className="text-right text-sm font-medium">
               {texts.homePage.lastPlayed(chu3LastPlay)}
             </Text>
           </div>
-        </LayerCard>
+        </SectionCard>
       ) : null}
       {showOn9CardSkeleton ? (
         <On9ProfileCardSkeleton />
       ) : showOn9Card ? (
-        <LayerCard className="mt-6 overflow-hidden p-0">
-          <div className="border-kumo-line border-b px-5 py-5">
-            <div className="text-kumo-default truncate text-[clamp(1.5rem,4vw,2.35rem)] font-black tracking-[0.32em]">
+        <SectionCard className="mt-6 overflow-hidden">
+          <div className="border-app-line border-b px-5 py-5">
+            <div className="text-app-default truncate text-[clamp(1.5rem,4vw,2.35rem)] font-black tracking-[0.32em]">
               {on9Name}
             </div>
           </div>
           <div className="grid gap-5 px-4 py-4 md:grid-cols-[116px_minmax(0,1fr)] md:items-center">
-            <div className="border-kumo-line bg-kumo-recessed mx-auto flex aspect-[3/4] w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
+            <div className="border-app-line bg-app-recessed mx-auto flex aspect-[3/4] w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
               {on9Avatar ? (
                 <img
                   src={on9Avatar}
@@ -240,33 +240,32 @@ export function HomePage() {
                   loading="lazy"
                 />
               ) : (
-                <div className="text-kumo-subtle text-xs">{texts.homePage.noAvatar}</div>
+                <div className="text-app-subtle text-xs">{texts.homePage.noAvatar}</div>
               )}
             </div>
             <dl className="grid min-w-0 grid-cols-[max-content_1fr] gap-x-5 gap-y-2 text-sm sm:text-base">
-              <dt className="font-semibold text-kumo-default">{texts.homePage.id}</dt>
-              <dd className="truncate text-kumo-default">{accessCardId}</dd>
-              <dt className="font-semibold text-kumo-default">{texts.homePage.level}</dt>
-              <dd className="text-kumo-default">{on9LevelText}</dd>
-              <dt className="font-semibold text-kumo-default">{texts.homePage.rating}</dt>
-              <dd className="text-kumo-default">{on9Rating}</dd>
-              <dt className="font-semibold text-kumo-default">{texts.homePage.battlePoint}</dt>
-              <dd className="text-kumo-default">{on9BattlePoint ? on9BattlePoint.toLocaleString() : '—'}</dd>
-              <dt className="font-semibold text-kumo-default">{texts.gamesPage.playCount}</dt>
-              <dd className="text-kumo-default">{on9PlayCount ? on9PlayCount.toLocaleString() : '—'}</dd>
-              <dt className="font-semibold text-kumo-default">{texts.homePage.completion}</dt>
-              <dd className="text-kumo-default">{on9Complete}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.id}</dt>
+              <dd className="truncate text-app-default">{accessCardId}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.level}</dt>
+              <dd className="text-app-default">{on9LevelText}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.rating}</dt>
+              <dd className="text-app-default">{on9Rating}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.battlePoint}</dt>
+              <dd className="text-app-default">{on9BattlePoint ? on9BattlePoint.toLocaleString() : '—'}</dd>
+              <dt className="font-semibold text-app-default">{texts.gamesPage.playCount}</dt>
+              <dd className="text-app-default">{on9PlayCount ? on9PlayCount.toLocaleString() : '—'}</dd>
+              <dt className="font-semibold text-app-default">{texts.homePage.completion}</dt>
+              <dd className="text-app-default">{on9Complete}</dd>
             </dl>
           </div>
-          <div className="border-kumo-line bg-kumo-recessed flex justify-end border-t px-4 py-3">
-            <Text DANGEROUS_className="text-right text-sm font-medium">
+          <div className="border-app-line bg-app-recessed flex justify-end border-t px-4 py-3">
+            <Text className="text-right text-sm font-medium">
               {texts.homePage.lastPlayed(on9LastPlay)}
             </Text>
           </div>
-        </LayerCard>
+        </SectionCard>
       ) : null}
-      <LayerCard className="mt-6 p-4">
-        <LayerCard.Secondary>{texts.homePage.games}</LayerCard.Secondary>
+      <SectionCard title={<>{texts.homePage.games}</>} className="mt-6">
         {showSummarySkeleton ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -274,7 +273,7 @@ export function HomePage() {
             ))}
           </div>
         ) : summaryQuery.error ? (
-          <Text DANGEROUS_className="text-kumo-danger mt-2">
+          <Text className="text-app-danger mt-2">
             {summaryQuery.error instanceof Error ? summaryQuery.error.message : texts.common.error}
           </Text>
         ) : summary && hasSummary ? (
@@ -288,28 +287,28 @@ export function HomePage() {
             />
           </div>
         ) : (
-          <Text DANGEROUS_className="text-kumo-subtle mt-2">
+          <Text className="text-app-subtle mt-2">
             {texts.homePage.noGameData}
           </Text>
         )}
         <div className="mt-4 flex flex-wrap gap-2">
           <Link to="/cards">
-            <Button variant="primary">{texts.nav.cards}</Button>
+            <Button type="primary">{texts.nav.cards}</Button>
           </Link>
           <Link to="/team">
-            <Button variant="secondary">{texts.nav.team}</Button>
+            <Button>{texts.nav.team}</Button>
           </Link>
           <Link to="/friends">
-            <Button variant="secondary">{texts.nav.friends}</Button>
+            <Button>{texts.nav.friends}</Button>
           </Link>
           <Link to="/friends/ongeki">
-            <Button variant="secondary">{texts.nav.on9Friends}</Button>
+            <Button>{texts.nav.on9Friends}</Button>
           </Link>
           <Link to="/settings/profile">
-            <Button variant="secondary">{texts.nav.settings}</Button>
+            <Button>{texts.nav.settings}</Button>
           </Link>
         </div>
-      </LayerCard>
+      </SectionCard>
     </div>
   )
 }

@@ -1,13 +1,13 @@
 import { memo, useMemo } from 'react'
-import { Text } from '@cloudflare/kumo/components/text'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import type { GameName, GenericGamePlaylog } from '../../lib/types'
-import { getMult, roundFloor, type MusicMetaLite } from '../../lib/scoring'
-import { toDisplayRating } from '../../lib/gameRatingDisplay'
-import { formatPlaylogLevelLabel } from '../../lib/playlogDisplay'
-import { musicJacketUrl } from '../../lib/musicCover'
-import { imgCross } from '../../lib/imgSign'
-import { useAppTexts } from '../../content/texts'
+import type { GameName, GenericGamePlaylog } from '@/lib/types'
+import { getMult, roundFloor, type MusicMetaLite } from '@/lib/scoring'
+import { toDisplayRating } from '@/lib/gameRatingDisplay'
+import { formatPlaylogLevelLabel } from '@/lib/playlogDisplay'
+import { musicJacketUrl } from '@/lib/musicCover'
+import { imgCross } from '@/lib/imgSign'
+import { useAppTexts } from '@/content/texts'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { Text } from '@/components/ui/Text'
 
 type Row = GenericGamePlaylog & MusicMetaLite & { worldsEndTag?: string }
 
@@ -42,8 +42,8 @@ const RecentScoreRow = memo(function RecentScoreRow({
 
   return (
     <div
-      className={`border-kumo-line flex items-center gap-3 rounded-lg border px-3 py-2 ${
-        index % 2 === 0 ? 'bg-kumo-recessed' : ''
+      className={`border-app-line flex items-center gap-3 rounded-lg border px-3 py-2 ${
+        index % 2 === 0 ? 'bg-app-recessed' : ''
       }`}
       style={{ contentVisibility: 'auto' }}
     >
@@ -62,13 +62,13 @@ const RecentScoreRow = memo(function RecentScoreRow({
       />
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium">{row.name ?? `${texts.common.id} ${row.musicId}`}</div>
-        <div className="text-kumo-subtle mt-0.5 flex flex-wrap items-center gap-2 text-xs">
+        <div className="text-app-subtle mt-0.5 flex flex-wrap items-center gap-2 text-xs">
           {row.isAllPerfect || row.isAllJustice ? (
-            <span className="text-kumo-success font-medium">AP/AJ</span>
+            <span className="text-app-success font-medium">AP/AJ</span>
           ) : null}
-          {row.isFullCombo ? <span className="text-kumo-brand font-medium">FC</span> : null}
+          {row.isFullCombo ? <span className="text-app-brand font-medium">FC</span> : null}
           <span>Lv {lvLabel}</span>
-          <span className="text-kumo-default">{rankStr}</span>
+          <span className="text-app-default">{rankStr}</span>
           <span title={(row.achievement / 10000).toFixed(4)}>{pct}%</span>
           {showEndRating && typeof row.afterRating === 'number' ? (
             <span>{texts.common.rating} {toDisplayRating(row.afterRating, game).toFixed(2)}</span>
@@ -100,16 +100,14 @@ export function RecentScoresSection({
 
   if (!rows.length) {
     return (
-      <LayerCard className="p-4">
-        <LayerCard.Secondary>{texts.gamesPage.recentScores}</LayerCard.Secondary>
-        <Text DANGEROUS_className="text-kumo-subtle mt-2">{texts.gamesPage.noRecords}</Text>
-      </LayerCard>
+      <SectionCard title={<>{texts.gamesPage.recentScores}</>}>
+        <Text className="text-app-subtle mt-2">{texts.gamesPage.noRecords}</Text>
+      </SectionCard>
     )
   }
 
   return (
-    <LayerCard className="p-4">
-      <LayerCard.Secondary>{texts.gamesPage.recentScores}</LayerCard.Secondary>
+    <SectionCard title={<>{texts.gamesPage.recentScores}</>}>
       <div className="mt-4 flex flex-col gap-2">
         {rows.map((r, i) => (
           <RecentScoreRow
@@ -121,6 +119,6 @@ export function RecentScoresSection({
           />
         ))}
       </div>
-    </LayerCard>
+    </SectionCard>
   )
 }

@@ -1,4 +1,4 @@
-import { publicGet, userGet, userPost } from './client'
+import { publicGet, userGet, userPost } from '@/api/client'
 
 export type OAuthLinkedAccount = {
   provider: string

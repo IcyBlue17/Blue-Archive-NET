@@ -1,23 +1,21 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Tabs } from '@cloudflare/kumo/components/tabs'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import { PageHeader } from '../../components/common/PageHeader'
-import { SkeletonBox } from '../../components/common/Skeleton'
-import { Chu3MusicLibrary } from '../../components/game/Chu3MusicLibrary'
-import { Chu3PlaylogExplorer } from '../../components/game/Chu3PlaylogExplorer'
-import { On9MusicLibrary } from '../../components/game/On9MusicLibrary'
-import { On9PlaylogExplorer } from '../../components/game/On9PlaylogExplorer'
-import { GameSummaryPanel } from '../../components/game/GameSummaryPanel'
-import { PlaysHeatmap } from '../../components/game/PlaysHeatmap'
-import { RatingCompositionSection } from '../../components/game/RatingCompositionSection'
-import { RecentScoresSection } from '../../components/game/RecentScoresSection'
-import { TrendLineChart } from '../../components/game/TrendLineChart'
-import * as dataApi from '../../api/data'
-import * as gameApi from '../../api/game'
-import { useAuth } from '../../hooks/useAuth'
-import { qk } from '../../lib/query'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { SkeletonBox } from '@/components/ui/Skeleton'
+import { Chu3MusicLibrary } from '@/features/chu3/components/Chu3MusicLibrary'
+import { Chu3PlaylogExplorer } from '@/features/chu3/components/Chu3PlaylogExplorer'
+import { On9MusicLibrary } from '@/features/ongeki/components/On9MusicLibrary'
+import { On9PlaylogExplorer } from '@/features/ongeki/components/On9PlaylogExplorer'
+import { GameSummaryPanel } from '@/components/game/GameSummaryPanel'
+import { PlaysHeatmap } from '@/components/game/PlaysHeatmap'
+import { RatingCompositionSection } from '@/components/game/RatingCompositionSection'
+import { RecentScoresSection } from '@/components/game/RecentScoresSection'
+import { TrendLineChart } from '@/components/game/TrendLineChart'
+import * as dataApi from '@/api/data'
+import * as gameApi from '@/api/game'
+import { useAuth } from '@/hooks/useAuth'
+import { qk } from '@/lib/query'
 import type {
   AllMusicMap,
   Chu3UserMusicDetail,
@@ -26,11 +24,13 @@ import type {
   GenericGameSummary,
   OngekiUserMusicDetail,
   TrendEntry,
-} from '../../lib/types'
-import type { MusicMetaLite } from '../../lib/scoring'
-import { gameTitle } from '../../lib/gameTitles'
-import { useI18n } from '../../lib/i18n'
-import { useAppTexts } from '../../content/texts'
+} from '@/lib/types'
+import type { MusicMetaLite } from '@/lib/scoring'
+import { gameTitle } from '@/lib/gameTitles'
+import { useI18n } from '@/lib/i18n'
+import { useAppTexts } from '@/content/texts'
+import { Segmented, Tabs } from 'antd'
+import { SectionCard } from '@/components/ui/SectionCard'
 
 const GAMES: GameName[] = ['chu3', 'mai2', 'ongeki', 'wacca']
 const CHU3_SECTIONS = ['overview', 'songs', 'plays'] as const
@@ -62,40 +62,40 @@ function normMusicMap(raw: AllMusicMap | null | undefined): Record<number, Music
 function GameDashSkeleton() {
   return (
     <>
-      <LayerCard className="p-4">
+      <SectionCard>
         <SkeletonBox className="h-5 w-28 rounded-md" />
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="border-kumo-line rounded-md border px-3 py-2">
+            <div key={i} className="border-app-line rounded-md border px-3 py-2">
               <SkeletonBox className="h-3 w-16 rounded-md" />
               <SkeletonBox className="mt-2 h-5 w-20 rounded-md" />
             </div>
           ))}
         </div>
-      </LayerCard>
-      <LayerCard className="mb-6 mt-6 p-4">
+      </SectionCard>
+      <SectionCard className="mb-6 mt-6">
         <SkeletonBox className="h-5 w-24 rounded-md" />
         <SkeletonBox className="mt-4 h-56 w-full rounded-xl" />
-      </LayerCard>
-      <LayerCard className="mb-6 p-4">
+      </SectionCard>
+      <SectionCard className="mb-6">
         <SkeletonBox className="h-5 w-24 rounded-md" />
         <SkeletonBox className="mt-4 h-44 w-full rounded-xl" />
-      </LayerCard>
-      <LayerCard className="p-4">
+      </SectionCard>
+      <SectionCard>
         <SkeletonBox className="h-5 w-24 rounded-md" />
         <div className="mt-4 space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonBox key={i} className="h-16 w-full rounded-xl" />
           ))}
         </div>
-      </LayerCard>
+      </SectionCard>
     </>
   )
 }
 
 function GameSectionSkeleton() {
   return (
-    <LayerCard className="p-4">
+    <SectionCard>
       <SkeletonBox className="h-5 w-28 rounded-md" />
       <SkeletonBox className="mt-4 h-10 w-full rounded-xl" />
       <div className="mt-4 grid gap-3 xl:grid-cols-[1.2fr_0.9fr]">
@@ -106,7 +106,7 @@ function GameSectionSkeleton() {
         </div>
         <SkeletonBox className="h-[32rem] w-full rounded-xl" />
       </div>
-    </LayerCard>
+    </SectionCard>
   )
 }
 
@@ -184,33 +184,31 @@ export function GameDashboardPage() {
       <PageHeader title={`${gameTitle(game, loc)} · ${texts.gamesPage.games}`} crumbs={[{ label: texts.nav.home, href: '/home' }]} />
       <Tabs
         className="mb-4"
-        variant="underline"
-        tabs={GAMES.map((one) => ({ value: one, label: gameTitle(one, loc) }))}
-        value={game}
-        onValueChange={(value) => nav(sectionPath(value as GameName, SECTIONED_GAMES.includes(value as GameName) ? section : 'overview'))}
+        items={GAMES.map((one) => ({ key: one, label: gameTitle(one, loc) }))}
+        activeKey={game}
+        onChange={(value) => nav(sectionPath(value as GameName, SECTIONED_GAMES.includes(value as GameName) ? section : 'overview'))}
       />
 
       {SECTIONED_GAMES.includes(game) ? (
-        <Tabs
+        <Segmented
           className="mb-6"
-          variant="segmented"
-          tabs={[
+          block
+          options={[
             { value: 'overview', label: texts.gamesPage.overview },
             { value: 'songs', label: texts.gamesPage.songs },
             { value: 'plays', label: texts.gamesPage.plays },
           ]}
           value={section}
-          onValueChange={(value) => nav(sectionPath(game, value as GameSection))}
+          onChange={(value) => nav(sectionPath(game, value as GameSection))}
         />
       ) : null}
 
       {section === 'overview' ? (
         <>
           {overviewErr ? (
-            <LayerCard className="mb-4 p-4">
-              <LayerCard.Secondary>{texts.common.prompt}</LayerCard.Secondary>
-              <p className="text-kumo-subtle mt-2 text-sm">{overviewErr}</p>
-            </LayerCard>
+            <SectionCard title={<>{texts.common.prompt}</>} className="mb-4">
+              <p className="text-app-subtle mt-2 text-sm">{overviewErr}</p>
+            </SectionCard>
           ) : null}
           {showOverviewLoading ? (
             <GameDashSkeleton />
@@ -218,18 +216,16 @@ export function GameDashboardPage() {
             <>
               <GameSummaryPanel game={game} summary={summary} />
               <RatingCompositionSection game={game} ratingComposition={composition} allMusics={musicById as Record<string, MusicMetaLite>} lastVersion={summary?.lastVersion} />
-              <LayerCard className="mb-6 mt-6 p-4">
-                <LayerCard.Secondary>{texts.gamesPage.ratingTrend}</LayerCard.Secondary>
+              <SectionCard title={<>{texts.gamesPage.ratingTrend}</>} className="mb-6 mt-6">
                 <div className="mt-4">
                   <TrendLineChart data={trend} game={game} />
                 </div>
-              </LayerCard>
-              <LayerCard className="mb-6 p-4">
-                <LayerCard.Secondary>{texts.gamesPage.playsHeatmap}</LayerCard.Secondary>
+              </SectionCard>
+              <SectionCard title={<>{texts.gamesPage.playsHeatmap}</>} className="mb-6">
                 <div className="mt-4">
                   <PlaysHeatmap trend={trend} />
                 </div>
-              </LayerCard>
+              </SectionCard>
               <RecentScoresSection game={game} recent={summary?.recent} musicById={musicById} />
             </>
           )}
@@ -242,10 +238,9 @@ export function GameDashboardPage() {
         ) : (
           <>
             {songErr ? (
-              <LayerCard className="mb-4 p-4">
-                <LayerCard.Secondary>{texts.common.prompt}</LayerCard.Secondary>
-                <p className="text-kumo-subtle mt-2 text-sm">{songErr}</p>
-              </LayerCard>
+              <SectionCard title={<>{texts.common.prompt}</>} className="mb-4">
+                <p className="text-app-subtle mt-2 text-sm">{songErr}</p>
+              </SectionCard>
             ) : game === 'ongeki' ? (
               <On9MusicLibrary
                 musicById={musicById}
@@ -276,10 +271,9 @@ export function GameDashboardPage() {
         ) : (
           <>
             {playErr ? (
-              <LayerCard className="mb-4 p-4">
-                <LayerCard.Secondary>{texts.common.prompt}</LayerCard.Secondary>
-                <p className="text-kumo-subtle mt-2 text-sm">{playErr}</p>
-              </LayerCard>
+              <SectionCard title={<>{texts.common.prompt}</>} className="mb-4">
+                <p className="text-app-subtle mt-2 text-sm">{playErr}</p>
+              </SectionCard>
             ) : game === 'ongeki' ? (
               <On9PlaylogExplorer
                 musicById={musicById}

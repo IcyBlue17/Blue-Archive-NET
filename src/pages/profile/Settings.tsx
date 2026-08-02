@@ -3,34 +3,33 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Key, Trash } from '@phosphor-icons/react'
 import { startRegistration } from '@simplewebauthn/browser'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useKumoToastManager } from '@cloudflare/kumo'
-import { Button } from '@cloudflare/kumo/components/button'
-import { ClipboardText } from '@cloudflare/kumo/components/clipboard-text'
-import { Input } from '@cloudflare/kumo/components/input'
-import { Text } from '@cloudflare/kumo/components/text'
-import { Tabs } from '@cloudflare/kumo/components/tabs'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import * as oauthApi from '../../api/oauth'
-import * as passkeyApi from '../../api/passkey'
+import * as oauthApi from '@/api/oauth'
+import * as passkeyApi from '@/api/passkey'
 import {
   OAUTH_PROVIDER_DISPLAY_NAME,
   OAUTH_PROVIDER_ICON,
   OAUTH_PROVIDER_ICON_CLASS,
   type OauthProviderId,
   OAuthButtons,
-} from '../../components/auth/OAuthButtons'
-import { PageHeader } from '../../components/common/PageHeader'
-import { SkeletonBox } from '../../components/common/Skeleton'
-import { ArcadeExtraSettings } from '../../components/settings/ArcadeExtraSettings'
-import { ChusanExtraSettings } from '../../components/settings/ChusanExtraSettings'
-import { GameOptionFields } from '../../components/settings/GameOptionFields'
-import { GlobalGameSettingsSection } from '../../components/settings/GlobalGameSettingsSection'
-import { useAppTexts } from '../../content/texts'
-import { readToken, useAuth } from '../../hooks/useAuth'
-import { qk } from '../../lib/query'
-import * as settingsApi from '../../api/settings'
-import * as userApi from '../../api/user'
-import { useI18n } from '../../lib/i18n'
+} from '@/components/auth/OAuthButtons'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { SkeletonBox } from '@/components/ui/Skeleton'
+import { ArcadeExtraSettings } from '@/components/settings/ArcadeExtraSettings'
+import { ChusanExtraSettings } from '@/features/chu3/components/ChusanExtraSettings'
+import { GameOptionFields } from '@/components/settings/GameOptionFields'
+import { GlobalGameSettingsSection } from '@/components/settings/GlobalGameSettingsSection'
+import { useAppTexts } from '@/content/texts'
+import { readToken, useAuth } from '@/hooks/useAuth'
+import { qk } from '@/lib/query'
+import * as settingsApi from '@/api/settings'
+import * as userApi from '@/api/user'
+import { useI18n } from '@/lib/i18n'
+import { Button, Input, Tabs } from 'antd'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { useToast } from '@/components/ui/toast'
+import { ClipboardField } from '@/components/ui/ClipboardField'
+import { Text } from '@/components/ui/Text'
+import { formatDateTime } from '@/lib/datetime'
 
 const SETTING_TABS = ['profile', 'global', 'chu3', 'mai2', 'ongeki', 'wacca'] as const
 
@@ -59,10 +58,7 @@ function SettingListSkeleton() {
 }
 
 function passkeyTime(raw: string | undefined, locale: 'zh' | 'en') {
-  if (!raw) return ''
-  const d = new Date(raw)
-  if (Number.isNaN(d.getTime())) return raw
-  return d.toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US')
+  return raw ? formatDateTime(raw, locale) : ''
 }
 
 function isOauthProviderId(value: string): value is OauthProviderId {
@@ -81,7 +77,7 @@ export function SettingsPage() {
   const { page } = useParams<{ page?: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const toast = useKumoToastManager()
+  const toast = useToast()
   const { locale } = useI18n()
   const copy = useAppTexts()
   const { user: me, refresh, loading: loadingUser } = useAuth()
@@ -231,69 +227,67 @@ export function SettingsPage() {
       <PageHeader title={copy.nav.settings} crumbs={[{ label: copy.nav.home, href: '/home' }]} />
       <Tabs
         className="mb-6"
-        variant="underline"
-        tabs={SETTING_TABS.map((value) => ({ value, label: copy.settingsPage.tabs[value] }))}
-        value={tab}
-        onValueChange={(v) => navigate(`/settings/${v}`)}
+        items={SETTING_TABS.map((value) => ({ key: value, label: copy.settingsPage.tabs[value] }))}
+        activeKey={tab}
+        onChange={(v) => navigate(`/settings/${v}`)}
       />
       {tab === 'profile' ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.profile.section}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.profile.section}</>}>
           {showProfileSkeleton ? (
             <ProfileSkeleton />
           ) : (
             <div className="mt-4 flex max-w-md flex-col gap-3">
               <label className="flex flex-col gap-1">
-                <Text size="sm">{copy.settingsPage.profile.displayName}</Text>
+                <Text className="text-sm">{copy.settingsPage.profile.displayName}</Text>
                 <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
               </label>
               <label className="flex flex-col gap-1">
-                <Text size="sm">{copy.settingsPage.profile.bio}</Text>
+                <Text className="text-sm">{copy.settingsPage.profile.bio}</Text>
                 <Input value={bio} onChange={(e) => setBio(e.target.value)} />
               </label>
-              {msg ? <Text DANGEROUS_className="text-kumo-success">{msg}</Text> : null}
-              {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
+              {msg ? <Text className="text-app-success">{msg}</Text> : null}
+              {err ? <Text className="text-app-danger">{err}</Text> : null}
               <Button onClick={saveProfile}>{copy.settingsPage.profile.save}</Button>
-              <Text DANGEROUS_className="text-kumo-subtle text-sm">
+              <Text className="text-app-subtle text-sm">
                 {copy.settingsPage.profile.email}: {me?.email ?? copy.common.empty}
               </Text>
 
-              <div className="border-kumo-line mt-6 border-t pt-4">
-                <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+              <div className="border-app-line mt-6 border-t pt-4">
+                <Text className="text-sm mb-2 font-medium">
                   {copy.settingsPage.profile.botBindingSection}
                 </Text>
-                <Text size="sm" DANGEROUS_className="mb-3 text-kumo-subtle">
+                <Text className="text-sm mb-3 text-app-subtle">
                   {copy.settingsPage.profile.botBindingHint}
                 </Text>
                 {botBindingQuery.isPending ? (
                   <SkeletonBox className="h-10 w-full rounded-lg" />
                 ) : botBindingQuery.data?.binding ? (
-                  <div className="rounded-xl border border-kumo-line px-4 py-3">
-                    <Text size="sm" DANGEROUS_className="font-medium">
+                  <div className="rounded-xl border border-app-line px-4 py-3">
+                    <Text className="text-sm font-medium">
                       {copy.settingsPage.profile.botBound}
                     </Text>
-                    <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                    <Text className="text-sm text-app-subtle">
                       {copy.settingsPage.profile.botExternalUserId}: {botBindingQuery.data.binding.externalUserId}
                     </Text>
                     {botBindingQuery.data.binding.externalUsername ? (
-                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                      <Text className="text-sm text-app-subtle">
                         {copy.settingsPage.profile.botExternalUsername}: {botBindingQuery.data.binding.externalUsername}
                       </Text>
                     ) : null}
                   </div>
                 ) : (
-                  <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                  <Text className="text-sm text-app-subtle">
                     {copy.settingsPage.profile.botUnboundHint}
                   </Text>
                 )}
                 <div className="mt-3 flex flex-col gap-2">
-                  <Button type="button" variant="secondary" onClick={() => void issueBindCode()}>
+                  <Button htmlType="button" onClick={() => void issueBindCode()}>
                     {copy.settingsPage.profile.generateBotBindCode}
                   </Button>
                   {bindCode ? (
                     <>
-                      <ClipboardText text={bindCode.code} />
-                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                      <ClipboardField text={bindCode.code} />
+                      <Text className="text-sm text-app-subtle">
                         {copy.settingsPage.profile.botBindCodeExpires(bindCode.expiresAt)}
                       </Text>
                     </>
@@ -301,8 +295,8 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="border-kumo-line mt-6 border-t pt-4">
-                <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+              <div className="border-app-line mt-6 border-t pt-4">
+                <Text className="text-sm mb-2 font-medium">
                   {copy.settingsPage.profile.oauthSection}
                 </Text>
                 {linkedQuery.isPending ? (
@@ -310,7 +304,7 @@ export function SettingsPage() {
                 ) : (
                   <ul className="mb-3 space-y-2">
                     {(linkedQuery.data ?? []).length === 0 ? (
-                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                      <Text className="text-sm text-app-subtle">
                         {copy.settingsPage.profile.oauthEmpty}
                       </Text>
                     ) : (
@@ -324,34 +318,34 @@ export function SettingsPage() {
                         return (
                           <li
                             key={a.provider}
-                            className="border-kumo-line bg-kumo-base flex items-center gap-3 rounded-xl border px-4 py-3"
+                            className="border-app-line bg-app-base flex items-center gap-3 rounded-xl border px-4 py-3"
                           >
                             <span
-                              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-line bg-kumo-base"
+                              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-app-line bg-app-base"
                               aria-hidden
                             >
                               {ProviderIcon ? (
                                 <ProviderIcon className={providerIconClass} aria-hidden />
                               ) : (
-                                <Text size="sm" DANGEROUS_className="font-semibold uppercase">
+                                <Text className="text-sm font-semibold uppercase">
                                   {a.provider.slice(0, 1)}
                                 </Text>
                               )}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <Text size="sm" DANGEROUS_className="font-medium">
+                              <Text className="text-sm font-medium">
                                 {providerName}
                               </Text>
                               {providerSubtitle ? (
-                                <Text size="sm" DANGEROUS_className="text-kumo-subtle truncate">
+                                <Text className="text-sm text-app-subtle truncate">
                                   {providerSubtitle}
                                 </Text>
                               ) : null}
                             </div>
                             <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
+                              htmlType="button"
+                              type="text"
+                              size="small"
                               disabled={pkBusy}
                               onClick={() => void unlinkOauth(a.provider)}
                             >
@@ -372,15 +366,14 @@ export function SettingsPage() {
                 />
               </div>
 
-              <div className="border-kumo-line mt-6 border-t pt-4">
-                <Text size="sm" DANGEROUS_className="mb-2 font-medium">
+              <div className="border-app-line mt-6 border-t pt-4">
+                <Text className="text-sm mb-2 font-medium">
                   {copy.settingsPage.profile.passkeySection}
                 </Text>
-                {pkMsg ? <Text DANGEROUS_className="text-kumo-success mb-2 text-sm">{pkMsg}</Text> : null}
-                {pkErr ? <Text DANGEROUS_className="text-kumo-danger mb-2 text-sm">{pkErr}</Text> : null}
+                {pkMsg ? <Text className="text-app-success mb-2 text-sm">{pkMsg}</Text> : null}
+                {pkErr ? <Text className="text-app-danger mb-2 text-sm">{pkErr}</Text> : null}
                 <Button
-                  type="button"
-                  variant="secondary"
+                  htmlType="button"
                   className="mb-3 gap-2"
                   disabled={pkBusy}
                   onClick={() => void addPasskey()}
@@ -393,30 +386,30 @@ export function SettingsPage() {
                 ) : (
                   <ul className="space-y-2">
                     {(passkeysQuery.data ?? []).length === 0 ? (
-                      <Text size="sm" DANGEROUS_className="text-kumo-subtle">
+                      <Text className="text-sm text-app-subtle">
                         {copy.settingsPage.profile.passkeyEmpty}
                       </Text>
                     ) : (
                       (passkeysQuery.data ?? []).map((c) => (
                         <li
                           key={c.credentialId}
-                          className="flex items-center justify-between gap-2 rounded-lg border border-kumo-line px-3 py-2"
+                          className="flex items-center justify-between gap-2 rounded-lg border border-app-line px-3 py-2"
                         >
                           <div className="min-w-0">
-                            <Text size="sm" DANGEROUS_className="truncate">
+                            <Text className="text-sm truncate">
                               {c.label || c.credentialId.slice(0, 16) + '…'}
                             </Text>
                             {c.createdAt ? (
-                              <Text size="sm" DANGEROUS_className="text-kumo-subtle truncate">
+                              <Text className="text-sm text-app-subtle truncate">
                                 {passkeyTime(c.createdAt, locale)}
                               </Text>
                             ) : null}
                           </div>
                           <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            shape="square"
+                            htmlType="button"
+                            type="text"
+                            size="small"
+
                             aria-label={copy.settingsPage.auth.passkeyRemove}
                             disabled={pkBusy}
                             onClick={() => void removePasskey(c.credentialId)}
@@ -431,12 +424,11 @@ export function SettingsPage() {
               </div>
             </div>
           )}
-        </LayerCard>
+        </SectionCard>
       ) : null}
 
       {tab === 'global' ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.global.section}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.global.section}</>}>
           {showOptionsSkeleton ? (
             <SettingListSkeleton />
           ) : (
@@ -444,19 +436,17 @@ export function SettingsPage() {
               <GlobalGameSettingsSection options={options} locale={loc} onSet={setOptKey} err={err} />
             </div>
           )}
-        </LayerCard>
+        </SectionCard>
       ) : null}
 
       {tab === 'chu3' && showOptionsSkeleton ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.tabs.chu3}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.tabs.chu3}</>}>
           <SettingListSkeleton />
-        </LayerCard>
+        </SectionCard>
       ) : null}
 
       {tab === 'chu3' && !showOptionsSkeleton && me?.username ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.tabs.chu3}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.tabs.chu3}</>}>
           <div className="mt-4">
             <ChusanExtraSettings
               username={me.username}
@@ -469,23 +459,21 @@ export function SettingsPage() {
               err={err}
             />
           </div>
-        </LayerCard>
+        </SectionCard>
       ) : null}
 
       {tab === 'chu3' && !showOptionsSkeleton && !me?.username ? (
-        <Text DANGEROUS_className="text-kumo-subtle">{copy.settingsPage.loadingUser}</Text>
+        <Text className="text-app-subtle">{copy.settingsPage.loadingUser}</Text>
       ) : null}
 
       {tab === 'mai2' && showOptionsSkeleton ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.tabs.mai2}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.tabs.mai2}</>}>
           <SettingListSkeleton />
-        </LayerCard>
+        </SectionCard>
       ) : null}
 
       {tab === 'mai2' && !showOptionsSkeleton && me?.username ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.tabs.mai2}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.tabs.mai2}</>}>
           <div className="mt-4">
             <ArcadeExtraSettings
               game="mai2"
@@ -496,23 +484,21 @@ export function SettingsPage() {
               err={err}
             />
           </div>
-        </LayerCard>
+        </SectionCard>
       ) : null}
 
       {tab === 'mai2' && !showOptionsSkeleton && !me?.username ? (
-        <Text DANGEROUS_className="text-kumo-subtle">{copy.settingsPage.loadingUser}</Text>
+        <Text className="text-app-subtle">{copy.settingsPage.loadingUser}</Text>
       ) : null}
 
       {tab === 'ongeki' && showOptionsSkeleton ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.tabs.ongeki}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.tabs.ongeki}</>}>
           <SettingListSkeleton />
-        </LayerCard>
+        </SectionCard>
       ) : null}
 
       {tab === 'ongeki' && !showOptionsSkeleton && me?.username ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.tabs.ongeki}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.tabs.ongeki}</>}>
           <div className="mt-4">
             <ArcadeExtraSettings
               game="ongeki"
@@ -523,16 +509,15 @@ export function SettingsPage() {
               err={err}
             />
           </div>
-        </LayerCard>
+        </SectionCard>
       ) : null}
 
       {tab === 'ongeki' && !showOptionsSkeleton && !me?.username ? (
-        <Text DANGEROUS_className="text-kumo-subtle">{copy.settingsPage.loadingUser}</Text>
+        <Text className="text-app-subtle">{copy.settingsPage.loadingUser}</Text>
       ) : null}
 
       {tab === 'wacca' ? (
-        <LayerCard className="p-4">
-          <LayerCard.Secondary>{copy.settingsPage.tabs.wacca}</LayerCard.Secondary>
+        <SectionCard title={<>{copy.settingsPage.tabs.wacca}</>}>
           {showOptionsSkeleton ? (
             <SettingListSkeleton />
           ) : (
@@ -546,7 +531,7 @@ export function SettingsPage() {
               />
             </div>
           )}
-        </LayerCard>
+        </SectionCard>
       ) : null}
     </div>
   )

@@ -1,5 +1,5 @@
-import type { AquaNetUser } from '../lib/types'
-import { setToken, userPost, userPostForm } from './client'
+import type { AquaNetUser } from '@/lib/types'
+import { setToken, userPost, userPostForm } from '@/api/client'
 
 export interface BotBindingInfo {
   externalUserId: string

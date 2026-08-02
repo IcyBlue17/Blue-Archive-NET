@@ -1,3 +1,5 @@
+import { formatDate, formatDateTime } from './datetime'
+
 export type FormatLocale = 'zh' | 'en'
 
 export function coerceInt(value: unknown): number {
@@ -6,18 +8,13 @@ export function coerceInt(value: unknown): number {
   return 0
 }
 
+// 时间格式化统一在 lib/datetime.ts（moment），这里只保留原有的调用名
 export function formatDateTimeMaybe(raw: string | undefined, locale: FormatLocale): string {
-  if (!raw) return '—'
-  const date = new Date(raw)
-  if (Number.isNaN(date.getTime())) return raw
-  return date.toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US')
+  return formatDateTime(raw, locale)
 }
 
 export function formatDateMaybe(raw: string | undefined, locale: FormatLocale): string {
-  if (!raw) return '—'
-  const date = new Date(raw)
-  if (Number.isNaN(date.getTime())) return raw
-  return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')
+  return formatDate(raw, locale)
 }
 
 export function formatRatioPercent(value: number, total: number, digits = 2): string {

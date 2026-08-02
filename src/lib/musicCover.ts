@@ -1,7 +1,7 @@
-import { dataUrl } from './config'
-import { imgUrlOnHost } from './imgSign'
-import { chu3AssetUrl } from './chu3Assets'
-import type { GameName } from './types'
+import { dataUrl } from '@/lib/config'
+import { imgUrlOnHost } from '@/lib/imgSign'
+import { chu3AssetUrl } from '@/lib/chu3Assets'
+import type { GameName } from '@/lib/types'
 
 export function musicJacketUrl(game: GameName, musicId: number): string {
   const sub = musicId.toString().padStart(6, '0').substring(2)

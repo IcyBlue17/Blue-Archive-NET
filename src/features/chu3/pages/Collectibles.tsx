@@ -1,0 +1,1652 @@
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { SkeletonBox } from '@/components/ui/Skeleton'
+import * as gameApi from '@/api/game'
+import { detailSet } from '@/api/settings'
+import { qk } from '@/lib/query'
+import {
+  buildChu3CatalogOptions,
+  bundleToAllItems,
+  bundleToLookups,
+  type Chu3DetailRow,
+  fetchChu3DetailRow,
+  type Chu3AllItems,
+  chu3CollectibleHasImage,
+  chu3CollectibleImageUrl,
+  CHU3_TROPHY_FIELDS,
+  loadChu3CatalogBundle,
+  loadChu3StageCatalog,
+  type Chu3CatalogBundle,
+  type Chu3MateJsonEntry,
+  type Chu3NameLookups,
+  trophyRareLabel,
+  type Chu3StageJsonEntry,
+} from '@/lib/chu3Assets'
+import { imgCross } from '@/lib/imgSign'
+import { CHU3_FAV_CHARACTER, useChu3Favorites } from '@/hooks/useChu3Favorites'
+import {
+  buildChu3AppearanceSelectRows,
+  CHU3_APPEARANCE_FIELD_ORDER,
+  CHU3_FIELD_ALL_ITEMS_KEY,
+  CHU3_MATE_NONE_ID,
+  withEquippedIfMissing,
+  type Chu3UserItem,
+  type Chu3UserMateRow,
+  type Chu3UserboxSelectRow,
+} from '@/lib/chu3Userbox'
+import { useAppTexts } from '@/content/texts'
+import { Button, Input, Modal } from 'antd'
+import { useToast } from '@/components/ui/toast'
+import { LabeledSwitch } from '@/components/ui/LabeledSwitch'
+import { Text } from '@/components/ui/Text'
+import { TrophyPlate } from '@/features/chu3/components/TrophyPlate'
+
+const UNLOCK_ALL_STORAGE_KEY = 'chu3-collectibles-unlock-all'
+
+const COLLECTIBLES_FIELD_ORDER = CHU3_APPEARANCE_FIELD_ORDER
+
+// 称号没有统一的贴图，游戏是按 rareType 取底框条再把名字画上去，
+// 所以它既不是「有图」也不是「纯文字」，单独走 TrophyPlate。
+const TROPHY_FIELDS = new Set([
+  'trophyId',
+  'trophyIdSub1',
+  'trophyIdSub2',
+])
+
+const TEXT_ONLY_PREVIEW_FIELDS = TROPHY_FIELDS
+
+type Chu3TrophyMeta = { rareType: number; imageFile: string }
+
+function trophyMetaOf(allItems: Chu3AllItems, itemId: number): Chu3TrophyMeta {
+  const row = allItems.trophy?.[String(itemId)] as
+    | { rareType?: number | string; imageFile?: string }
+    | undefined
+  const raw = row?.rareType
+  const rareType = typeof raw === 'number' ? raw : parseInt(String(raw ?? 0), 10)
+  return {
+    rareType: Number.isFinite(rareType) ? rareType : 0,
+    imageFile: (row?.imageFile ?? '').trim(),
+  }
+}
+
+function numFromUser(u: Record<string, unknown>, field: string): number {
+  const v = u[field]
+  if (typeof v === 'number') return v
+  if (typeof v === 'string' && v !== '') return parseInt(v, 10) || 0
+  return 0
+}
+
+function buildAllCollectibleRows(
+  items: Chu3UserItem[],
+  charIds: number[],
+  equippedChar: number,
+  allItems: Chu3AllItems,
+  u: Record<string, unknown>,
+  mateRows: Chu3UserMateRow[],
+): Chu3UserboxSelectRow[] {
+  const base = buildChu3AppearanceSelectRows(
+    items,
+    charIds,
+    equippedChar,
+    allItems,
+    mateRows,
+    numFromUser(u, 'mateId'),
+  )
+  const byField = new Map(base.map((r) => [r.field, r]))
+  const out: Chu3UserboxSelectRow[] = []
+  for (const f of COLLECTIBLES_FIELD_ORDER) {
+    const key = CHU3_FIELD_ALL_ITEMS_KEY[f]
+    let row = byField.get(f)
+    if (!row) {
+      row = { field: f, allItemsKey: key, options: [] }
+    }
+    row = withEquippedIfMissing(row, numFromUser(u, f), allItems)
+    out.push(row)
+  }
+  return out
+}
+
+function resolveCollectibleName(
+  field: string,
+  itemId: number,
+  allItems: Chu3AllItems,
+  lookups: Chu3NameLookups | null,
+  mateNoneLabel = '',
+): string {
+  if (itemId < 0) return '—'
+  if (itemId === 0 && field !== 'characterId') return '—'
+  if (field === 'mateId' && itemId === CHU3_MATE_NONE_ID) return mateNoneLabel || '—'
+  const key = CHU3_FIELD_ALL_ITEMS_KEY[field as keyof typeof CHU3_FIELD_ALL_ITEMS_KEY]
+  const fromAll = key ? allItems[key]?.[String(itemId)]?.name : undefined
+
+  let fromJson: string | undefined
+  if (lookups) {
+    switch (field) {
+      case 'nameplateId':
+        fromJson = lookups.namePlate.get(itemId)
+        break
+      case 'frameId':
+        fromJson = lookups.frame.get(itemId)
+        break
+      case 'trophyId':
+      case 'trophyIdSub1':
+      case 'trophyIdSub2':
+        fromJson = lookups.trophy.get(itemId)
+        break
+      case 'characterId':
+        fromJson = lookups.character.get(itemId)
+        break
+      case 'mapIconId':
+        fromJson = lookups.mapIcon.get(itemId)
+        break
+      case 'voiceId':
+        fromJson = lookups.systemVoice.get(itemId)
+        break
+      case 'avatarWear':
+      case 'avatarHead':
+      case 'avatarFace':
+      case 'avatarSkin':
+      case 'avatarItem':
+      case 'avatarFront':
+      case 'avatarBack':
+        fromJson = lookups.avatar.get(itemId)
+        break
+      case 'mateId':
+        fromJson = lookups.mate.get(itemId)
+        break
+      default:
+        break
+    }
+  }
+  return fromJson ?? fromAll ?? `(unknown ${itemId})`
+}
+
+function draftFromUser(u: Record<string, unknown>): Record<string, number> {
+  const d: Record<string, number> = {}
+  for (const f of COLLECTIBLES_FIELD_ORDER) {
+    d[f] = numFromUser(u, f)
+  }
+  return d
+}
+
+function stageImgPath(raw: unknown): string | null {
+  const s = typeof raw === 'string' ? raw.trim() : String(raw ?? '').trim()
+  if (!s) return null
+  if (/^https?:\/\//i.test(s)) return s
+  const path = s.replace(/^\/+/, '')
+  if (!path) return null
+  return path.includes('/') ? path : `stage/${path}`
+}
+
+function mergeStageItems(
+  allItems: Chu3AllItems,
+  stageRows: Chu3StageJsonEntry[],
+): Chu3AllItems {
+  if (!stageRows.length) return allItems
+  const stage = { ...(allItems.stage ?? {}) }
+  let dirty = !allItems.stage
+  for (const row of stageRows) {
+    const rawId = row.stageId ?? row.id
+    const id = typeof rawId === 'number' ? rawId : parseInt(String(rawId), 10)
+    if (!Number.isFinite(id) || id <= 0) continue
+    const old = stage[String(id)]
+    const oldName = typeof old?.name === 'string' ? old.name.trim() : ''
+    const oldImg = stageImgPath(old?.imagePath ?? old?.imageFile)
+    const name = typeof row.name === 'string' && row.name.trim() ? row.name.trim() : oldName || `Stage ${id}`
+    const imagePath = stageImgPath(row.imagePath ?? row.imageFile) ?? oldImg
+    const next = { ...old }
+    let rowDirty = false
+    if (next.name !== name) {
+      next.name = name
+      rowDirty = true
+    }
+    if ((next.imagePath ?? null) !== imagePath) {
+      next.imagePath = imagePath
+      rowDirty = true
+    }
+    if (!rowDirty) continue
+    stage[String(id)] = next
+    dirty = true
+  }
+  return dirty ? { ...allItems, stage: stage } : allItems
+}
+
+function buildPaginationItems(current: number, total: number): (number | 'ellipsis')[] {
+  if (total <= 1) return []
+  if (total <= 9) return Array.from({ length: total }, (_, i) => i)
+  const want = new Set<number>()
+  want.add(0)
+  want.add(total - 1)
+  for (let d = -2; d <= 2; d++) {
+    const p = current + d
+    if (p >= 0 && p < total) want.add(p)
+  }
+  const sorted = [...want].sort((a, b) => a - b)
+  const out: (number | 'ellipsis')[] = []
+  for (let i = 0; i < sorted.length; i++) {
+    const cur = sorted[i]!
+    if (i > 0 && cur > sorted[i - 1]! + 1) out.push('ellipsis')
+    out.push(cur)
+  }
+  return out
+}
+
+function isWidePreviewField(field: string): boolean {
+  // 称号牌是 592×62 的横幅，跟名牌/舞台一样按宽预览排版
+  return field === 'nameplateId' || field === 'stageId' || TEXT_ONLY_PREVIEW_FIELDS.has(field)
+}
+
+type Chu3CollectibleLoad = {
+  lockedRows: Chu3UserboxSelectRow[]
+  catalogBundle: Chu3CatalogBundle
+  user: Record<string, unknown>
+  draft: Record<string, number>
+  allItems: Chu3AllItems
+  lookups: Chu3NameLookups
+  ownedCharacters: number[]
+  ownedCharacterLvs: Record<number, number>
+  mateRows: Chu3UserMateRow[]
+}
+
+type Chu3TrophyCondition = {
+  type?: number
+  musicId?: number
+  musicName?: string
+  musicDifId?: number
+  musicDif?: string
+  scoreRankId?: number
+  scoreRank?: string
+  fullCombo?: boolean
+  fullChain?: boolean
+  allJustice?: boolean
+  targetCharaId?: number
+  targetCharaName?: string
+  targetRank?: number
+  releaseTagId?: number
+  releaseTag?: string
+}
+
+/**
+ * 把一条结构化达成条件拍成一行人话。
+ *
+ * 条件是分片里的原始结构，字段大多是「没有就是 -1 / 空串 / Invalid」，
+ * 逐个挑出有意义的拼起来，全空就返回空串让调用方跳过这一条。
+ */
+function trophyConditionText(cond: Chu3TrophyCondition): string {
+  const parts: string[] = []
+  const music = cleanText(cond.musicName)
+  if (music) {
+    const dif = cleanText(cond.musicDif)
+    parts.push(dif ? `${music} / ${dif}` : music)
+  }
+  const rank = cleanText(cond.scoreRank)
+  if (rank) parts.push(rank)
+  if (cond.allJustice) parts.push('ALL JUSTICE')
+  else if (cond.fullChain) parts.push('FULL CHAIN')
+  else if (cond.fullCombo) parts.push('FULL COMBO')
+
+  const chara = cleanText(cond.targetCharaName)
+  if (chara) {
+    const rk = typeof cond.targetRank === 'number' && cond.targetRank > 0 ? ` RANK ${cond.targetRank}` : ''
+    parts.push(`${chara}${rk}`)
+  }
+  const tag = cleanText(cond.releaseTag)
+  if (tag) parts.push(tag)
+  return parts.join(' · ')
+}
+
+type Chu3MateReward = {
+  rewardId?: number | string
+  level?: number | string
+  itemId?: number | string
+  itemName?: string
+}
+
+type Chu3MateMeta = {
+  name?: string
+  charaId?: number | string
+  charaName?: string
+  systemVoiceId?: number | string
+  version?: string
+  netOpenName?: string
+  rewards?: Chu3MateReward[]
+  [key: string]: unknown
+}
+
+type Chu3CharacterMeta = {
+  name?: string
+  worksId?: number | string
+  worksName?: string
+  illustratorId?: number | string
+  illustratorName?: string
+  rareType?: number | string
+  ranking?: boolean | number | string
+  defaultImageId?: number | string
+  defaultImageName?: string
+  addImages?: string
+  addImageList?: Array<Record<string, unknown>>
+  rankRewards?: Array<Record<string, unknown>>
+  [key: string]: unknown
+}
+
+function text(v: unknown): string {
+  return typeof v === 'string' ? v.trim() : v == null ? '' : String(v)
+}
+
+function cleanText(v: unknown): string {
+  const s = text(v)
+  if (!s) return ''
+  if (s === 'Invalid' || s === '-1' || s === 'null' || s === 'undefined') return ''
+  return s
+}
+
+function rewardText(v: unknown): string {
+  const s = cleanText(v)
+  if (!s) return ''
+  if (s.includes('[OTHER]')) return ''
+  if (s.includes('限界突破の証')) return ''
+  return s
+}
+
+/**
+ * mate.json wins over all-items.json here. all-items.json is ~14 MB and rewritten in place on
+ * every asset build, so a cached edge copy can lag a rebuild by a long time and silently drop
+ * every mate field; mate.json is tiny, newly added, and already fetched for the name lookups.
+ */
+function buildMateMetaMap(
+  allItems: Chu3AllItems,
+  mateRowsJson: Chu3MateJsonEntry[],
+): Record<number, Chu3MateMeta> {
+  const out: Record<number, Chu3MateMeta> = {}
+  const raw = allItems.mate as Record<string, Chu3MateMeta> | undefined
+  if (raw) {
+    for (const [id, row] of Object.entries(raw)) {
+      const num = parseInt(id, 10)
+      if (!Number.isNaN(num)) out[num] = row
+    }
+  }
+  for (const row of mateRowsJson) {
+    if (!Number.isFinite(row.id)) continue
+    out[row.id] = { ...out[row.id], ...row }
+  }
+  return out
+}
+
+function buildCharaMetaMap(allItems: Chu3AllItems): Record<number, Chu3CharacterMeta> {
+  const raw = allItems.chara as Record<string, Chu3CharacterMeta> | undefined
+  const out: Record<number, Chu3CharacterMeta> = {}
+  if (!raw) return out
+  for (const [id, row] of Object.entries(raw)) {
+    const num = parseInt(id, 10)
+    if (!Number.isNaN(num)) out[num] = row
+  }
+  return out
+}
+
+export function CollectiblesPage() {
+  const texts = useAppTexts()
+  const toast = useToast()
+  const [unlockAll, setUnlockAll] = useState(() => localStorage.getItem(UNLOCK_ALL_STORAGE_KEY) === '1')
+  const [lockedRows, setLockedRows] = useState<Chu3UserboxSelectRow[]>([])
+  const [catalogBundle, setCatalogBundle] = useState<Chu3CatalogBundle | null>(null)
+  const [user, setUser] = useState<Record<string, unknown>>({})
+  const [draft, setDraft] = useState<Record<string, number>>(() => draftFromUser({}))
+  const [allItems, setAllItems] = useState<Chu3AllItems>({})
+  const [lookups, setLookups] = useState<Chu3NameLookups | null>(null)
+  const [ownedCharacters, setOwnedCharacters] = useState<number[]>([])
+  const [ownedCharacterLvs, setOwnedCharacterLvs] = useState<Record<number, number>>({})
+  const [mateRows, setMateRows] = useState<Chu3UserMateRow[]>([])
+  const [charaDetail, setCharaDetail] = useState<Record<number, Chu3DetailRow>>({})
+  // 称号的达成条件（explainText）只存在于 detail/trophy-N.json 分片里，
+  // 列表文件不带——用到哪些 id 就拉哪几个分片。
+  const [trophyDetail, setTrophyDetail] = useState<Record<number, Chu3DetailRow>>({})
+  const [err, setErr] = useState<string | null>(null)
+  const [modalField, setModalField] = useState<string | null>(null)
+  const [modalPage, setModalPage] = useState(0)
+  const [modalSearch, setModalSearch] = useState('')
+  const [charaWorksFilter, setCharaWorksFilter] = useState('')
+  const [charaLv, setCharaLv] = useState('1')
+  const [customIdEnabled, setCustomIdEnabled] = useState(false)
+  const [customIdInput, setCustomIdInput] = useState('')
+  const [customCharacterLv, setCustomCharacterLv] = useState('1')
+  const [pickedCharaId, setPickedCharaId] = useState<number | null>(null)
+  const [unlockingCharaId, setUnlockingCharaId] = useState<number | null>(null)
+  const [saving, setSaving] = useState(false)
+  const keepDraftRef = useRef(false)
+  const pendingCharaIdRef = useRef<number | null>(null)
+
+  const deferredSearch = useDeferredValue(modalSearch.trim().toLowerCase())
+
+  const label = useCallback(
+    (field: string) => texts.collectibles.fieldLabels[field as keyof typeof texts.collectibles.fieldLabels] ?? field,
+    [texts],
+  )
+
+  const effectiveUser = useMemo(() => {
+    const o: Record<string, unknown> = { ...user }
+    for (const f of COLLECTIBLES_FIELD_ORDER) {
+      o[f] = draft[f]
+    }
+    return o
+  }, [user, draft])
+
+  const hasDirty = useMemo(
+    () => COLLECTIBLES_FIELD_ORDER.some((f) => numFromUser(user, f) !== draft[f]),
+    [user, draft],
+  )
+
+  const displayRows = useMemo((): Chu3UserboxSelectRow[] => {
+    const base: Chu3UserboxSelectRow[] =
+      unlockAll && catalogBundle
+        ? COLLECTIBLES_FIELD_ORDER.map((f) => {
+            const key = CHU3_FIELD_ALL_ITEMS_KEY[f]
+            const options = buildChu3CatalogOptions(f, catalogBundle, allItems)
+            let row: Chu3UserboxSelectRow = { field: f, allItemsKey: key, options }
+            row = withEquippedIfMissing(row, numFromUser(effectiveUser, f), allItems)
+            return row
+          })
+        : lockedRows
+    return base.map((row) =>
+      withEquippedIfMissing(row, numFromUser(effectiveUser, row.field), allItems),
+    )
+  }, [unlockAll, catalogBundle, lockedRows, allItems, effectiveUser])
+
+  const loadQuery = useQuery<Chu3CollectibleLoad>({
+    queryKey: qk.collectiblesChu3,
+    placeholderData: (old) => old,
+    queryFn: async () => {
+      // 不再下 all-items.json：那 14 MB 里每一类都和下面这些分类文件重复，
+      // 同一批数据下了两遍。就地用 bundle 拼出同样的结构即可。
+      const [box, bundle, stageRows] = await Promise.all([
+        gameApi.userBox(),
+        loadChu3CatalogBundle(),
+        loadChu3StageCatalog(),
+      ])
+      const items = (box.items ?? []) as Chu3UserItem[]
+      const u = (box.user ?? {}) as Record<string, unknown>
+      const rawChars = (box as { characters?: unknown }).characters
+      const rawCharaRows = (box as { characterRows?: unknown }).characterRows
+      const charIds: number[] = Array.isArray(rawChars)
+        ? rawChars
+            .map((x) => (typeof x === 'number' ? x : parseInt(String(x), 10)))
+            .filter((n) => !Number.isNaN(n))
+        : []
+      const charaLvs: Record<number, number> = {}
+      if (Array.isArray(rawCharaRows)) {
+        for (const one of rawCharaRows) {
+          const row = one as { characterId?: unknown; level?: unknown }
+          const charaId = typeof row.characterId === 'number' ? row.characterId : parseInt(String(row.characterId), 10)
+          const lv = typeof row.level === 'number' ? row.level : parseInt(String(row.level), 10)
+          if (!Number.isNaN(charaId) && charaId > 0 && !Number.isNaN(lv)) {
+            charaLvs[charaId] = lv
+          }
+        }
+      }
+      const rawMateRows = (box as { mateRows?: unknown }).mateRows
+      const mateRows: Chu3UserMateRow[] = Array.isArray(rawMateRows)
+        ? rawMateRows
+            .map((one) => {
+              const row = one as Record<string, unknown>
+              const num = (v: unknown) => {
+                const n = typeof v === 'number' ? v : parseInt(String(v), 10)
+                return Number.isNaN(n) ? 0 : n
+              }
+              return {
+                mateId: num(row.mateId),
+                friendshipLevel: num(row.friendshipLevel),
+                totalFriendshipExp: num(row.totalFriendshipExp),
+                enterGardenCount: num(row.enterGardenCount),
+                playCount: num(row.playCount),
+              }
+            })
+            .filter((r) => r.mateId > 0)
+        : []
+      const equippedChar = numFromUser(u, 'characterId')
+      const ai = mergeStageItems(bundleToAllItems(bundle, stageRows), stageRows)
+      return {
+        allItems: ai,
+        user: u,
+        catalogBundle: bundle,
+        lookups: bundleToLookups(bundle),
+        lockedRows: buildAllCollectibleRows(items, charIds, equippedChar, ai, u, mateRows),
+        draft: draftFromUser(u),
+        ownedCharacters: charIds,
+        ownedCharacterLvs: charaLvs,
+        mateRows,
+      }
+    },
+  })
+
+  useEffect(() => {
+    if (!loadQuery.data) return
+    setAllItems(loadQuery.data.allItems)
+    setUser(loadQuery.data.user)
+    setCatalogBundle(loadQuery.data.catalogBundle)
+    setLookups(loadQuery.data.lookups)
+    setOwnedCharacters(loadQuery.data.ownedCharacters)
+    setOwnedCharacterLvs(loadQuery.data.ownedCharacterLvs)
+    setMateRows(loadQuery.data.mateRows)
+    setLockedRows(loadQuery.data.lockedRows)
+    setDraft((oldDraft) => {
+      if (!keepDraftRef.current) return loadQuery.data.draft
+      const nextDraft = { ...loadQuery.data.draft, ...oldDraft }
+      if (pendingCharaIdRef.current != null) nextDraft.characterId = pendingCharaIdRef.current
+      keepDraftRef.current = false
+      pendingCharaIdRef.current = null
+      return nextDraft
+    })
+    pendingCharaIdRef.current = null
+  }, [loadQuery.data])
+
+  const favorites = useChu3Favorites()
+
+  // 角色喜爱是 chusan_user_favorite 里 kind=3 的行，和「当前选择」无关：
+  // 可以同时喜爱多个，游戏在喜爱角色列表里读它。
+  const toggleCharaFavorite = useCallback(
+    async (characterId: number, name: string) => {
+      try {
+        const isAdd = await favorites.toggle(CHU3_FAV_CHARACTER, characterId)
+        if (isAdd == null) return
+        toast.add({
+          title: isAdd ? texts.collectibles.favoriteAdded : texts.collectibles.favoriteRemoved,
+          description: texts.collectibles.favoriteDesc(name, isAdd),
+          variant: 'success',
+        })
+      } catch (e) {
+        toast.add({
+          title: texts.collectibles.favoriteFailed,
+          description: e instanceof Error ? e.message : texts.collectibles.favoriteFailed,
+          variant: 'error',
+        })
+      }
+    },
+    [favorites, texts.collectibles, toast],
+  )
+
+  const ownedCharacterSet = useMemo(() => new Set(ownedCharacters), [ownedCharacters])
+  const pickedCharaLv = pickedCharaId != null ? (ownedCharacterLvs[pickedCharaId] ?? 1) : 1
+  const pickedCharaOwned = pickedCharaId != null && ownedCharacterSet.has(pickedCharaId)
+  const pickedCharaName =
+    pickedCharaId != null
+      ? resolveCollectibleName('characterId', pickedCharaId, allItems, lookups)
+      : null
+
+  const activeRow = useMemo(
+    () => (modalField ? displayRows.find((r) => r.field === modalField) ?? null : null),
+    [displayRows, modalField],
+  )
+
+  const pickerOptionsFull = useMemo(() => activeRow?.options ?? [], [activeRow])
+  const charaMetaMap = useMemo(() => buildCharaMetaMap(allItems), [allItems])
+  const mateMetaMap = useMemo(
+    () => buildMateMetaMap(allItems, catalogBundle?.mate ?? []),
+    [allItems, catalogBundle],
+  )
+  const mateOwnedMap = useMemo(() => {
+    const m: Record<number, Chu3UserMateRow> = {}
+    for (const r of mateRows) m[r.mateId] = r
+    return m
+  }, [mateRows])
+  // 等级奖励等重字段不在 character.json 里，点开某个角色时才拉它所在的分片。
+  useEffect(() => {
+    const id = pickedCharaId
+    if (id == null || !Number.isFinite(id) || id < 0) return
+    if (charaDetail[id] !== undefined) return
+    // 老格式的资源包把 rankRewards 直接放在列表行里，就不用再拉了
+    if (charaMetaMap[id]?.rankRewards !== undefined) return
+    let alive = true
+    void fetchChu3DetailRow('chara', id).then((row) => {
+      if (alive) setCharaDetail((m) => ({ ...m, [id]: row ?? {} }))
+    })
+    return () => {
+      alive = false
+    }
+  }, [pickedCharaId, charaDetail, charaMetaMap])
+
+  const selectedCharaMeta = useMemo((): Chu3CharacterMeta | null => {
+    if (pickedCharaId == null) return null
+    const base = charaMetaMap[pickedCharaId]
+    const extra = charaDetail[pickedCharaId]
+    if (!base && !extra) return null
+    return { ...(base ?? {}), ...(extra ?? {}) }
+  }, [pickedCharaId, charaMetaMap, charaDetail])
+  const validAddImages = useMemo(() => {
+    if (!Array.isArray(selectedCharaMeta?.addImageList)) return [] as string[]
+    return selectedCharaMeta.addImageList
+      .map((one) => cleanText(one.charaName) || cleanText(one.imageName) || cleanText(one.imageId))
+      .filter((one) => !!one)
+  }, [selectedCharaMeta])
+  const validRankRewards = useMemo(() => {
+    if (!Array.isArray(selectedCharaMeta?.rankRewards)) return [] as Array<{ lv: string; reward: string }>
+    return selectedCharaMeta.rankRewards
+      .map((one) => ({
+        lv: cleanText(one.index),
+        reward: rewardText(one.rewardSkillSeedName),
+      }))
+      .filter((one) => !!one.reward)
+  }, [selectedCharaMeta])
+  // 称号选择器点一下就装备，所以详情面板讲的是当前装备的那个。
+  const selectedTrophyId = TROPHY_FIELDS.has(activeRow?.field ?? '')
+    ? numFromUser(effectiveUser, activeRow?.field ?? '')
+    : 0
+
+  // 达成条件和获得说明不在 trophy.json 里（8093 条条件有 4.5 MB），点开才拉分片。
+  useEffect(() => {
+    const id = selectedTrophyId
+    if (id <= 0) return
+    if (trophyDetail[id] !== undefined) return
+    let alive = true
+    void fetchChu3DetailRow('trophy', id).then((row) => {
+      if (alive) setTrophyDetail((m) => ({ ...m, [id]: row ?? {} }))
+    })
+    return () => {
+      alive = false
+    }
+  }, [selectedTrophyId, trophyDetail])
+
+  const selectedTrophy = useMemo(() => {
+    if (selectedTrophyId <= 0) return null
+    const detail = trophyDetail[selectedTrophyId] as
+      | { conditionList?: Chu3TrophyCondition[]; explainText?: string }
+      | undefined
+    const rows = Array.isArray(detail?.conditionList) ? detail.conditionList : []
+    return {
+      id: selectedTrophyId,
+      name: resolveCollectibleName(activeRow?.field ?? '', selectedTrophyId, allItems, lookups),
+      meta: trophyMetaOf(allItems, selectedTrophyId),
+      explainText: cleanText(detail?.explainText),
+      conditions: rows.map(trophyConditionText).filter((x) => !!x),
+      loading: detail === undefined,
+    }
+  }, [selectedTrophyId, trophyDetail, allItems, lookups, activeRow?.field])
+
+  // The mate picker equips on click, so the detail panel describes whatever is equipped right now.
+  const selectedMateId = activeRow?.field === 'mateId' ? numFromUser(effectiveUser, 'mateId') : 0
+  const selectedMateMeta = selectedMateId > 0 ? mateMetaMap[selectedMateId] ?? null : null
+  const selectedMateOwned = selectedMateId > 0 ? mateOwnedMap[selectedMateId] ?? null : null
+  const selectedMateName =
+    selectedMateId > 0
+      ? resolveCollectibleName('mateId', selectedMateId, allItems, lookups, texts.collectibles.mateNone)
+      : null
+  const selectedMateRewards = useMemo(() => {
+    if (!Array.isArray(selectedMateMeta?.rewards)) return [] as Array<{ lv: string; reward: string }>
+    return selectedMateMeta.rewards
+      .map((one) => ({ lv: cleanText(one.level), reward: rewardText(one.itemName) }))
+      .filter((one) => !!one.reward)
+  }, [selectedMateMeta])
+  const charaWorksList = useMemo(() => {
+    if (activeRow?.field !== 'characterId') return [] as string[]
+    const set = new Set<string>()
+    Object.values(charaMetaMap).forEach((meta) => {
+      const works = cleanText(meta?.worksName)
+      if (works) set.add(works)
+    })
+    return [...set].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+  }, [activeRow?.field, charaMetaMap])
+  const filteredOptions = useMemo(() => {
+    return pickerOptionsFull.filter((o) => {
+      const charaMeta = activeRow?.field === 'characterId' ? charaMetaMap[o.itemId] : null
+      if (activeRow?.field === 'characterId') {
+        if (charaWorksFilter && cleanText(charaMeta?.worksName) !== charaWorksFilter) return false
+      }
+      if (!deferredSearch) return true
+      const extra =
+        activeRow?.field === 'characterId'
+          ? `${cleanText(charaMeta?.worksName)} ${cleanText(charaMeta?.illustratorName)} ${cleanText(charaMeta?.defaultImageName)}`
+          : activeRow?.field === 'mateId'
+            ? cleanText(mateMetaMap[o.itemId]?.charaName)
+            : ''
+      return (
+        o.name.toLowerCase().includes(deferredSearch) ||
+        String(o.itemId).includes(deferredSearch) ||
+        extra.toLowerCase().includes(deferredSearch)
+      )
+    })
+  }, [pickerOptionsFull, deferredSearch, activeRow?.field, charaMetaMap, mateMetaMap, charaWorksFilter])
+
+  const pageSize =
+    activeRow && chu3CollectibleHasImage(activeRow.field)
+      ? 12
+      : activeRow && ['trophyId', 'trophyIdSub1', 'trophyIdSub2'].includes(activeRow.field)
+        ? 24
+        : 20
+
+  const totalPages = Math.max(1, Math.ceil(filteredOptions.length / pageSize))
+  const safePage = Math.min(modalPage, totalPages - 1)
+  const pageSlice = filteredOptions.slice(safePage * pageSize, safePage * pageSize + pageSize)
+
+  /**
+   * 需要达成条件的称号 id：当前佩戴的三个 + 弹窗当前页可见的那些。
+   * 分片按 id/1000 切且已按文件名缓存，同页 id 连续，实际只会下一两个分片。
+   */
+  const wantedTrophyIds = useMemo(() => {
+    const ids = new Set<number>()
+    for (const f of CHU3_TROPHY_FIELDS) {
+      const id = numFromUser(effectiveUser, f)
+      if (id > 0) ids.add(id)
+    }
+    if (activeRow && TEXT_ONLY_PREVIEW_FIELDS.has(activeRow.field)) {
+      for (const o of pageSlice) if (o.itemId > 0) ids.add(o.itemId)
+    }
+    return [...ids]
+  }, [effectiveUser, activeRow, pageSlice])
+
+  useEffect(() => {
+    const missing = wantedTrophyIds.filter((id) => trophyDetail[id] === undefined)
+    if (!missing.length) return
+    let alive = true
+    void Promise.all(
+      missing.map(async (id) => [id, (await fetchChu3DetailRow('trophy', id)) ?? {}] as const),
+    ).then((rows) => {
+      if (alive) setTrophyDetail((m) => ({ ...m, ...Object.fromEntries(rows) }))
+    })
+    return () => {
+      alive = false
+    }
+  }, [wantedTrophyIds, trophyDetail])
+
+  const trophyConditionOf = useCallback(
+    (itemId: number): string => cleanText(trophyDetail[itemId]?.explainText),
+    [trophyDetail],
+  )
+  const equippedId = modalField ? numFromUser(effectiveUser, modalField) : 0
+
+  useEffect(() => {
+    setModalPage(0)
+  }, [modalField, deferredSearch, pageSize])
+
+  useEffect(() => {
+    if (!modalField) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [modalField])
+
+  useEffect(() => {
+    if (!modalField) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setModalField(null)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [modalField])
+
+  function openModal(field: string) {
+    setModalSearch('')
+    setModalPage(0)
+    setCharaWorksFilter('')
+    setCustomIdEnabled(false)
+    const currentId = draft[field] ?? numFromUser(user, field)
+    setCustomIdInput(currentId > 0 ? String(currentId) : '')
+    if (field === 'characterId') {
+      const curCharaId = draft.characterId || numFromUser(user, 'characterId')
+      setPickedCharaId(curCharaId > 0 ? curCharaId : null)
+      const currentLv = curCharaId > 0 ? (ownedCharacterLvs[curCharaId] ?? 1) : 1
+      setCharaLv(String(currentLv))
+      setCustomCharacterLv(String(currentLv))
+    } else {
+      setPickedCharaId(null)
+      setCustomCharacterLv('1')
+    }
+    setModalField(field)
+  }
+
+  const closeModal = useCallback(() => {
+    setModalField(null)
+    setPickedCharaId(null)
+    setCharaWorksFilter('')
+    setCustomIdEnabled(false)
+    setCustomIdInput('')
+    setCustomCharacterLv('1')
+  }, [])
+
+  const onUnlockAllChange = (on: boolean) => {
+    setUnlockAll(on)
+    localStorage.setItem(UNLOCK_ALL_STORAGE_KEY, on ? '1' : '0')
+  }
+
+  const selectDraftItem = useCallback((field: string, itemId: number) => {
+    setDraft((d) => ({ ...d, [field]: itemId }))
+    closeModal()
+  }, [closeModal])
+
+  const applyPickedChara = useCallback(async (characterId: number, isOwned: boolean) => {
+    const level = Math.min(999, Math.max(1, parseInt(charaLv, 10) || 1))
+    setUnlockingCharaId(characterId)
+    setErr(null)
+    try {
+      if (!isOwned) {
+        await gameApi.unlockChu3Character(characterId, level)
+        keepDraftRef.current = true
+        pendingCharaIdRef.current = characterId
+        setOwnedCharacters((list) => (list.includes(characterId) ? list : [...list, characterId]))
+        setOwnedCharacterLvs((map) => ({ ...map, [characterId]: level }))
+        setDraft((d) => ({ ...d, characterId }))
+        closeModal()
+        await loadQuery.refetch()
+        toast.add({
+          title: texts.collectibles.characterUnlocked(level),
+          description: texts.collectibles.saveToApply,
+          variant: 'success',
+        })
+        return
+      }
+
+      const oldLv = ownedCharacterLvs[characterId] ?? 1
+      if (oldLv !== level) {
+        await gameApi.unlockChu3Character(characterId, level)
+        setOwnedCharacterLvs((map) => ({ ...map, [characterId]: level }))
+      }
+      setDraft((d) => ({ ...d, characterId }))
+      closeModal()
+      toast.add({
+        title:
+          oldLv === level
+            ? texts.collectibles.characterSelected
+            : texts.collectibles.characterUpdated(level),
+        description: texts.collectibles.saveToApply,
+        variant: 'success',
+      })
+    } catch (e) {
+      keepDraftRef.current = false
+      pendingCharaIdRef.current = null
+      setErr(e instanceof Error ? e.message : texts.collectibles.characterUpdateFailed)
+    } finally {
+      setUnlockingCharaId(null)
+    }
+  }, [charaLv, closeModal, loadQuery, ownedCharacterLvs, texts.collectibles, toast])
+
+  const pickCharacter = useCallback((characterId: number) => {
+    if (characterId <= 0) {
+      selectDraftItem('characterId', characterId)
+      return
+    }
+    setPickedCharaId(characterId)
+    setCharaLv(String(ownedCharacterLvs[characterId] ?? 1))
+    setCustomIdInput(String(characterId))
+    setCustomCharacterLv(String(ownedCharacterLvs[characterId] ?? 1))
+  }, [ownedCharacterLvs, selectDraftItem])
+
+  const selectCollectible = useCallback(async (field: string, itemId: number) => {
+    if (field === 'characterId') {
+      pickCharacter(itemId)
+      return
+    }
+    selectDraftItem(field, itemId)
+  }, [pickCharacter, selectDraftItem])
+
+  const applyCustomCollectibleId = useCallback(async () => {
+    if (!modalField) return
+    const customId = parseInt(customIdInput, 10)
+    if (!Number.isFinite(customId) || customId < 0) {
+      setErr(texts.collectibles.invalidCustomId)
+      return
+    }
+    if (modalField === 'characterId') {
+      if (customId <= 0) {
+        setErr(texts.collectibles.invalidCharacterId)
+        return
+      }
+      const level = Math.min(999, Math.max(1, parseInt(customCharacterLv, 10) || 1))
+      setUnlockingCharaId(customId)
+      setErr(null)
+      try {
+        await gameApi.unlockChu3Character(customId, level)
+        keepDraftRef.current = true
+        pendingCharaIdRef.current = customId
+        setOwnedCharacters((list) => (list.includes(customId) ? list : [...list, customId]))
+        setOwnedCharacterLvs((map) => ({ ...map, [customId]: level }))
+        setDraft((d) => ({ ...d, characterId: customId }))
+        closeModal()
+        await loadQuery.refetch()
+        toast.add({
+          title: texts.collectibles.characterRegistered(level),
+          description: texts.collectibles.saveToApply,
+          variant: 'success',
+        })
+      } catch (e) {
+        keepDraftRef.current = false
+        pendingCharaIdRef.current = null
+        setErr(e instanceof Error ? e.message : texts.collectibles.characterUpdateFailed)
+      } finally {
+        setUnlockingCharaId(null)
+      }
+      return
+    }
+    setErr(null)
+    setDraft((d) => ({ ...d, [modalField]: customId }))
+    closeModal()
+  }, [
+    closeModal,
+    customCharacterLv,
+    customIdInput,
+    loadQuery,
+    modalField,
+    texts.collectibles,
+    toast,
+  ])
+
+  const applyCharacterChoice = useCallback(async () => {
+    if (pickedCharaId == null) return
+    if (pickedCharaId <= 0) {
+      selectDraftItem('characterId', pickedCharaId)
+      return
+    }
+    await applyPickedChara(pickedCharaId, ownedCharacterSet.has(pickedCharaId))
+  }, [applyPickedChara, ownedCharacterSet, pickedCharaId, selectDraftItem])
+
+  const saveCollectibles = useCallback(async () => {
+    if (!hasDirty) return
+    const nextChara = draft.characterId
+    const prevChara = numFromUser(user, 'characterId')
+    if (nextChara !== prevChara && nextChara > 0 && !ownedCharacterSet.has(nextChara)) {
+      setErr(texts.collectibles.unlockCharacterBeforeSave)
+      return
+    }
+    setSaving(true)
+    setErr(null)
+    try {
+      for (const f of COLLECTIBLES_FIELD_ORDER) {
+        const next = draft[f]
+        const prev = numFromUser(user, f)
+        if (next !== prev) {
+          await detailSet('chu3', f, String(next))
+        }
+      }
+      await loadQuery.refetch()
+      toast.add({
+        title: texts.common.saved,
+        variant: 'success',
+      })
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : texts.collectibles.saveFailed)
+    } finally {
+      setSaving(false)
+    }
+  }, [hasDirty, draft, user, texts.collectibles, texts.common.saved, toast, loadQuery, ownedCharacterSet])
+
+  const pageItems = useMemo(
+    () => buildPaginationItems(safePage, totalPages),
+    [safePage, totalPages],
+  )
+
+  const loadErr =
+    loadQuery.error instanceof Error
+      ? loadQuery.error.message
+      : loadQuery.error
+        ? texts.common.loadingFailed
+        : null
+
+  if (loadQuery.isPending && !loadQuery.data) {
+    return (
+      <div className="pb-10">
+        <PageHeader title={texts.nav.collectibles} crumbs={[{ label: texts.nav.home, href: '/home' }]} />
+        <div className="mb-6 flex max-w-md flex-col gap-3">
+          <SkeletonBox className="h-11 w-56 rounded-lg" />
+          <SkeletonBox className="h-10 w-24 rounded-lg" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="border-app-line bg-app-base flex flex-col overflow-hidden rounded-lg border shadow-sm"
+            >
+              <div className="border-app-line bg-app-tint border-b px-3 py-2.5 text-center">
+                <SkeletonBox className="mx-auto h-4 w-24 rounded-md" />
+              </div>
+              <div className="flex flex-1 flex-col gap-3 p-3">
+                <SkeletonBox className="h-10 w-full rounded-lg" />
+                <SkeletonBox className="aspect-square w-full rounded-xl" />
+                <SkeletonBox className="h-9 w-full rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="pb-10">
+      <PageHeader title={texts.nav.collectibles} crumbs={[{ label: texts.nav.home, href: '/home' }]} />
+
+      <div className="mb-6 flex max-w-md flex-col gap-3">
+        <LabeledSwitch label={texts.collectibles.unlockAll} checked={unlockAll} onChange={onUnlockAllChange} />
+        <Button disabled={!hasDirty || saving} onClick={() => void saveCollectibles()}>
+          {texts.collectibles.save}
+        </Button>
+      </div>
+
+      {err || loadErr ? (
+        <Text className="text-app-danger mb-4 text-sm">{err ?? loadErr}</Text>
+      ) : null}
+
+      <section>
+        <h2 className="text-app-default mb-3 text-lg font-semibold">
+          {texts.collectibles.equipped}
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {displayRows.map((row) => {
+            const cur = numFromUser(effectiveUser, row.field)
+            const name = resolveCollectibleName(row.field, cur, allItems, lookups, texts.collectibles.mateNone)
+            const img = chu3CollectibleImageUrl(row.field, cur, allItems)
+            const hasImg = chu3CollectibleHasImage(row.field)
+            const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(row.field)
+            const emptyUnlocks = row.options.length === 0
+            const isCharacter = row.field === 'characterId'
+            const isWidePreview = isWidePreviewField(row.field)
+            const canChange = true
+            return (
+              <div
+                key={row.field}
+                className="border-app-line bg-app-base flex flex-col overflow-hidden rounded-lg border shadow-sm"
+              >
+                <div className="border-app-line bg-app-tint border-b px-3 py-2.5 text-center text-sm font-semibold text-app-default">
+                  {label(row.field)}
+                </div>
+                <div className="flex flex-1 flex-col gap-3 p-3">
+                  <div>
+                    <div className="text-app-default line-clamp-3 min-h-[2.75rem] text-sm font-medium">{name}</div>
+                    {!unlockAll && emptyUnlocks && cur === 0 ? (
+                      <div className="text-app-subtle mt-1 text-xs">
+                        {texts.collectibles.nothingUnlocked}
+                      </div>
+                    ) : null}
+                  </div>
+                  {/*
+                    预览区始终 flex-1：这样不管有没有图，「更改」按钮都被顶到卡片最底下，
+                    同一行的按钮才会齐平。图片不再套灰底边框，直接居中显示。
+                  */}
+                  <div
+                    className={`flex flex-1 items-center justify-center overflow-hidden ${
+                      isWidePreview
+                        ? 'min-h-[88px]'
+                        : isCharacter
+                          ? 'min-h-[180px]'
+                          : hasImg
+                            ? 'min-h-[120px]'
+                            : 'min-h-[48px]'
+                    }`}
+                  >
+                    {textOnly ? (
+                      <div className="flex w-full flex-col gap-2">
+                        <TrophyPlate itemId={cur} name={name} allItems={allItems} />
+                        {trophyConditionOf(cur) ? (
+                          <div className="text-app-subtle text-xs leading-snug">
+                            <span className="text-app-default font-medium">
+                              {texts.collectibles.trophyCondition}
+                            </span>
+                            ：{trophyConditionOf(cur)}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : img ? (
+                      <img
+                        src={img}
+                        crossOrigin={imgCross(img)}
+                        alt=""
+                        className={
+                          isWidePreview
+                            ? 'max-h-20 w-full object-contain object-center'
+                            : 'max-h-full max-w-full object-contain'
+                        }
+                        loading="lazy"
+                      />
+                    ) : null}
+                  </div>
+                  <Button
+                    className="mt-auto"
+                    size="small"
+                    type="primary"
+                    disabled={!canChange}
+                    onClick={() => openModal(row.field)}
+                  >
+                    {texts.collectibles.change}
+                  </Button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/*
+        换成 antd Modal：缩放淡入动画、ESC 关闭、焦点陷阱、背景滚动锁定都由它接管，
+        原来那套手写遮罩全部删掉。body 做成纵向 flex，让中间的列表区自己滚。
+      */}
+      <Modal
+        open={!!(modalField && activeRow)}
+        onCancel={closeModal}
+        title={activeRow ? label(activeRow.field) : ''}
+        footer={null}
+        centered
+        destroyOnHidden
+        width={{ xs: '100%', sm: '92%', lg: 960 }}
+        styles={{
+          body: {
+            padding: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: 'min(78vh, 760px)',
+          },
+        }}
+      >
+        {activeRow ? (
+          <>
+            <div className="border-app-line bg-app-base shrink-0 border-b px-4 py-3">
+              <div className={`grid items-end gap-3 ${activeRow.field === 'characterId' ? 'md:grid-cols-[minmax(0,1fr)_220px]' : ''}`}>
+                <label className="flex flex-col gap-1">
+                  <span className="text-app-subtle text-xs">
+                    {texts.collectibles.searchLabel}
+                  </span>
+                  <Input
+                    className="h-11"
+                    value={modalSearch}
+                    onChange={(e) => setModalSearch(e.target.value)}
+                    placeholder={texts.collectibles.searchPlaceholder}
+                    autoFocus
+                  />
+                </label>
+                {activeRow.field === 'characterId' ? (
+                  <label className="flex flex-col gap-1">
+                    <span className="text-app-subtle text-xs">{texts.collectibles.works}</span>
+                    <select
+                      value={charaWorksFilter}
+                      onChange={(e) => setCharaWorksFilter(e.target.value)}
+                      className="border-app-line bg-app-base h-11 rounded-xl border px-3 text-sm text-app-default"
+                      aria-label={texts.collectibles.worksFilter}
+                    >
+                      <option value="">{texts.collectibles.allWorks}</option>
+                      {charaWorksList.map((one) => (
+                        <option key={one} value={one}>
+                          {one}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+              </div>
+              <div className="mt-3 rounded-xl border border-app-border bg-app-recessed px-3 py-3">
+                <LabeledSwitch label={texts.collectibles.experimentalCustomId} checked={customIdEnabled} onChange={(checked) => setCustomIdEnabled(Boolean(checked))} />
+                {customIdEnabled ? (
+                  <div className={`mt-3 grid gap-3 ${activeRow.field === 'characterId' ? 'md:grid-cols-[minmax(0,1fr)_140px_auto]' : 'md:grid-cols-[minmax(0,1fr)_auto]'}`}>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-app-subtle text-xs">{texts.collectibles.customIdLabel}</span>
+                      <Input
+                        className="h-11"
+                        type="number"
+                        min={0}
+                        value={customIdInput}
+                        onChange={(e) => setCustomIdInput(e.target.value)}
+                        placeholder={texts.collectibles.customIdPlaceholder}
+                      />
+                    </label>
+                    {activeRow.field === 'characterId' ? (
+                      <label className="flex flex-col gap-1">
+                        <span className="text-app-subtle text-xs">{texts.collectibles.characterLevel}</span>
+                        <Input
+                          className="h-11"
+                          type="number"
+                          min={1}
+                          max={999}
+                          value={customCharacterLv}
+                          onChange={(e) => setCustomCharacterLv(e.target.value)}
+                        />
+                      </label>
+                    ) : null}
+                    <div className="flex items-end">
+                      <Button
+                        size="small"
+                        className="h-11 px-4"
+                        disabled={saving || unlockingCharaId != null}
+                        onClick={() => void applyCustomCollectibleId()}
+                      >
+                        {activeRow.field === 'characterId'
+                          ? texts.collectibles.registerCustomCharacter
+                          : texts.collectibles.applyCustomId}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="bg-app-recessed min-h-0 flex-1 overflow-y-auto px-4 py-4">
+              {activeRow.field === 'characterId' && pickedCharaId != null ? (
+                <div className="mb-4 rounded-xl border border-app-line bg-app-base p-4">
+                  <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
+                    <div className="bg-app-recessed mx-auto flex aspect-[4/5] w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-app-line">
+                      {(() => {
+                        const charaImg = chu3CollectibleImageUrl('characterId', pickedCharaId, allItems)
+                        return charaImg ? (
+                          <img
+                            src={charaImg}
+                            crossOrigin={imgCross(charaImg)}
+                            alt=""
+                            className="max-h-full max-w-full scale-[1.18] object-contain p-1"
+                          />
+                        ) : null
+                      })()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xl font-semibold text-app-default">{pickedCharaName}</div>
+                      <div className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                        <div>
+                          <span className="text-app-subtle">{texts.collectibles.works}: </span>
+                          <span>{cleanText(selectedCharaMeta?.worksName) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-app-subtle">{texts.collectibles.illustrator}: </span>
+                          <span>{cleanText(selectedCharaMeta?.illustratorName) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-app-subtle">ID: </span>
+                          <span>{pickedCharaId}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-[140px_minmax(0,1fr)] sm:items-end">
+                        <label className="flex flex-col gap-1">
+                          <Text className="text-sm">{texts.collectibles.characterLevel}</Text>
+                          <Input
+                            type="number"
+                            className="h-11"
+                            min={1}
+                            max={999}
+                            value={charaLv}
+                            onChange={(e) => setCharaLv(e.target.value)}
+                          />
+                        </label>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button
+                            size="small"
+                            className="h-11 px-4"
+                            disabled={saving || unlockingCharaId != null}
+                            onClick={() => void applyCharacterChoice()}
+                          >
+                            {pickedCharaOwned
+                              ? texts.collectibles.applyLevelAndSelect
+                              : texts.collectibles.unlockAndSelect}
+                          </Button>
+                          <Button
+                            size="small"
+                            className="h-11 px-4"
+                            // 后端要求先解锁：喜爱一个没拥有的角色，游戏那边会读到一条解析不出的条目。
+                            disabled={favorites.busy || !pickedCharaOwned}
+                            onClick={() =>
+                              void toggleCharaFavorite(pickedCharaId, pickedCharaName ?? String(pickedCharaId))
+                            }
+                          >
+                            {favorites.isBusy(CHU3_FAV_CHARACTER, pickedCharaId)
+                              ? texts.collectibles.favoriteWorking
+                              : favorites.charaSet.has(pickedCharaId)
+                                ? texts.collectibles.unfavorite
+                                : texts.collectibles.favorite}
+                          </Button>
+                          <Text className="text-sm self-center text-app-subtle">
+                            {pickedCharaOwned
+                              ? texts.collectibles.ownedLevel(pickedCharaLv)
+                              : texts.collectibles.locked}
+                          </Text>
+                        </div>
+                        <Text className="text-app-subtle text-sm sm:col-span-2">
+                          {texts.collectibles.favoriteCount(
+                            favorites.box.character.length,
+                            favorites.box.characterMax,
+                          )}
+                        </Text>
+                      </div>
+
+                      {validAddImages.length || validRankRewards.length ? (
+                        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                          {validAddImages.length ? (
+                            <div>
+                              <Text className="text-sm mb-2 font-medium">
+                                {texts.collectibles.additionalImages}
+                              </Text>
+                              <div className="space-y-1 text-sm text-app-subtle">
+                                {validAddImages.slice(0, 8).map((one, idx) => (
+                                  <div key={idx}>{one}</div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {validRankRewards.length ? (
+                            <div>
+                              <Text className="text-sm mb-2 font-medium">
+                                {texts.collectibles.rankRewards}
+                              </Text>
+                              <div className="space-y-1 text-sm text-app-subtle">
+                                {validRankRewards.slice(0, 8).map((one, idx) => (
+                                  <div key={idx}>
+                                    {texts.common.level} {one.lv || '?'} · {one.reward}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {selectedTrophy ? (
+                <div className="border-app-line bg-app-base mb-4 rounded-xl border p-4">
+                  <div className="mx-auto max-w-xl">
+                    <TrophyPlate itemId={selectedTrophy.id} name={selectedTrophy.name} allItems={allItems} />
+                  </div>
+                  <div className="mt-3 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                    <div>
+                      <span className="text-app-subtle">ID: </span>
+                      <span>{selectedTrophy.id}</span>
+                    </div>
+                    <div>
+                      <span className="text-app-subtle">{texts.collectibles.trophyRarity}: </span>
+                      <span>{trophyRareLabel(selectedTrophy.meta.rareType)}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <Text className="mb-2 text-sm font-medium">
+                      {texts.collectibles.trophyCondition}
+                    </Text>
+                    {selectedTrophy.loading ? (
+                      <SkeletonBox className="h-4 w-48 rounded-md" />
+                    ) : selectedTrophy.explainText || selectedTrophy.conditions.length ? (
+                      <div className="text-app-subtle space-y-1 text-sm">
+                        {selectedTrophy.explainText ? (
+                          <div className="text-app-default">{selectedTrophy.explainText}</div>
+                        ) : null}
+                        {selectedTrophy.conditions.map((one, idx) => (
+                          <div key={idx}>· {one}</div>
+                        ))}
+                      </div>
+                    ) : (
+                      <Text className="text-app-subtle text-sm">
+                        {texts.collectibles.trophyNoCondition}
+                      </Text>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {activeRow.field === 'mateId' && selectedMateId > 0 && selectedMateId !== CHU3_MATE_NONE_ID ? (
+                <div className="mb-4 rounded-xl border border-app-line bg-app-base p-4">
+                  <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
+                    <div className="bg-app-recessed mx-auto flex aspect-square w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-app-line">
+                      {(() => {
+                        const mateImg = chu3CollectibleImageUrl('mateId', selectedMateId, allItems)
+                        return mateImg ? (
+                          <img
+                            src={mateImg}
+                            crossOrigin={imgCross(mateImg)}
+                            alt=""
+                            className="max-h-full max-w-full object-contain p-1"
+                          />
+                        ) : null
+                      })()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xl font-semibold text-app-default">{selectedMateName}</div>
+                      <div className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                        <div>
+                          <span className="text-app-subtle">ID: </span>
+                          <span>{selectedMateId}</span>
+                        </div>
+                        <div>
+                          <span className="text-app-subtle">{texts.collectibles.mateChara}: </span>
+                          <span>{cleanText(selectedMateMeta?.charaName) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-app-subtle">{texts.collectibles.mateSystemVoice}: </span>
+                          <span>{cleanText(selectedMateMeta?.systemVoiceId) || '—'}</span>
+                        </div>
+                        <div>
+                          <span className="text-app-subtle">{texts.collectibles.mateVersion}: </span>
+                          <span>{cleanText(selectedMateMeta?.netOpenName) || cleanText(selectedMateMeta?.version) || '—'}</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <Text className="text-sm mb-2 font-medium">
+                          {texts.collectibles.mateProgress}
+                        </Text>
+                        {selectedMateOwned ? (
+                          <div className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                            <div>
+                              <span className="text-app-subtle">{texts.collectibles.mateFriendshipLevel}: </span>
+                              <span>{selectedMateOwned.friendshipLevel ?? 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-app-subtle">{texts.collectibles.mateFriendshipExp}: </span>
+                              <span>{selectedMateOwned.totalFriendshipExp ?? 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-app-subtle">{texts.collectibles.mateGardenCount}: </span>
+                              <span>{selectedMateOwned.enterGardenCount ?? 0}</span>
+                            </div>
+                            <div>
+                              <span className="text-app-subtle">{texts.collectibles.matePlayCount}: </span>
+                              <span>{selectedMateOwned.playCount ?? 0}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <Text className="text-sm text-app-subtle">
+                            {texts.collectibles.mateNotOwned}
+                          </Text>
+                        )}
+                      </div>
+
+                      {selectedMateRewards.length ? (
+                        <div className="mt-4">
+                          <Text className="text-sm mb-2 font-medium">
+                            {texts.collectibles.mateRewards}
+                          </Text>
+                          <div className="grid gap-x-4 gap-y-1 text-sm text-app-subtle sm:grid-cols-2">
+                            {selectedMateRewards.map((one, idx) => (
+                              <div key={idx}>
+                                {texts.common.level} {one.lv || '?'} · {one.reward}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {filteredOptions.length === 0 ? (
+                <Text className="text-app-subtle text-sm">
+                  {texts.collectibles.noMatches}
+                </Text>
+              ) : (
+                <div
+                  className={
+                    chu3CollectibleHasImage(activeRow.field)
+                      ? isWidePreviewField(activeRow.field)
+                        ? 'grid grid-cols-1 gap-4 sm:grid-cols-2'
+                        : 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
+                      : 'grid grid-cols-1 gap-2 sm:grid-cols-2'
+                  }
+                >
+                  {pageSlice.map((o) => {
+                    const isEquipped = equippedId === o.itemId
+                    const isPicked = activeRow.field === 'characterId' && pickedCharaId === o.itemId
+                    const isOwnedCharacter = activeRow.field !== 'characterId' || ownedCharacterSet.has(o.itemId)
+                    const charaLvNow = activeRow.field === 'characterId' ? (ownedCharacterLvs[o.itemId] ?? 1) : 0
+                    const img = chu3CollectibleImageUrl(activeRow.field, o.itemId, allItems)
+                    const displayName = resolveCollectibleName(
+                      activeRow.field,
+                      o.itemId,
+                      allItems,
+                      lookups,
+                      texts.collectibles.mateNone,
+                    )
+                    const hasImg = chu3CollectibleHasImage(activeRow.field)
+                    const textOnly = TEXT_ONLY_PREVIEW_FIELDS.has(activeRow.field)
+                    const isCharacter = activeRow.field === 'characterId'
+                    const isWidePreview = isWidePreviewField(activeRow.field)
+                    return (
+                      <Button
+                        key={o.itemId}
+                        htmlType="button"
+                        disabled={saving || unlockingCharaId != null}
+                        onClick={() => void selectCollectible(activeRow.field, o.itemId)}
+                        className={`border-app-line !bg-app-base !text-app-default h-auto min-h-0 w-full flex-col items-stretch gap-0 overflow-hidden rounded-xl border p-0 text-left shadow-sm transition-colors hover:border-app-brand ${
+                          isPicked || isEquipped ? 'ring-app-brand ring-2 ring-offset-2 ring-offset-app-base' : ''
+                        }`}
+                      >
+                        <div className="text-app-default border-app-line line-clamp-2 border-b px-3 py-2.5 text-sm font-medium">
+                          {displayName}
+                        </div>
+                        {activeRow.field === 'characterId' ? (
+                          <div className="border-app-line flex flex-wrap items-center gap-2 border-b px-3 py-2">
+                            <span
+                              className={`rounded-md px-2 py-1 text-xs ${
+                                isOwnedCharacter
+                                  ? 'bg-app-success-tint text-app-success'
+                                  : 'bg-app-warning-tint text-app-warning'
+                              }`}
+                            >
+                              {isOwnedCharacter
+                                ? texts.collectibles.ownedLevel(charaLvNow)
+                                : unlockingCharaId === o.itemId
+                                  ? texts.collectibles.unlocking
+                                  : texts.collectibles.lockedClickToUnlock}
+                            </span>
+                            {favorites.charaSet.has(o.itemId) ? (
+                              <span className="rounded-md bg-amber-500/15 px-2 py-1 text-xs text-amber-700 dark:text-amber-300">
+                                ★ {texts.collectibles.favoriteBadge}
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {activeRow.field === 'mateId' && o.itemId !== CHU3_MATE_NONE_ID ? (
+                          <div className="border-app-line flex flex-wrap items-center gap-2 border-b px-3 py-2">
+                            <span
+                              className={`rounded-md px-2 py-1 text-xs ${
+                                mateOwnedMap[o.itemId]
+                                  ? 'bg-app-success-tint text-app-success'
+                                  : 'bg-app-warning-tint text-app-warning'
+                              }`}
+                            >
+                              {mateOwnedMap[o.itemId]
+                                ? texts.collectibles.mateFriendshipLv(mateOwnedMap[o.itemId]?.friendshipLevel ?? 0)
+                                : texts.collectibles.mateNotOwned}
+                            </span>
+                            {cleanText(mateMetaMap[o.itemId]?.charaName) ? (
+                              <span className="text-app-subtle text-xs">
+                                {cleanText(mateMetaMap[o.itemId]?.charaName)}
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {textOnly ? (
+                          <div className="flex flex-col gap-2 px-3 py-3">
+                            <TrophyPlate itemId={o.itemId} name={displayName} allItems={allItems} />
+                            {trophyConditionOf(o.itemId) ? (
+                              <div className="text-app-subtle text-xs leading-snug whitespace-normal">
+                                <span className="text-app-default font-medium">
+                                  {texts.collectibles.trophyCondition}
+                                </span>
+                                ：{trophyConditionOf(o.itemId)}
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : !hasImg ? null : (
+                          <div
+                            className={`flex items-center justify-center p-3 ${
+                              isWidePreview
+                                ? 'min-h-[100px]'
+                                : isCharacter
+                                  ? 'min-h-[220px]'
+                                  : 'min-h-[140px]'
+                            }`}
+                          >
+                            {img ? (
+                              <img
+                                src={img}
+                                crossOrigin={imgCross(img)}
+                                alt=""
+                                className={
+                                  isWidePreview
+                                    ? 'max-h-24 w-full object-contain object-center'
+                                    : 'max-h-[min(220px,100%)] max-w-full object-contain'
+                                }
+                                loading="lazy"
+                              />
+                            ) : null}
+                          </div>
+                        )}
+                      </Button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {totalPages > 1 && filteredOptions.length > 0 ? (
+              <div className="border-app-line bg-app-base flex shrink-0 flex-wrap items-center justify-center gap-1 border-t px-4 py-3">
+                <Button
+                  size="small"
+                  disabled={safePage <= 0 || saving || unlockingCharaId != null}
+                  onClick={() => setModalPage(0)}
+                >
+                  «
+                </Button>
+                <Button
+                  size="small"
+                  disabled={safePage <= 0 || saving || unlockingCharaId != null}
+                  onClick={() => setModalPage((p) => Math.max(0, p - 1))}
+                >
+                  {texts.common.previousPage}
+                </Button>
+                {pageItems.map((item, idx) =>
+                  item === 'ellipsis' ? (
+                    <span key={`e-${idx}`} className="text-app-subtle px-2 text-sm">
+                      …
+                    </span>
+                  ) : (
+                    <Button
+                      key={item}
+                      size="small"
+                      type={item === safePage ? 'primary' : 'default'}
+                      disabled={saving || unlockingCharaId != null}
+                      onClick={() => setModalPage(item)}
+                    >
+                      {item + 1}
+                    </Button>
+                  ),
+                )}
+                <Button
+                  size="small"
+                  disabled={safePage >= totalPages - 1 || saving || unlockingCharaId != null}
+                  onClick={() => setModalPage((p) => Math.min(totalPages - 1, p + 1))}
+                >
+                  {texts.common.nextPage}
+                </Button>
+                <Button
+                  size="small"
+                  disabled={safePage >= totalPages - 1 || saving || unlockingCharaId != null}
+                  onClick={() => setModalPage(totalPages - 1)}
+                >
+                  »
+                </Button>
+              </div>
+            ) : null}
+          </>
+        ) : null}
+      </Modal>
+    </div>
+  )
+}

@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Checkbox } from '@cloudflare/kumo/components/checkbox'
-import { Select } from '@cloudflare/kumo/components/select'
-import { Text } from '@cloudflare/kumo/components/text'
-import { getAppTexts } from '../../content/texts'
-import { useAuth } from '../../hooks/useAuth'
-import * as userApi from '../../api/user'
-import { settingFieldLabel } from '../../lib/settingsFieldLabels'
-import type { SettingFieldLocale } from '../../lib/settingsFieldLabels'
-import { GameOptionFields } from './GameOptionFields'
-import type { GameOption } from '../../lib/types'
+import { getAppTexts } from '@/content/texts'
+import { useAuth } from '@/hooks/useAuth'
+import * as userApi from '@/api/user'
+import { settingFieldLabel } from '@/lib/settingsFieldLabels'
+import type { SettingFieldLocale } from '@/lib/settingsFieldLabels'
+import { GameOptionFields } from '@/components/settings/GameOptionFields'
+import type { GameOption } from '@/lib/types'
+import { Checkbox, Select } from 'antd'
+import { Text } from '@/components/ui/Text'
 
 const ROUNDING_KEY = 'rounding'
 
@@ -65,38 +64,30 @@ export function GlobalGameSettingsSection({
 
   return (
     <div className="flex flex-col gap-6">
-      <blockquote className="border-kumo-line text-kumo-subtle border-l-2 pl-3 text-sm">
+      <blockquote className="border-app-line text-app-subtle border-l-2 pl-3 text-sm">
         {copy.globalSettings.webHint}
       </blockquote>
 
-      <Checkbox
-        controlFirst
-        className="items-start"
-        label={
-          <span className="flex flex-col gap-0.5">
+      <Checkbox className="items-start" checked={rounding} onChange={(e) => ((c) => setRoundingPersist(c))(e.target.checked)}><span className="flex flex-col gap-0.5">
             <span className="text-sm font-medium">{r.name}</span>
-            <span className="text-kumo-subtle text-xs">{r.desc}</span>
-          </span>
-        }
-        checked={rounding}
-        onCheckedChange={(c) => setRoundingPersist(c)}
-      />
+            <span className="text-app-subtle text-xs">{r.desc}</span>
+          </span></Checkbox>
 
-      <div className="bg-kumo-line h-px w-full opacity-40" />
+      <div className="bg-app-line h-px w-full opacity-40" />
 
-      <blockquote className="border-kumo-line text-kumo-subtle border-l-2 pl-3 text-sm">
+      <blockquote className="border-app-line text-app-subtle border-l-2 pl-3 text-sm">
         {copy.globalSettings.regionHint}
       </blockquote>
 
       <div className="flex max-w-md flex-col gap-2">
         <span className="text-sm font-medium">{copy.globalSettings.prefecture}</span>
-        <span className="text-kumo-subtle text-xs">{copy.globalSettings.syncHint}</span>
+        <span className="text-app-subtle text-xs">{copy.globalSettings.syncHint}</span>
         <Select
           className="max-w-md"
           aria-label={copy.globalSettings.prefecture}
           value={region}
           disabled={regionBusy}
-          onValueChange={(v) => void onRegionChange(Number(v))}
+          onChange={(v) => void onRegionChange(Number(v))}
         >
           <Select.Option value={0}>{copy.globalSettings.select}</Select.Option>
           {copy.globalSettings.prefectures.slice(1).map((name, i) => (
@@ -105,13 +96,13 @@ export function GlobalGameSettingsSection({
             </Select.Option>
           ))}
         </Select>
-        {regionErr ? <Text DANGEROUS_className="text-kumo-danger text-sm">{regionErr}</Text> : null}
+        {regionErr ? <Text className="text-app-danger text-sm">{regionErr}</Text> : null}
       </div>
 
-      <div className="bg-kumo-line h-px w-full opacity-40" />
+      <div className="bg-app-line h-px w-full opacity-40" />
 
       <div>
-        <Text DANGEROUS_className="mb-3" size="sm">
+        <Text className="text-sm mb-3">
           {copy.globalSettings.profileOptions}
         </Text>
         <GameOptionFields

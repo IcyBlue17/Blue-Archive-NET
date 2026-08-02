@@ -1,8 +1,8 @@
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
-import { Tabs } from '@cloudflare/kumo/components/tabs'
-import { PageHeader } from '../components/common/PageHeader'
-import { useAppTexts } from '../content/texts'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { useAppTexts } from '@/content/texts'
+import { Tabs } from 'antd'
 
 const ADMIN_TABS = [
   { path: '/admin', value: 'overview', labelKey: 'overview' },
@@ -44,29 +44,19 @@ export function AdminLayout() {
           { label: texts.nav.admin, href: '/admin' },
         ]}
       />
+      {/*
+        原来这里是 Segmented 风格的标签条 + 下面一整行重复的 NavLink。九个入口在手机上
+        两种都会挤爆，所以合并成一条 antd Tabs——它自带溢出滚动与左右箭头。
+      */}
       <Tabs
         className="mb-6"
-        variant="segmented"
-        tabs={ADMIN_TABS.map((x) => ({ value: x.value, label: texts.admin.tabs[x.labelKey] }))}
-        value={active}
-        onValueChange={(v) => {
+        items={ADMIN_TABS.map((x) => ({ key: x.value, label: texts.admin.tabs[x.labelKey] }))}
+        activeKey={active}
+        onChange={(v) => {
           const item = ADMIN_TABS.find((x) => x.value === v)
           if (item) nav(item.path)
         }}
       />
-      <div className="mb-4 flex flex-wrap gap-2">
-        {ADMIN_TABS.map((x) => (
-          <NavLink
-            key={x.path}
-            to={x.path}
-            className={({ isActive }) =>
-              `rounded-md px-3 py-1 text-sm no-underline ${isActive ? 'bg-kumo-fill text-kumo-strong' : 'text-kumo-subtle'}`
-            }
-          >
-            {texts.admin.tabs[x.labelKey]}
-          </NavLink>
-        ))}
-      </div>
       <Outlet />
     </div>
   )

@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button } from '@cloudflare/kumo/components/button'
-import { Text } from '@cloudflare/kumo/components/text'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import { ClipboardText } from '@cloudflare/kumo/components/clipboard-text'
-import { useKumoToastManager } from '@cloudflare/kumo'
-import { PageHeader } from '../../components/common/PageHeader'
-import { useAppTexts } from '../../content/texts'
-import { AQUA_CONNECTION } from '../../lib/config'
-import * as userApi from '../../api/user'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { useAppTexts } from '@/content/texts'
+import { AQUA_CONNECTION } from '@/lib/config'
+import * as userApi from '@/api/user'
+import { Button } from 'antd'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { useToast } from '@/components/ui/toast'
+import { ClipboardField } from '@/components/ui/ClipboardField'
+import { Text } from '@/components/ui/Text'
 
 function formatKeychip(raw: string) {
   const normalized = raw.replace(/[^0-9A-Z]/gi, '').toUpperCase()
@@ -29,7 +29,7 @@ id=${idLine}
 
 export function SetupPage() {
   const copy = useAppTexts()
-  const toast = useKumoToastManager()
+  const toast = useToast()
   const [keychip, setKeychip] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
 
@@ -65,47 +65,43 @@ export function SetupPage() {
   return (
     <div>
       <PageHeader title={copy.nav.setup} crumbs={[{ label: copy.nav.home, href: '/home' }]} />
-      <LayerCard className="mb-6 p-4">
-        <LayerCard.Secondary>{copy.setup.connectionAddress}</LayerCard.Secondary>
-        <Text DANGEROUS_className="mt-2">
+      <SectionCard title={<>{copy.setup.connectionAddress}</>} className="mb-6">
+        <Text className="mt-2">
           {AQUA_CONNECTION || copy.setup.connectionEnvHint}
         </Text>
-      </LayerCard>
-      <LayerCard className="mb-6 p-4">
-        <LayerCard.Secondary>{copy.setup.iniExample}</LayerCard.Secondary>
-        <blockquote className="border-kumo-line text-kumo-subtle mt-3 border-l-2 pl-3 text-sm">
+      </SectionCard>
+      <SectionCard title={<>{copy.setup.iniExample}</>} className="mb-6">
+        <blockquote className="border-app-line text-app-subtle mt-3 border-l-2 pl-3 text-sm">
           {copy.setup.iniHint}
         </blockquote>
-        <pre className="bg-kumo-recessed border-kumo-line mt-4 max-h-80 overflow-auto rounded-lg border p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+        <pre className="bg-app-recessed border-app-line mt-4 max-h-80 overflow-auto rounded-lg border p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap">
           {iniText}
         </pre>
         <Button
-          type="button"
-          variant="secondary"
-          size="sm"
+          htmlType="button"
+          size="small"
           className="mt-3"
           onClick={() => void navigator.clipboard.writeText(iniText)}
         >
           {copy.setup.copyAll}
         </Button>
-      </LayerCard>
-      <LayerCard className="p-4">
-        <LayerCard.Secondary>{copy.setup.keychip}</LayerCard.Secondary>
-        <Text DANGEROUS_className="text-kumo-subtle mt-2 text-sm">
+      </SectionCard>
+      <SectionCard title={<>{copy.setup.keychip}</>}>
+        <Text className="text-app-subtle mt-2 text-sm">
           {copy.setup.keychipHint}
         </Text>
         {keychip ? (
           <div className="mt-4">
-            <ClipboardText text={formatKeychip(keychip)} />
+            <ClipboardField text={formatKeychip(keychip)} />
           </div>
         ) : (
-          <Text DANGEROUS_className="mt-2">{copy.setup.notAllocated}</Text>
+          <Text className="mt-2">{copy.setup.notAllocated}</Text>
         )}
-        {err ? <Text DANGEROUS_className="text-kumo-danger mt-2">{err}</Text> : null}
-        <Button type="button" className="mt-4" onClick={() => void allocate()}>
+        {err ? <Text className="text-app-danger mt-2">{err}</Text> : null}
+        <Button htmlType="button" className="mt-4" onClick={() => void allocate()}>
           {copy.setup.allocate}
         </Button>
-      </LayerCard>
+      </SectionCard>
     </div>
   )
 }

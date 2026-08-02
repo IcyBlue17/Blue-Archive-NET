@@ -1,5 +1,6 @@
-import { chusanRating, getMult, type MusicMetaLite } from './scoring'
-import type { GamePlayRecord } from './types'
+import { chusanRating, getMult, type MusicMetaLite } from '@/lib/scoring'
+import type { GamePlayRecord } from '@/lib/types'
+import { formatGameDateTime } from '@/lib/datetime'
 
 const CHU3_DIFFS = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
 
@@ -79,28 +80,7 @@ export function fmtRate(raw?: number): string {
   return `${(n / 100).toFixed(2)}%`
 }
 
+/** 写库时间没有时区标记，按 JST 解读后换算到本地——细节见 lib/datetime.ts。 */
 export function fmtTime(raw: string, locale: 'zh' | 'en'): string {
-  if (!raw) return '—'
-  const hasTz = /(z|[+-]\d{2}:?\d{2})$/i.test(raw.trim())
-  let d = hasTz ? new Date(raw) : new Date(Number.NaN)
-  if (Number.isNaN(d.getTime())) {
-    const m = raw.trim().match(
-      /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[ t](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/i,
-    )
-    if (m) {
-      const [, yy, mm, dd, hh = '0', mi = '0', ss = '0'] = m
-      d = new Date(
-        Date.UTC(
-          Number(yy),
-          Number(mm) - 1,
-          Number(dd),
-          Number(hh) - 9,
-          Number(mi),
-          Number(ss),
-        ),
-      )
-    }
-  }
-  if (Number.isNaN(d.getTime())) return raw
-  return d.toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US')
+  return formatGameDateTime(raw, locale)
 }

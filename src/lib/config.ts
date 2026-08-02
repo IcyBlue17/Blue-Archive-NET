@@ -1,4 +1,4 @@
-import type { ChusanMatchingOption } from './types'
+import type { ChusanMatchingOption } from '@/lib/types'
 
 export const APP_NAME = (import.meta.env.VITE_APP_NAME as string)?.trim() || 'banet'
 

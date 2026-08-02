@@ -1,5 +1,5 @@
-import { APP_NAME } from '../../lib/config'
-import { imgCross, imgUrl } from '../../lib/imgSign'
+import { APP_NAME } from '@/lib/config'
+import { imgCross, imgUrl } from '@/lib/imgSign'
 
 type BrandImageKind = 'logo' | 'mark'
 

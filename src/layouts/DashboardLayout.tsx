@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   House,
@@ -11,229 +12,260 @@ import {
   Sparkle,
   IdentificationCard,
   List,
+  CaretLeft,
+  CaretRight,
   Scroll,
   UsersThree,
 } from '@phosphor-icons/react'
-import { Sidebar, useSidebar } from '@cloudflare/kumo'
-import { Button } from '@cloudflare/kumo/components/button'
-import { Switch } from '@cloudflare/kumo/components/switch'
-import { Text } from '@cloudflare/kumo/components/text'
-import { BrandImage } from '../components/common/BrandImage'
-import { SkeletonBox } from '../components/common/Skeleton'
-import { DashboardMainScroll } from '../components/layout/DashboardMainScroll'
-import { useAuth } from '../hooks/useAuth'
-import { useAdmin } from '../hooks/useAdmin'
-import { useI18n } from '../lib/i18n'
-import { useTheme } from '../lib/theme'
-import { useAppTexts } from '../content/texts'
-import { APP_NAME } from '../lib/config'
+import { Button, Drawer, Grid, Layout, Menu } from 'antd'
+import type { MenuProps } from 'antd'
+import { BrandImage } from '@/components/common/BrandImage'
+import { SkeletonBox } from '@/components/ui/Skeleton'
+import { LabeledSwitch } from '@/components/ui/LabeledSwitch'
+import { DashboardMainScroll } from '@/components/layout/DashboardMainScroll'
+import { useAuth } from '@/hooks/useAuth'
+import { useAdmin } from '@/hooks/useAdmin'
+import { useI18n } from '@/lib/i18n'
+import { useTheme } from '@/lib/theme'
+import { useAppTexts } from '@/content/texts'
+import { APP_NAME } from '@/lib/config'
+import { Text } from '@/components/ui/Text'
 
-function NavBtn({
-  path,
-  icon: Icon,
-  children,
-  active,
-  onNavigate,
-}: {
-  path: string
+type NavEntry = {
+  /** Menu 的 key，同时也是点击后跳转的目标。 */
+  key: string
   icon: typeof House
-  children: React.ReactNode
-  active: boolean
-  onNavigate: (p: string) => void
-}) {
-  return (
-    <Sidebar.Menu>
-      <Sidebar.MenuButton icon={Icon} active={active} onClick={() => onNavigate(path)}>
-        {children}
-      </Sidebar.MenuButton>
-    </Sidebar.Menu>
-  )
+  label: string
+  /** 当前路径是否算命中这一项。 */
+  match: (pathname: string) => boolean
+  adminOnly?: boolean
 }
 
-function DashboardShell() {
+type NavGroup = { label: string; entries: NavEntry[] }
+
+const exact = (p: string) => (path: string) => path === p
+const prefix = (p: string) => (path: string) => path.startsWith(p)
+
+function useNavGroups(): NavGroup[] {
+  const texts = useAppTexts()
+  const { isAdmin } = useAdmin()
+
+  return useMemo(() => {
+    const groups: NavGroup[] = [
+      {
+        label: texts.nav.groups.basic,
+        entries: [
+          { key: '/home', icon: House, label: texts.nav.home, match: exact('/home') },
+          { key: '/cards', icon: Cards, label: texts.nav.cards, match: prefix('/cards') },
+          { key: '/setup', icon: BookOpen, label: texts.nav.setup, match: exact('/setup') },
+          { key: '/ranking/chu3', icon: Trophy, label: texts.nav.ranking, match: prefix('/ranking') },
+          { key: '/games/chu3', icon: Trophy, label: texts.layout.games, match: prefix('/games') },
+          { key: '/settings/profile', icon: GearSix, label: texts.nav.settings, match: prefix('/settings') },
+          { key: '/admin', icon: ShieldStar, label: texts.nav.admin, match: prefix('/admin'), adminOnly: true },
+        ],
+      },
+      {
+        label: texts.nav.groups.maimai,
+        entries: [{ key: '/pictures', icon: Images, label: texts.nav.pictures, match: exact('/pictures') }],
+      },
+      {
+        label: texts.nav.groups.chunithm,
+        entries: [
+          { key: '/collectibles', icon: Sparkle, label: texts.nav.collectibles, match: exact('/collectibles') },
+          { key: '/favorites', icon: Heart, label: texts.nav.chu3Favorites, match: exact('/favorites') },
+          { key: '/team', icon: ShieldStar, label: texts.nav.team, match: prefix('/team') },
+          { key: '/friends', icon: UsersThree, label: texts.nav.friends, match: exact('/friends') },
+        ],
+      },
+      {
+        label: texts.nav.groups.ongeki,
+        entries: [
+          {
+            key: '/collectibles/ongeki',
+            icon: IdentificationCard,
+            label: texts.nav.on9Collectibles,
+            match: exact('/collectibles/ongeki'),
+          },
+          { key: '/on9-story', icon: Scroll, label: texts.nav.on9Story, match: exact('/on9-story') },
+          { key: '/friends/ongeki', icon: UsersThree, label: texts.nav.on9Friends, match: exact('/friends/ongeki') },
+        ],
+      },
+    ]
+    return groups
+      .map((g) => ({ ...g, entries: g.entries.filter((e) => !e.adminOnly || isAdmin) }))
+      .filter((g) => g.entries.length > 0)
+  }, [texts, isAdmin])
+}
+
+function toMenuItems(groups: NavGroup[]): MenuProps['items'] {
+  return groups.map((g) => ({
+    type: 'group' as const,
+    key: g.label,
+    label: g.label,
+    children: g.entries.map((e) => ({
+      key: e.key,
+      icon: <e.icon className="size-4" weight="duotone" />,
+      label: e.label,
+    })),
+  }))
+}
+
+/**
+ * 选中项。`/collectibles/ongeki` 这类更具体的路径要先于 `/collectibles` 判定，
+ * 所以按「精确匹配优先于前缀匹配」来挑。
+ */
+function selectedKey(groups: NavGroup[], pathname: string): string[] {
+  const all = groups.flatMap((g) => g.entries)
+  const hit = all.find((e) => e.key === pathname) ?? all.find((e) => e.match(pathname))
+  return hit ? [hit.key] : []
+}
+
+function SidebarFooter({
+  collapsed,
+  onToggleCollapse,
+}: {
+  collapsed: boolean
+  onToggleCollapse?: () => void
+}) {
   const { locale, setLocale } = useI18n()
   const texts = useAppTexts()
   const { theme, setTheme } = useTheme()
-  const nav = useNavigate()
-  const loc = useLocation()
   const { user, logout, loading } = useAuth()
-  const { isAdmin } = useAdmin()
-  const { isMobile, setOpenMobile } = useSidebar()
 
-  const go = (p: string) => {
-    nav(p)
-    if (isMobile) setOpenMobile(false)
+  // 收起时只留一个展开按钮，其余控件没地方摆
+  if (collapsed) {
+    return (
+      <div className="border-app-line flex justify-center border-t p-2">
+        <Button
+          type="text"
+          size="small"
+          aria-label={texts.layout.openMenu}
+          onClick={onToggleCollapse}
+          icon={<CaretRight className="size-4" weight="bold" />}
+        />
+      </div>
+    )
   }
 
   return (
-    <div className="bg-kumo-surface flex h-dvh w-full overflow-hidden">
-      <Sidebar className="h-dvh shrink-0 border-r border-kumo-line">
-        <Sidebar.Header className="gap-2 p-4">
-          <div className="flex items-center gap-2">
-            <BrandImage kind="mark" />
-            <Text variant="heading3" DANGEROUS_className="truncate">
-              {APP_NAME}
-            </Text>
-          </div>
-        </Sidebar.Header>
-        <Sidebar.Content>
-          <Sidebar.Group>
-            <Sidebar.GroupLabel>{texts.nav.groups.basic}</Sidebar.GroupLabel>
-            <Sidebar.GroupContent>
-              <NavBtn path="/home" icon={House} active={loc.pathname === '/home'} onNavigate={go}>
-                {texts.nav.home}
-              </NavBtn>
-              <NavBtn path="/cards" icon={Cards} active={loc.pathname.startsWith('/cards')} onNavigate={go}>
-                {texts.nav.cards}
-              </NavBtn>
-              <NavBtn path="/setup" icon={BookOpen} active={loc.pathname === '/setup'} onNavigate={go}>
-                {texts.nav.setup}
-              </NavBtn>
-              <NavBtn
-                path="/ranking/chu3"
-                icon={Trophy}
-                active={loc.pathname.startsWith('/ranking')}
-                onNavigate={go}
-              >
-                {texts.nav.ranking}
-              </NavBtn>
-              <NavBtn path="/games/chu3" icon={Trophy} active={loc.pathname.startsWith('/games')} onNavigate={go}>
-                {texts.layout.games}
-              </NavBtn>
-              <NavBtn
-                path="/settings/profile"
-                icon={GearSix}
-                active={loc.pathname.startsWith('/settings')}
-                onNavigate={go}
-              >
-                {texts.nav.settings}
-              </NavBtn>
-              {isAdmin ? (
-                <NavBtn path="/admin" icon={ShieldStar} active={loc.pathname.startsWith('/admin')} onNavigate={go}>
-                  {texts.nav.admin}
-                </NavBtn>
-              ) : null}
-            </Sidebar.GroupContent>
-          </Sidebar.Group>
-          <Sidebar.Group>
-            <Sidebar.GroupLabel>{texts.nav.groups.maimai}</Sidebar.GroupLabel>
-            <Sidebar.GroupContent>
-              <NavBtn path="/pictures" icon={Images} active={loc.pathname === '/pictures'} onNavigate={go}>
-                {texts.nav.pictures}
-              </NavBtn>
-            </Sidebar.GroupContent>
-          </Sidebar.Group>
-          <Sidebar.Group>
-            <Sidebar.GroupLabel>{texts.nav.groups.chunithm}</Sidebar.GroupLabel>
-            <Sidebar.GroupContent>
-              <NavBtn
-                path="/collectibles"
-                icon={Sparkle}
-                active={loc.pathname === '/collectibles'}
-                onNavigate={go}
-              >
-                {texts.nav.collectibles}
-              </NavBtn>
-              <NavBtn path="/favorites" icon={Heart} active={loc.pathname === '/favorites'} onNavigate={go}>
-                {texts.nav.chu3Favorites}
-              </NavBtn>
-              <NavBtn path="/team" icon={ShieldStar} active={loc.pathname.startsWith('/team')} onNavigate={go}>
-                {texts.nav.team}
-              </NavBtn>
-              <NavBtn path="/friends" icon={UsersThree} active={loc.pathname === '/friends'} onNavigate={go}>
-                {texts.nav.friends}
-              </NavBtn>
-            </Sidebar.GroupContent>
-          </Sidebar.Group>
-          <Sidebar.Group>
-            <Sidebar.GroupLabel>{texts.nav.groups.ongeki}</Sidebar.GroupLabel>
-            <Sidebar.GroupContent>
-              <NavBtn
-                path="/collectibles/ongeki"
-                icon={IdentificationCard}
-                active={loc.pathname === '/collectibles/ongeki'}
-                onNavigate={go}
-              >
-                {texts.nav.on9Collectibles}
-              </NavBtn>
-              <NavBtn
-                path="/on9-story"
-                icon={Scroll}
-                active={loc.pathname === '/on9-story'}
-                onNavigate={go}
-              >
-                {texts.nav.on9Story}
-              </NavBtn>
-              <NavBtn
-                path="/friends/ongeki"
-                icon={UsersThree}
-                active={loc.pathname === '/friends/ongeki'}
-                onNavigate={go}
-              >
-                {texts.nav.on9Friends}
-              </NavBtn>
-            </Sidebar.GroupContent>
-          </Sidebar.Group>
-        </Sidebar.Content>
-        <Sidebar.Footer className="gap-2 p-4">
-          {loading && !user ? (
-            <SkeletonBox className="h-4 w-24 rounded-md" />
-          ) : (
-            <Text size="sm" DANGEROUS_className="text-kumo-subtle truncate">
-              {user?.username ?? '—'}
-            </Text>
-          )}
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setLocale(locale === 'zh' ? 'en' : 'zh')}
-              >
-                {texts.nav.language}
-              </Button>
-              <Button variant="destructive" size="sm" onClick={logout}>
-                {texts.nav.logout}
-              </Button>
-            </div>
-            <Switch
-              controlFirst={false}
-              size="sm"
-              label={texts.layout.darkMode}
-              checked={theme === 'dark'}
-              onCheckedChange={(on) => setTheme(on ? 'dark' : 'light')}
-            />
-          </div>
-          <div className="hidden md:block">
-            <Sidebar.Trigger />
-          </div>
-        </Sidebar.Footer>
-      </Sidebar>
-      <DashboardMainScroll>
-        <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
-          <Sidebar.Trigger
-            className="shrink-0"
-            aria-label={texts.layout.openMenu}
-          >
-            <List className="size-4" weight="bold" />
-          </Sidebar.Trigger>
-          <div className="flex min-w-0 items-center gap-2">
-            <BrandImage kind="mark" />
-            <Text size="sm" DANGEROUS_className="truncate">
-              {APP_NAME}
-            </Text>
-          </div>
-        </div>
-        <Outlet />
-      </DashboardMainScroll>
+    <div className="border-app-line flex flex-col gap-3 border-t px-4 py-3">
+      {loading && !user ? (
+        <SkeletonBox className="h-4 w-24 rounded-md" />
+      ) : (
+        <Text className="text-app-subtle truncate text-sm">{user?.username ?? '—'}</Text>
+      )}
+      <LabeledSwitch
+        size="small"
+        label={texts.layout.darkMode}
+        checked={theme === 'dark'}
+        onChange={(on) => setTheme(on ? 'dark' : 'light')}
+      />
+      {/* 语言 / 退出 / 收起挤在一行，省掉两行高度 */}
+      <div className="flex items-center gap-1">
+        <Button size="small" type="text" onClick={() => setLocale(locale === 'zh' ? 'en' : 'zh')}>
+          {texts.nav.language}
+        </Button>
+        <Button danger size="small" type="text" onClick={logout}>
+          {texts.nav.logout}
+        </Button>
+        {onToggleCollapse ? (
+          <Button
+            type="text"
+            size="small"
+            className="ml-auto"
+            aria-label={texts.layout.collapseMenu}
+            onClick={onToggleCollapse}
+            icon={<CaretLeft className="size-4" weight="bold" />}
+          />
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function SidebarBrand() {
+  return (
+    <div className="border-app-line flex h-14 items-center gap-2 border-b px-4">
+      <BrandImage kind="mark" />
+      <Text className="truncate font-semibold">{APP_NAME}</Text>
     </div>
   )
 }
 
 export function DashboardLayout() {
+  const nav = useNavigate()
+  const loc = useLocation()
+  const texts = useAppTexts()
+  const screens = Grid.useBreakpoint()
+  // useBreakpoint 首帧可能返回空对象，此时按桌面处理，避免抽屉一闪而过
+  const isMobile = screens.md === false
+  const [collapsed, setCollapsed] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const groups = useNavGroups()
+  const items = useMemo(() => toMenuItems(groups), [groups])
+  const selected = selectedKey(groups, loc.pathname)
+
+  const onSelect: MenuProps['onClick'] = (info) => {
+    nav(info.key)
+    setDrawerOpen(false)
+  }
+
+  // 行高 / 行距一律走 antd Menu 的默认值，不做压缩
+  const menu = (
+    <Menu mode="inline" items={items} selectedKeys={selected} onClick={onSelect} style={{ borderInlineEnd: 'none' }} />
+  )
+
   return (
-    <Sidebar.Provider defaultOpen>
-      <DashboardShell />
-    </Sidebar.Provider>
+    <Layout className="bg-app-surface h-dvh w-full overflow-hidden">
+      {isMobile ? (
+        <Drawer
+          placement="left"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          size={260}
+          closable={false}
+          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column' } }}
+        >
+          <SidebarBrand />
+          <div className="min-h-0 flex-1 overflow-y-auto">{menu}</div>
+          <SidebarFooter collapsed={false} />
+        </Drawer>
+      ) : (
+        <Layout.Sider
+          className="bg-app-base border-app-line h-dvh border-r"
+          width={200}
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          // 默认触发条是一根深色横杠，跟主题完全不搭；关掉它，折叠入口放进页脚自己画
+          trigger={null}
+        >
+          <div className="flex h-full flex-col">
+            <SidebarBrand />
+            <div className="min-h-0 flex-1 overflow-y-auto">{menu}</div>
+            <SidebarFooter collapsed={collapsed} onToggleCollapse={() => setCollapsed((v) => !v)} />
+          </div>
+        </Layout.Sider>
+      )}
+
+      <DashboardMainScroll>
+        {isMobile ? (
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <Button
+              type="text"
+              aria-label={texts.layout.openMenu}
+              onClick={() => setDrawerOpen(true)}
+              icon={<List className="size-4" weight="bold" />}
+            />
+            <div className="flex min-w-0 items-center gap-2">
+              <BrandImage kind="mark" />
+              <Text className="truncate text-sm">{APP_NAME}</Text>
+            </div>
+          </div>
+        ) : null}
+        <Outlet />
+      </DashboardMainScroll>
+    </Layout>
   )
 }

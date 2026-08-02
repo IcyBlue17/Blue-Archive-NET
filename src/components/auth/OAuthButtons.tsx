@@ -1,8 +1,7 @@
 
 import type { ComponentType, SVGProps } from 'react'
-import { Text } from '@cloudflare/kumo/components/text'
-import { OAUTH_API_ORIGIN } from '../../lib/config'
-import { useAppTexts } from '../../content/texts'
+import { OAUTH_API_ORIGIN } from '@/lib/config'
+import { useAppTexts } from '@/content/texts'
 
 import AppleLogo from '~icons/logos/apple'
 
@@ -11,6 +10,7 @@ import GithubLogo from '~icons/simple-icons/github'
 import GoogleLogo from '~icons/logos/google-icon'
 
 import MicrosoftLogo from '~icons/logos/microsoft-icon'
+import { Text } from '@/components/ui/Text'
 
 export const OAUTH_PROVIDER_ORDER = ['google', 'microsoft', 'github', 'apple'] as const
 export type OauthProviderId = (typeof OAUTH_PROVIDER_ORDER)[number]
@@ -95,19 +95,19 @@ export function OAuthButtons({
               void go(id)
             }}
             className={
-              'border-kumo-line bg-kumo-base text-kumo-default flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ' +
+              'border-app-line bg-app-base text-app-default flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ' +
               (isOn && !disabled && !bindBlocked
-                ? 'hover:bg-kumo-fill-hover cursor-pointer'
+                ? 'hover:bg-app-fill-hover cursor-pointer'
                 : 'cursor-not-allowed opacity-55')
             }
           >
             <span
-              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-kumo-line bg-kumo-base"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-app-line bg-app-base"
               aria-hidden
             >
               <ProviderIcon className={OAUTH_PROVIDER_ICON_CLASS[id]} aria-hidden />
             </span>
-            <Text size="sm" DANGEROUS_className="min-w-0 flex-1 font-medium">
+            <Text className="text-sm min-w-0 flex-1 font-medium">
               {label}
             </Text>
           </button>

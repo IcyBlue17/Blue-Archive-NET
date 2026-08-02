@@ -1,19 +1,18 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button } from '@cloudflare/kumo/components/button'
-import { Input } from '@cloudflare/kumo/components/input'
-import { Text } from '@cloudflare/kumo/components/text'
-import { LayerCard } from '@cloudflare/kumo/components/layer-card'
-import { Table } from '@cloudflare/kumo/components/table'
-import { CardSummaryGrid } from '../../components/common/CardSummaryGrid'
-import { PageHeader } from '../../components/common/PageHeader'
-import { SkeletonBox } from '../../components/common/Skeleton'
-import { useAppTexts } from '../../content/texts'
-import { useAuth } from '../../hooks/useAuth'
-import { qk } from '../../lib/query'
-import * as cardApi from '../../api/card'
-import type { Card, CardSummary } from '../../lib/types'
-import { useI18n } from '../../lib/i18n'
+import { CardSummaryGrid } from '@/components/common/CardSummaryGrid'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { SkeletonBox } from '@/components/ui/Skeleton'
+import { useAppTexts } from '@/content/texts'
+import { useAuth } from '@/hooks/useAuth'
+import { qk } from '@/lib/query'
+import * as cardApi from '@/api/card'
+import type { Card, CardSummary } from '@/lib/types'
+import { useI18n } from '@/lib/i18n'
+import { Button, Input, Tag } from 'antd'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { ResponsiveTable } from '@/components/ui/ResponsiveTable'
+import { Text } from '@/components/ui/Text'
 
 const DEFAULT_MIGRATE = 'mai2,chu3'
 
@@ -77,12 +76,11 @@ export function LinkCardPage() {
   return (
     <div>
       <PageHeader title={copy.nav.cards} crumbs={[{ label: copy.nav.home, href: '/home' }]} />
-      <LayerCard className="mb-6 p-4">
-        <LayerCard.Secondary>{copy.linkCard.summary}</LayerCard.Secondary>
+      <SectionCard title={<>{copy.linkCard.summary}</>} className="mb-6">
         {loadingSummary && !ghostSummary ? (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="border-kumo-line rounded-md border px-3 py-2">
+              <div key={i} className="border-app-line rounded-md border px-3 py-2">
                 <SkeletonBox className="h-5 w-24 rounded-md" />
                 <SkeletonBox className="mt-3 h-4 w-28 rounded-md" />
                 <SkeletonBox className="mt-2 h-3 w-36 rounded-md" />
@@ -90,27 +88,26 @@ export function LinkCardPage() {
             ))}
           </div>
         ) : !ghostSummary ? (
-          <Text DANGEROUS_className="text-kumo-subtle mt-2">{copy.common.empty}</Text>
+          <Text className="text-app-subtle mt-2">{copy.common.empty}</Text>
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <CardSummaryGrid
               summary={ghostSummary}
               locale={locale === 'en' ? 'en' : 'zh'}
               texts={copy}
-              itemClassName="border-kumo-line rounded-md border px-3 py-2"
-              nameClassName="text-kumo-subtle text-sm"
-              detailClassName="text-kumo-subtle text-xs"
+              itemClassName="border-app-line rounded-md border px-3 py-2"
+              nameClassName="text-app-subtle text-sm"
+              detailClassName="text-app-subtle text-xs"
               ratingLabel={copy.linkCard.rating}
               lastLoginLabel={copy.homePage.lastLogin}
             />
           </div>
         )}
-      </LayerCard>
-      <LayerCard className="mb-6 p-4">
-        <LayerCard.Secondary>{copy.linkCard.bindCard}</LayerCard.Secondary>
+      </SectionCard>
+      <SectionCard title={<>{copy.linkCard.bindCard}</>} className="mb-6">
         <div className="mt-4 flex max-w-md flex-col gap-3">
           <label className="flex flex-col gap-1">
-            <Text size="sm">{copy.linkCard.accessCode}</Text>
+            <Text className="text-sm">{copy.linkCard.accessCode}</Text>
             <Input
               value={cardId}
               inputMode="numeric"
@@ -119,16 +116,16 @@ export function LinkCardPage() {
               placeholder={copy.linkCard.accessCodePlaceholder}
             />
           </label>
-          {msg ? <Text DANGEROUS_className="text-kumo-success">{msg}</Text> : null}
-          {err ? <Text DANGEROUS_className="text-kumo-danger">{err}</Text> : null}
-          <Button type="button" onClick={link}>
+          {msg ? <Text className="text-app-success">{msg}</Text> : null}
+          {err ? <Text className="text-app-danger">{err}</Text> : null}
+          <Button htmlType="button" onClick={link}>
             {copy.linkCard.bind}
           </Button>
         </div>
-      </LayerCard>
-      <LayerCard className="p-0 overflow-hidden">
-        <div className="border-kumo-line bg-kumo-recessed border-b px-4 py-3">
-          <Text size="sm" DANGEROUS_className="font-medium">
+      </SectionCard>
+      <SectionCard className="overflow-hidden">
+        <div className="border-app-line bg-app-recessed border-b px-4 py-3">
+          <Text className="text-sm font-medium">
             {copy.linkCard.linkedCards}
           </Text>
         </div>
@@ -139,64 +136,49 @@ export function LinkCardPage() {
               <SkeletonBox className="h-10 w-full rounded-lg" />
             </div>
           ) : (me?.cards ?? []).length === 0 ? (
-            <Text DANGEROUS_className="text-kumo-subtle px-2 py-6 text-center text-sm">{copy.linkCard.noCards}</Text>
+            <Text className="text-app-subtle px-2 py-6 text-center text-sm">{copy.linkCard.noCards}</Text>
           ) : (
-            <Table>
-              <Table.Header>
-                <Table.Row>
-                  <Table.Head>{copy.linkCard.cardNumber}</Table.Head>
-                  <Table.Head>{copy.linkCard.status}</Table.Head>
-                  <Table.Head className="text-end">{copy.linkCard.action}</Table.Head>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {(me?.cards ?? []).map((c) => (
-                  <Table.Row
-                    key={c.luid}
-                    className="hover:bg-kumo-tint transition-colors"
-                  >
-                    <Table.Cell>
-                      <span className="font-mono text-sm">{c.luid}</span>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <div className="flex flex-wrap gap-1">
-                        {c.isGhost ? (
-                          <span className="bg-kumo-fill text-kumo-subtle rounded-md px-2 py-0.5 text-xs">
-                            {copy.linkCard.ghost}
-                          </span>
-                        ) : (
-                          <span className="bg-kumo-success-tint text-kumo-success rounded-md px-2 py-0.5 text-xs">
-                            {copy.linkCard.linked}
-                          </span>
-                        )}
-                        {c.rankingBanned ? (
-                          <span className="bg-kumo-danger-tint text-kumo-danger rounded-md px-2 py-0.5 text-xs">
-                            {copy.linkCard.rankingBanned}
-                          </span>
-                        ) : null}
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell className="text-end">
-                      {!c.isGhost ? (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => unlink(c)}
-                        >
-                          {copy.linkCard.unlink}
-                        </Button>
+            <ResponsiveTable<Card>
+              rowKey={(c) => c.luid}
+              dataSource={me?.cards ?? []}
+              columns={[
+                {
+                  title: copy.linkCard.cardNumber,
+                  key: 'luid',
+                  render: (_, c) => <span className="font-mono text-sm">{c.luid}</span>,
+                },
+                {
+                  title: copy.linkCard.status,
+                  key: 'status',
+                  render: (_, c) => (
+                    <div className="flex flex-wrap gap-1">
+                      {c.isGhost ? (
+                        <Tag>{copy.linkCard.ghost}</Tag>
                       ) : (
-                        <span className="text-kumo-subtle text-xs">{copy.common.empty}</span>
+                        <Tag color="success">{copy.linkCard.linked}</Tag>
                       )}
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
+                      {c.rankingBanned ? <Tag color="error">{copy.linkCard.rankingBanned}</Tag> : null}
+                    </div>
+                  ),
+                },
+                {
+                  title: copy.linkCard.action,
+                  key: 'action',
+                  align: 'end',
+                  render: (_, c) =>
+                    !c.isGhost ? (
+                      <Button htmlType="button" danger size="small" onClick={() => unlink(c)}>
+                        {copy.linkCard.unlink}
+                      </Button>
+                    ) : (
+                      <span className="text-app-subtle text-xs">{copy.common.empty}</span>
+                    ),
+                },
+              ]}
+            />
           )}
         </div>
-      </LayerCard>
+      </SectionCard>
     </div>
   )
 }
