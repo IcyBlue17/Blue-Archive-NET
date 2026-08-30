@@ -7,6 +7,7 @@ import { downloadJsonFile } from "@/lib/download";
 import type { SettingFieldLocale } from "@/lib/settingsFieldLabels";
 import type { Chu3LxnsImportResult, ChusanMatchingOption, GameOption } from "@/lib/types";
 import { Chu3AppearanceSettings } from "@/features/chu3/components/Chu3AppearanceSettings";
+import { Chu3UserGameOptionSettings } from "@/features/chu3/components/Chu3UserGameOptionSettings";
 import { ChusanLoginRewardSettings } from "@/features/chu3/components/ChusanLoginRewardSettings";
 import { GameOptionFields } from "@/components/settings/GameOptionFields";
 import { Button, Input, Modal, Select, Typography } from 'antd'
@@ -204,6 +205,8 @@ export function ChusanExtraSettings({
       {err ? (
         <Text className="text-app-danger text-sm">{err}</Text>
       ) : null}
+
+      <Chu3UserGameOptionSettings locale={locale} />
 
       <section>
         <h3 className="text-app-default mb-2 text-base font-semibold">

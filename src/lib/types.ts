@@ -7,6 +7,9 @@ export interface GameOption {
   game: string
 }
 
+/** CHUNITHM `userGameOption` row returned by `/game/chu3/user-option`. */
+export type Chu3UserGameOption = Record<string, number | string | null | undefined>
+
 export interface AquaNetUser {
   auId?: number
   username: string

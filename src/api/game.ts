@@ -9,6 +9,7 @@ import type {
   Chu3TeamRankEntry,
   Chu3TeamRequestBox,
   Chu3TeamSummary,
+  Chu3UserGameOption,
   Chu3UserMusicDetail,
   GameName,
   GamePlayRecord,
@@ -270,6 +271,17 @@ export async function unlockChu3Character(characterId: number, level: number) {
 
 export async function chu3UserDetail(username: string) {
   return userPost('/api/v2/game/chu3/user-detail', { username })
+}
+
+export async function userOption(game: GameName) {
+  return userPost(`/api/v2/game/${game}/user-option`, {}) as Promise<Chu3UserGameOption | null>
+}
+
+export async function userOptionSet(game: GameName, field: string, value: number) {
+  return userPost(`/api/v2/game/${game}/user-option-set`, {
+    field,
+    value: String(value),
+  })
 }
 
 export async function chu3RivalList() {
