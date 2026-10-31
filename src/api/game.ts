@@ -78,6 +78,25 @@ export async function photos() {
   return userPost('/api/v2/game/mai2/my-photo', {}) as Promise<string[]>
 }
 
+export async function mai2UserBox() {
+  return userPost('/api/v2/game/mai2/user-box', {}) as Promise<{
+    user: unknown
+    items: unknown[]
+    characters?: number[]
+    characterRows?: Array<{
+      characterId: number
+      level?: number
+      awakening?: number
+      useCount?: number
+    }>
+    intimateRows?: Array<{
+      partnerId: number
+      intimateLevel?: number
+      intimateCountRewarded?: number
+    }>
+  }>
+}
+
 export async function userBox() {
   return userPost('/api/v2/game/chu3/user-box', {}) as Promise<{
     user: unknown
