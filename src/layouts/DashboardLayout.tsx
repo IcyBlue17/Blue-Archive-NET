@@ -16,6 +16,7 @@ import {
   CaretRight,
   Scroll,
   UsersThree,
+  MusicNotes,
 } from '@phosphor-icons/react'
 import { Button, Drawer, Grid, Layout, Menu } from 'antd'
 import type { MenuProps } from 'antd'
@@ -74,6 +75,7 @@ function useNavGroups(): NavGroup[] {
             label: texts.nav.mai2Collectibles,
             match: exact('/collectibles/mai2'),
           },
+          { key: '/games/mai2/songs', icon: MusicNotes, label: texts.nav.mai2Music, match: exact('/games/mai2/songs') },
         ],
       },
       {
