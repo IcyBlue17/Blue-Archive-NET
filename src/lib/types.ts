@@ -163,6 +163,33 @@ export interface GamePlayRecord extends GenericGamePlaylog {
   clearStatus?: number
   eventName?: string
   battlePoint?: number
+
+  // maimai DX-specific playlog fields
+  deluxscore?: number
+  maxDeluxscore?: number
+  totalDeluxscore?: number
+  syncStatus?: number
+  comboStatus?: number
+  tapCriticalPerfect?: number
+  tapPerfect?: number
+  tapGreat?: number
+  tapGood?: number
+  tapMiss?: number
+  holdCriticalPerfect?: number
+  holdPerfect?: number
+  holdGreat?: number
+  holdGood?: number
+  holdMiss?: number
+  touchCriticalPerfect?: number
+  touchPerfect?: number
+  touchGreat?: number
+  touchGood?: number
+  touchMiss?: number
+  breakCriticalPerfect?: number
+  breakPerfect?: number
+  breakGreat?: number
+  breakGood?: number
+  breakMiss?: number
 }
 
 export interface Chu3UserMusicDetail {
@@ -202,6 +229,17 @@ export interface OngekiUserMusicDetail {
   clearStatus?: number
   isStoryWatched?: boolean
   platinumScoreStar?: number
+}
+
+export interface Mai2UserMusicDetail {
+  musicId: number
+  level: number
+  playCount: number
+  achievement: number
+  deluxscoreMax: number
+  scoreRank: number
+  comboStatus: number
+  syncStatus: number
 }
 
 export interface RankCount {

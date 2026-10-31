@@ -7,6 +7,8 @@ import { Chu3MusicLibrary } from '@/features/chu3/components/Chu3MusicLibrary'
 import { Chu3PlaylogExplorer } from '@/features/chu3/components/Chu3PlaylogExplorer'
 import { On9MusicLibrary } from '@/features/ongeki/components/On9MusicLibrary'
 import { On9PlaylogExplorer } from '@/features/ongeki/components/On9PlaylogExplorer'
+import { Mai2MusicLibrary } from '@/features/mai2/components/Mai2MusicLibrary'
+import { Mai2PlaylogExplorer } from '@/features/mai2/components/Mai2PlaylogExplorer'
 import { GameSummaryPanel } from '@/components/game/GameSummaryPanel'
 import { PlaysHeatmap } from '@/components/game/PlaysHeatmap'
 import { RatingCompositionSection } from '@/components/game/RatingCompositionSection'
@@ -22,6 +24,7 @@ import type {
   GameName,
   GamePlayRecord,
   GenericGameSummary,
+  Mai2UserMusicDetail,
   OngekiUserMusicDetail,
   TrendEntry,
 } from '@/lib/types'
@@ -36,7 +39,7 @@ const GAMES: GameName[] = ['chu3', 'mai2', 'ongeki', 'wacca']
 const CHU3_SECTIONS = ['overview', 'songs', 'plays'] as const
 type GameSection = (typeof CHU3_SECTIONS)[number]
 // Games that have a per-song library / playlog explorer beyond the overview tab.
-const SECTIONED_GAMES: GameName[] = ['chu3', 'ongeki']
+const SECTIONED_GAMES: GameName[] = ['chu3', 'ongeki', 'mai2']
 
 function sectionPath(game: GameName, section: GameSection) {
   return section === 'overview' ? `/games/${game}` : `/games/${game}/${section}`
@@ -149,14 +152,14 @@ export function GameDashboardPage() {
     },
   })
 
-  const songQuery = useQuery<(Chu3UserMusicDetail | OngekiUserMusicDetail)[]>({
+  const songQuery = useQuery<(Chu3UserMusicDetail | OngekiUserMusicDetail | Mai2UserMusicDetail)[]>({
     queryKey: qk.gameLibrary(username, game),
     enabled: !!username && SECTIONED_GAMES.includes(game) && section === 'songs' && musicIds.length > 0,
     placeholderData: (old) => old,
     queryFn: async () => {
       const group = chunk(musicIds, 300)
       const rows = await Promise.all(
-        group.map((part) => gameApi.userMusicFromList<Chu3UserMusicDetail | OngekiUserMusicDetail>(username, game, part)),
+        group.map((part) => gameApi.userMusicFromList<Chu3UserMusicDetail | OngekiUserMusicDetail | Mai2UserMusicDetail>(username, game, part)),
       )
       return rows.flat()
     },
@@ -250,6 +253,15 @@ export function GameDashboardPage() {
                 error={songErr}
                 locale={loc}
               />
+            ) : game === 'mai2' ? (
+              <Mai2MusicLibrary
+                musicById={musicById}
+                detailRows={(songQuery.data ?? []) as Mai2UserMusicDetail[]}
+                records={playQuery.data ?? []}
+                loading={showSongsLoading}
+                error={songErr}
+                locale={loc}
+              />
             ) : (
               <Chu3MusicLibrary
                 musicById={musicById}
@@ -276,6 +288,14 @@ export function GameDashboardPage() {
               </SectionCard>
             ) : game === 'ongeki' ? (
               <On9PlaylogExplorer
+                musicById={musicById}
+                records={playQuery.data ?? []}
+                loading={showPlaysLoading}
+                error={playErr}
+                locale={loc}
+              />
+            ) : game === 'mai2' ? (
+              <Mai2PlaylogExplorer
                 musicById={musicById}
                 records={playQuery.data ?? []}
                 loading={showPlaysLoading}

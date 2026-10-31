@@ -66,7 +66,15 @@ function useNavGroups(): NavGroup[] {
       },
       {
         label: texts.nav.groups.maimai,
-        entries: [{ key: '/pictures', icon: Images, label: texts.nav.pictures, match: exact('/pictures') }],
+        entries: [
+          { key: '/pictures', icon: Images, label: texts.nav.pictures, match: exact('/pictures') },
+          {
+            key: '/collectibles/mai2',
+            icon: IdentificationCard,
+            label: texts.nav.mai2Collectibles,
+            match: exact('/collectibles/mai2'),
+          },
+        ],
       },
       {
         label: texts.nav.groups.chunithm,

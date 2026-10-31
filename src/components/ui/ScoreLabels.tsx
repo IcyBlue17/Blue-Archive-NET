@@ -19,6 +19,16 @@ const DIFF_BG: Record<number, string> = {
 /** オンゲキ の 4 は ULTIMA ではなく LUNATIC——白抜きの紫。 */
 const ON9_DIFF_BG: Record<number, string> = { ...DIFF_BG, 4: '#4c1d95' }
 
+/** maimai DX: basic 绿 / advanced 黄 / expert 红 / master 紫 / Re:MASTER 粉白; slot 5 = 宴会场 (rainbow). */
+const MAI2_DIFF_BG: Record<number, string> = {
+  0: '#16a34a',
+  1: '#d97706',
+  2: '#dc2626',
+  3: '#7c3aed',
+  4: '#db2777',
+  5: RAINBOW,
+}
+
 const badgeStyle = css`
   display: inline-flex;
   align-items: center;
@@ -37,10 +47,10 @@ export function DifficultyBadge({
   children,
 }: {
   level: number
-  game?: 'chu3' | 'ongeki'
+  game?: 'chu3' | 'ongeki' | 'mai2'
   children: ReactNode
 }) {
-  const bg = (game === 'ongeki' ? ON9_DIFF_BG : DIFF_BG)[level] ?? '#64748b'
+  const bg = (game === 'ongeki' ? ON9_DIFF_BG : game === 'mai2' ? MAI2_DIFF_BG : DIFF_BG)[level] ?? '#64748b'
   return (
     <span css={badgeStyle} style={{ background: bg }}>
       {children}
