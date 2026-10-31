@@ -550,3 +550,34 @@ export interface ChusanMatchingOption {
   matching: string
   reflector: string
 }
+
+// 段位認定 dan id (userData.courseRank); 11 is unused by maimai DX.
+export type Mai2CourseRankId = number
+
+// 友人对战 class id (userData.classRank): 0 = B5 .. 25 = LEGEND.
+export type Mai2ClassRankId = number
+
+// maimai2_user_udemae counters, served by /api/v2/game/mai2/friend-battle.
+export interface Mai2UserUdemae {
+  rate: number
+  maxRate: number
+  classValue: number
+  maxClassValue: number
+  totalWinNum: number
+  totalLoseNum: number
+  maxWinNum: number
+  maxLoseNum: number
+  winNum: number
+  loseNum: number
+  npcTotalWinNum: number
+  npcTotalLoseNum: number
+  npcMaxWinNum: number
+  npcMaxLoseNum: number
+  npcWinNum: number
+  npcLoseNum: number
+}
+
+export interface Mai2FriendBattle {
+  classRank: Mai2ClassRankId
+  udemae: Mai2UserUdemae
+}

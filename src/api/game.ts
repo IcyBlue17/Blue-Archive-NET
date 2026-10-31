@@ -16,6 +16,8 @@ import type {
   Mai2CircleSummary,
   Chu3UserGameOption,
   Chu3UserMusicDetail,
+  Mai2FriendBattle,
+  Mai2UserUdemae,
   GameName,
   GamePlayRecord,
   GenericGameSummary,
@@ -494,4 +496,32 @@ export async function mai2CircleRequestReject(id: number) {
   return userPost('/api/v2/game/mai2/circle-request-reject', {
     requestId: String(id),
   }) as Promise<{ status: string }>
+}
+
+export async function mai2UserDetail(username: string) {
+  return userPost('/api/v2/game/mai2/user-detail', { username }) as Promise<{
+    classRank?: number
+    courseRank?: number
+    playerRating?: number
+    [key: string]: unknown
+  }>
+}
+
+export async function mai2FriendBattle() {
+  return userPost('/api/v2/game/mai2/friend-battle', {}) as Promise<Mai2FriendBattle>
+}
+
+// The backend keeps classRank and udemae classValue in step: picking a class moves
+// classValue into it (and raises maxClassValue), counters pass through untouched.
+export async function mai2FriendBattleSet(body: {
+  classRank?: number
+} & Partial<Record<keyof Mai2UserUdemae, number>>) {
+  return userPost('/api/v2/game/mai2/friend-battle-set', {}, { json: body }) as Promise<Mai2FriendBattle>
+}
+
+export async function mai2CourseRankSet(courseRank: number) {
+  return userPost('/api/v2/game/mai2/user-detail-set', {
+    field: 'courseRank',
+    value: String(courseRank),
+  })
 }
