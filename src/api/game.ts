@@ -9,6 +9,11 @@ import type {
   Chu3TeamRankEntry,
   Chu3TeamRequestBox,
   Chu3TeamSummary,
+  Mai2CircleDetail,
+  Mai2CircleJoinResult,
+  Mai2CircleRankEntry,
+  Mai2CircleRequestBox,
+  Mai2CircleSummary,
   Chu3UserGameOption,
   Chu3UserMusicDetail,
   GameName,
@@ -427,6 +432,66 @@ export async function chu3TeamRequestApprove(id: number) {
 
 export async function chu3TeamRequestReject(id: number) {
   return userPost('/api/v2/game/chu3/team-request-reject', {
+    requestId: String(id),
+  }) as Promise<{ status: string }>
+}
+
+export async function mai2Circle() {
+  return userPost('/api/v2/game/mai2/circle', {}) as Promise<Mai2CircleSummary>
+}
+
+export async function mai2CircleDetail(circleId?: number) {
+  return userPost('/api/v2/game/mai2/circle-detail', circleId ? { circleId: String(circleId) } : {}) as Promise<Mai2CircleDetail>
+}
+
+export async function mai2CircleCreate(circleName: string) {
+  return userPost('/api/v2/game/mai2/circle-create', {
+    circleName,
+  }) as Promise<Mai2CircleDetail>
+}
+
+export async function mai2CircleJoin(circleId: number) {
+  return userPost('/api/v2/game/mai2/circle-join', {
+    circleId: String(circleId),
+  }) as Promise<Mai2CircleJoinResult>
+}
+
+export async function mai2CircleUpdate(circleName: string) {
+  return userPost('/api/v2/game/mai2/circle-update', {
+    circleName,
+  }) as Promise<Mai2CircleDetail>
+}
+
+export async function mai2CircleLeave() {
+  return userPost('/api/v2/game/mai2/circle-leave', {}) as Promise<{ status: string }>
+}
+
+export async function mai2CircleDisband() {
+  return userPost('/api/v2/game/mai2/circle-disband', {}) as Promise<{ status: string }>
+}
+
+export async function mai2CircleRanking(limit = 10) {
+  return userPost('/api/v2/game/mai2/circle-ranking', {
+    limit: String(limit),
+  }) as Promise<Mai2CircleRankEntry[]>
+}
+
+export async function mai2CircleRequests() {
+  return userPost('/api/v2/game/mai2/circle-requests', {}) as Promise<Mai2CircleRequestBox>
+}
+
+export async function mai2CircleRequestCancel() {
+  return userPost('/api/v2/game/mai2/circle-request-cancel', {}) as Promise<{ status: string }>
+}
+
+export async function mai2CircleRequestApprove(id: number) {
+  return userPost('/api/v2/game/mai2/circle-request-approve', {
+    requestId: String(id),
+  }) as Promise<Mai2CircleDetail>
+}
+
+export async function mai2CircleRequestReject(id: number) {
+  return userPost('/api/v2/game/mai2/circle-request-reject', {
     requestId: String(id),
   }) as Promise<{ status: string }>
 }

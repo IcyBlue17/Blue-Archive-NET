@@ -410,6 +410,91 @@ export interface Chu3TeamRequestBox {
   outgoing?: Chu3TeamJoinOutgoing | null
 }
 
+// maimai DX circle (SDGB 1.70), mirroring the chu3 team suite.
+// circleClass follows the in-game CircleClassID: 0 White, 1 Green, 2 Yellow, 3 Red,
+// 4 Violet, 5 Bronze, 6 Silver, 7 Gold, 8 Rainbow.
+export type Mai2CircleClass = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+
+export interface Mai2CircleSummary {
+  circleId: number
+  circleName?: string
+  circleRank?: number
+  circlePoint?: number
+  circleClass?: Mai2CircleClass
+  myPoint?: number
+  memberCount?: number
+  leaderExtId?: number
+  leaderName?: string
+}
+
+export interface Mai2CircleMember {
+  extId: number
+  userName: string
+  playerRating: number
+  highestRating: number
+  iconId: number
+  plateId: number
+  titleId: number
+  circlePoint: number
+  lastPlayDate: string
+  isLeader: boolean
+}
+
+export interface Mai2CircleDetail extends Mai2CircleSummary {
+  leaderExtId?: number
+  leaderName?: string
+  isLeader?: boolean
+  canManage?: boolean
+  isMember?: boolean
+  createdAt?: string
+  updatedAt?: string
+  members?: Mai2CircleMember[]
+}
+
+export interface Mai2CircleRankEntry {
+  rank: number
+  circleId: number
+  circleName: string
+  circleClass?: Mai2CircleClass
+  leaderExtId?: number
+  leaderName?: string
+  circlePoint: number
+  memberCount: number
+}
+
+export interface Mai2CircleJoinResult {
+  status: 'pending'
+  id: number
+  circleId: number
+  circleName: string
+  createdAt: string
+}
+
+export interface Mai2CircleJoinIncoming {
+  id: number
+  circleId: number
+  circleName: string
+  applicantExtId: number
+  applicantName: string
+  applicantRating: number
+  applicantIconId: number
+  createdAt: string
+}
+
+export interface Mai2CircleJoinOutgoing {
+  id: number
+  circleId: number
+  circleName: string
+  leaderExtId: number
+  leaderName: string
+  createdAt: string
+}
+
+export interface Mai2CircleRequestBox {
+  incoming: Mai2CircleJoinIncoming[]
+  outgoing?: Mai2CircleJoinOutgoing | null
+}
+
 export interface Chu3LxnsImportResult {
   playerName?: string | null
   friendCodeUsed?: number | null

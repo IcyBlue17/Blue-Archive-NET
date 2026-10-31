@@ -75,6 +75,7 @@ function useNavGroups(): NavGroup[] {
             label: texts.nav.mai2Collectibles,
             match: exact('/collectibles/mai2'),
           },
+          { key: '/circle/mai2', icon: ShieldStar, label: texts.nav.mai2Circle, match: prefix('/circle') },
           { key: '/games/mai2/songs', icon: MusicNotes, label: texts.nav.mai2Music, match: exact('/games/mai2/songs') },
         ],
       },

@@ -30,6 +30,7 @@ import { MaiPhotoPage } from '@/pages/games/MaiPhoto'
 import { CollectiblesPage } from '@/features/chu3/pages/Collectibles'
 import { On9CollectiblesPage } from '@/features/ongeki/pages/On9Collectibles'
 import { Mai2CollectiblesPage } from '@/features/mai2/pages/Mai2Collectibles'
+import { Mai2CirclePage } from '@/features/mai2/pages/Mai2Circle'
 import { On9StoryPage } from '@/features/ongeki/pages/On9Story'
 import { Chu3FavoritesPage } from '@/features/chu3/pages/Chu3Favorites'
 import { Chu3FriendsPage } from '@/features/chu3/pages/Chu3Friends'
@@ -85,6 +86,7 @@ export default function App() {
                       <Route path="/collectibles" element={<CollectiblesPage />} />
                       <Route path="/collectibles/ongeki" element={<On9CollectiblesPage />} />
                       <Route path="/collectibles/mai2" element={<Mai2CollectiblesPage />} />
+                      <Route path="/circle/mai2" element={<Mai2CirclePage />} />
                       <Route path="/on9-story" element={<On9StoryPage />} />
                       <Route path="/pictures" element={<MaiPhotoPage />} />
                       <Route path="/ranking" element={<Navigate to="/ranking/chu3" replace />} />
