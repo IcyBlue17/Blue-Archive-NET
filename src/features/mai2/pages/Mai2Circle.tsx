@@ -12,7 +12,7 @@ import { mai2CollectibleImageUrl } from '@/lib/mai2Assets'
 import { qk } from '@/lib/query'
 import type { Mai2CircleClass, Mai2CircleDetail, Mai2CircleJoinIncoming, Mai2CircleMember } from '@/lib/types'
 import { useAppTexts } from '@/content/texts'
-import { Button, Input } from 'antd'
+import { Button, Input, Select } from 'antd'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { useToast } from '@/components/ui/toast'
 import { Text } from '@/components/ui/Text'
@@ -183,6 +183,8 @@ export function Mai2CirclePage() {
   const username = user?.username ?? ''
   const [createName, setCreateName] = useState('')
   const [editName, setEditName] = useState('')
+  // -1 = automatic class, 0..8 = leader-pinned CircleClassID.
+  const [editClass, setEditClass] = useState<number>(-1)
   const [joinId, setJoinId] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
 
@@ -215,6 +217,7 @@ export function Mai2CirclePage() {
 
   useEffect(() => {
     setEditName(myCircle?.circleName || '')
+    setEditClass(myCircle?.classOverride ?? -1)
   }, [myCircle])
 
   async function refetch() {
@@ -343,6 +346,21 @@ export function Mai2CirclePage() {
     }
   }
 
+  async function updateClass() {
+    setBusy('class')
+    try {
+      await gameApi.mai2CircleClassSet(editClass < 0 ? null : editClass)
+      toast.add({
+        title: texts.mai2CirclePage.classUpdatedTitle,
+      })
+      await refetch()
+    } catch (err) {
+      errToast(texts.mai2CirclePage.classUpdateFailed, err)
+    } finally {
+      setBusy(null)
+    }
+  }
+
   async function leaveCircle() {
     if (!window.confirm(texts.mai2CirclePage.leaveConfirm)) return
     setBusy('leave')
@@ -392,9 +410,17 @@ export function Mai2CirclePage() {
               <div className="flex flex-wrap items-center gap-2">
                 <div className="text-app-default text-2xl font-bold">{myCircle.circleName || texts.common.teamWithId(myCircle.circleId)}</div>
                 <ClassBadge circleClass={myCircle.circleClass} />
+                {myCircle.classOverride != null ? (
+                  <span className="bg-app-recessed rounded-full px-2 py-0.5 text-xs text-app-subtle">
+                    {texts.mai2CirclePage.classManualBadge}
+                  </span>
+                ) : null}
               </div>
               <div className="text-app-subtle mt-1 text-sm">
                 {texts.common.id} {myCircle.circleId} · {texts.mai2CirclePage.leaderValue(myCircle.leaderName || '—')}
+                {myCircle.autoCircleClass != null
+                  ? ` · ${texts.mai2CirclePage.classAutoValue(texts.mai2CirclePage.classes[myCircle.autoCircleClass] ?? String(myCircle.autoCircleClass))}`
+                  : null}
               </div>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-4">
@@ -408,15 +434,36 @@ export function Mai2CirclePage() {
           <SectionCard title={<>{texts.mai2CirclePage.actions}</>} className="mt-6">
             {myCircle.canManage ? (
               <>
-                <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)] md:items-end">
+                <div className="mt-4 grid gap-3 md:grid-cols-2 md:items-end">
                   <label className="flex flex-col gap-1">
                     <Text className="text-sm">{texts.mai2CirclePage.circleName}</Text>
                     <Input className="h-11" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder={texts.mai2CirclePage.circleName} />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <Text className="text-sm">{texts.mai2CirclePage.circleClass}</Text>
+                    <Select
+                      className="h-11"
+                      value={editClass}
+                      onChange={(v) => setEditClass(v)}
+                      options={[
+                        { value: -1, label: texts.mai2CirclePage.classAuto },
+                        ...Array.from({ length: 9 }, (_, i) => ({
+                          value: i,
+                          label: `${texts.mai2CirclePage.classes[i] ?? i} · ${texts.mai2CirclePage.classHints[i] ?? ''}`,
+                        })),
+                      ]}
+                    />
                   </label>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button disabled={busy === 'update'} onClick={() => void updateCircle()}>
                     {busy === 'update' ? texts.mai2CirclePage.saving : texts.mai2CirclePage.saveCircle}
+                  </Button>
+                  <Button
+                    disabled={busy === 'class' || editClass === (myCircle.classOverride ?? -1)}
+                    onClick={() => void updateClass()}
+                  >
+                    {busy === 'class' ? texts.mai2CirclePage.saving : texts.mai2CirclePage.saveClass}
                   </Button>
                   <Button disabled={busy === 'leave'} onClick={() => void leaveCircle()}>
                     {texts.mai2CirclePage.leaveCircle}

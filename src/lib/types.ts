@@ -448,6 +448,10 @@ export interface Mai2CircleDetail extends Mai2CircleSummary {
   isMember?: boolean
   createdAt?: string
   updatedAt?: string
+  // Leader-pinned class; null/undefined means the class is computed automatically.
+  classOverride?: Mai2CircleClass | null
+  // What the automatic point/rank computation currently yields.
+  autoCircleClass?: Mai2CircleClass
   members?: Mai2CircleMember[]
 }
 
