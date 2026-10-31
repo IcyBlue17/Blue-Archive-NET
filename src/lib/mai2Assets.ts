@@ -160,7 +160,7 @@ export function buildMai2CatalogOptions(
           ? bundle.icon
           : field === 'frameId'
             ? bundle.frame
-            : field === 'characterId'
+            : field === 'characterId' || field === 'charaSlot'
               ? bundle.chara
               : field === 'partnerId'
                 ? bundle.partner
