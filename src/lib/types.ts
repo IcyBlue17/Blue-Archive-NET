@@ -410,6 +410,91 @@ export interface Chu3TeamRequestBox {
   outgoing?: Chu3TeamJoinOutgoing | null
 }
 
+// maimai DX circle (SDGB 1.70), mirroring the chu3 team suite.
+// circleClass follows the in-game CircleClassID: 0 White, 1 Green, 2 Yellow, 3 Red,
+// 4 Violet, 5 Bronze, 6 Silver, 7 Gold, 8 Rainbow.
+export type Mai2CircleClass = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+
+export interface Mai2CircleSummary {
+  circleId: number
+  circleName?: string
+  circleRank?: number
+  circlePoint?: number
+  circleClass?: Mai2CircleClass
+  myPoint?: number
+  memberCount?: number
+  leaderExtId?: number
+  leaderName?: string
+}
+
+export interface Mai2CircleMember {
+  extId: number
+  userName: string
+  playerRating: number
+  highestRating: number
+  iconId: number
+  plateId: number
+  titleId: number
+  circlePoint: number
+  lastPlayDate: string
+  isLeader: boolean
+}
+
+export interface Mai2CircleDetail extends Mai2CircleSummary {
+  leaderExtId?: number
+  leaderName?: string
+  isLeader?: boolean
+  canManage?: boolean
+  isMember?: boolean
+  createdAt?: string
+  updatedAt?: string
+  members?: Mai2CircleMember[]
+}
+
+export interface Mai2CircleRankEntry {
+  rank: number
+  circleId: number
+  circleName: string
+  circleClass?: Mai2CircleClass
+  leaderExtId?: number
+  leaderName?: string
+  circlePoint: number
+  memberCount: number
+}
+
+export interface Mai2CircleJoinResult {
+  status: 'pending'
+  id: number
+  circleId: number
+  circleName: string
+  createdAt: string
+}
+
+export interface Mai2CircleJoinIncoming {
+  id: number
+  circleId: number
+  circleName: string
+  applicantExtId: number
+  applicantName: string
+  applicantRating: number
+  applicantIconId: number
+  createdAt: string
+}
+
+export interface Mai2CircleJoinOutgoing {
+  id: number
+  circleId: number
+  circleName: string
+  leaderExtId: number
+  leaderName: string
+  createdAt: string
+}
+
+export interface Mai2CircleRequestBox {
+  incoming: Mai2CircleJoinIncoming[]
+  outgoing?: Mai2CircleJoinOutgoing | null
+}
+
 export interface Chu3LxnsImportResult {
   playerName?: string | null
   friendCodeUsed?: number | null
@@ -464,4 +549,65 @@ export interface ChusanMatchingOption {
   guide: string
   matching: string
   reflector: string
+}
+
+// 段位認定 dan id (userData.courseRank); 11 is unused by maimai DX.
+export type Mai2CourseRankId = number
+
+// 友人对战 class id (userData.classRank): 0 = B5 .. 25 = LEGEND.
+export type Mai2ClassRankId = number
+
+// maimai2_user_udemae counters, served by /api/v2/game/mai2/friend-battle.
+export interface Mai2UserUdemae {
+  rate: number
+  maxRate: number
+  classValue: number
+  maxClassValue: number
+  totalWinNum: number
+  totalLoseNum: number
+  maxWinNum: number
+  maxLoseNum: number
+  winNum: number
+  loseNum: number
+  npcTotalWinNum: number
+  npcTotalLoseNum: number
+  npcMaxWinNum: number
+  npcMaxLoseNum: number
+  npcWinNum: number
+  npcLoseNum: number
+}
+
+export interface Mai2FriendBattle {
+  classRank: Mai2ClassRankId
+  udemae: Mai2UserUdemae
+}
+
+// maimai2_user_friend_season_ranking row, served by /api/v2/game/mai2/friend-season.
+export interface Mai2FriendSeasonRanking {
+  seasonId: number
+  point: number
+  rank: number
+  rewardGet: boolean
+  userName: string
+  recordDate: string
+}
+
+// One row of udemaeSeason.json: a オトモダチ対戦 season + its reward table.
+export interface Mai2UdemaeSeasonReward {
+  kind: 'Point' | 'Ranking'
+  param: number
+  itemType: string
+  itemId: number
+}
+
+export interface Mai2UdemaeSeason {
+  id: number
+  seasonNo: number
+  name: string
+  openEventId: number
+  openEventName: string
+  resultEventId: number
+  resultEventName: string
+  netOpenName: string
+  rewards: Mai2UdemaeSeasonReward[]
 }
