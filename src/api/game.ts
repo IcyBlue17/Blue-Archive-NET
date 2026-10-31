@@ -465,6 +465,13 @@ export async function mai2CircleUpdate(circleName: string) {
   }) as Promise<Mai2CircleDetail>
 }
 
+// Pins the circle class (0..8) or restores the automatic computation with null/-1.
+export async function mai2CircleClassSet(circleClass: number | null) {
+  return userPost('/api/v2/game/mai2/circle-class-set', {
+    circleClass: String(circleClass ?? -1),
+  }) as Promise<Mai2CircleDetail>
+}
+
 export async function mai2CircleLeave() {
   return userPost('/api/v2/game/mai2/circle-leave', {}) as Promise<{ status: string }>
 }
