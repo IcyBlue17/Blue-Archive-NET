@@ -581,3 +581,33 @@ export interface Mai2FriendBattle {
   classRank: Mai2ClassRankId
   udemae: Mai2UserUdemae
 }
+
+// maimai2_user_friend_season_ranking row, served by /api/v2/game/mai2/friend-season.
+export interface Mai2FriendSeasonRanking {
+  seasonId: number
+  point: number
+  rank: number
+  rewardGet: boolean
+  userName: string
+  recordDate: string
+}
+
+// One row of udemaeSeason.json: a オトモダチ対戦 season + its reward table.
+export interface Mai2UdemaeSeasonReward {
+  kind: 'Point' | 'Ranking'
+  param: number
+  itemType: string
+  itemId: number
+}
+
+export interface Mai2UdemaeSeason {
+  id: number
+  seasonNo: number
+  name: string
+  openEventId: number
+  openEventName: string
+  resultEventId: number
+  resultEventName: string
+  netOpenName: string
+  rewards: Mai2UdemaeSeasonReward[]
+}

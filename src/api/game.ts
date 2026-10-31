@@ -17,6 +17,7 @@ import type {
   Chu3UserGameOption,
   Chu3UserMusicDetail,
   Mai2FriendBattle,
+  Mai2FriendSeasonRanking,
   Mai2UserUdemae,
   GameName,
   GamePlayRecord,
@@ -519,9 +520,19 @@ export async function mai2FriendBattleSet(body: {
   return userPost('/api/v2/game/mai2/friend-battle-set', {}, { json: body }) as Promise<Mai2FriendBattle>
 }
 
-export async function mai2CourseRankSet(courseRank: number) {
-  return userPost('/api/v2/game/mai2/user-detail-set', {
-    field: 'courseRank',
-    value: String(courseRank),
-  })
+export async function mai2FriendSeason() {
+  return userPost('/api/v2/game/mai2/friend-season', {}) as Promise<Mai2FriendSeasonRanking[]>
+}
+
+// The backend has no season reward tables, so with grantRewards the client sends the
+// qualifying Ranking rewards it computed from udemaeSeason.json.
+export async function mai2FriendSeasonSet(body: {
+  seasonId: number
+  point?: number
+  rank?: number
+  rewardGet?: boolean
+  grantRewards?: boolean
+  rewards?: { itemType: string; itemId: number }[]
+}) {
+  return userPost('/api/v2/game/mai2/friend-season-set', {}, { json: body }) as Promise<Mai2FriendSeasonRanking>
 }
